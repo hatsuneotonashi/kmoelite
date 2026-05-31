@@ -1,0 +1,175 @@
+# Kmoe Client
+
+Kmoe Client 是一个 **Alpha / 开发预览阶段** 的轻量非官方 KMOE 在线漫画阅读器，基于 Tauri 2、React、TypeScript、Rust 和 SQLite 构建。
+
+它的目标不是做一个新的漫画站，也不是把网页功能重新包装成一个笨重的下载器，而是把常用的 KMOE 阅读流程做成一个更像原生 App 的入口：打开应用，搜索或进入书架，点开一本漫画，直接开始阅读。
+
+本项目重点解决“不想长期下载漫画、只希望方便阅读”的需求：在 iPhone、iPad 等适合阅读漫画的手持设备上，存储容量价格很高，漫画资源又容易让本地存储快速膨胀。因此 Kmoe Client 的核心方向是**点开一本看一本，以临时 Reader cache 支撑高清阅读，看完后按策略自动清理，尽量不占用宝贵的长期存储空间**。
+
+本项目不隶属于 KMOE，不代表 KMOE 官方，也不提供任何规避站点限制、绕过会员权限、批量滥用下载或侵犯版权的能力。使用者需要自行遵守目标站点服务条款、版权法律和账号安全要求。
+
+English summary: [README.en.md](README.en.md)
+
+## 预览
+
+下面是 macOS 开发预览版的公开截图。为避免在开源仓库中直接传播真实漫画封面和页面内容，图片里的漫画画面已经做马赛克处理；截图重点展示 App 结构、详情页封面取色、Reader 和目录面板。
+
+![macOS 详情页封面取色与阅读入口](docs/assets/screenshots/kmoe-macos-detail-redacted.jpg)
+
+![macOS 首页、继续阅读和书架入口](docs/assets/screenshots/kmoe-macos-home-redacted.jpg)
+
+![Reader 双页阅读界面](docs/assets/screenshots/kmoe-macos-reader-redacted.jpg)
+
+![Reader 目录与页面缩略图面板](docs/assets/screenshots/kmoe-macos-reader-menu-redacted.jpg)
+
+## 当前状态
+
+Kmoe Client 仍处于 Alpha / 开发预览阶段，部分平台尚未完成完整测试，请不要将其视为稳定版本或正式发行版。
+
+### 开发预览可用
+
+| 平台 | 状态 |
+| --- | --- |
+| iPhone | 开发预览可用；适合个人测试和日常试用，签名真机完整验证仍需继续补齐。 |
+| iPad | 开发预览可用；平板布局和 Reader 体验已作为当前重点，签名真机完整验证仍需继续补齐。 |
+| macOS | 开发预览可用；当前主要本地开发和日常试用平台，公开二进制发布仍需签名、公证和干净机器验证。 |
+| Windows | 源码和打包路径存在；真机安装、卸载、open/reveal 和签名验证尚未完成。 |
+
+当前状态和限制见 [docs/status](docs/status/README.md) 与 [docs/platforms](docs/platforms/README.md)。
+
+### 更方便的使用方式
+
+- iPhone / iPad：适合把它当作低存储占用的随身漫画阅读器，登录后从目录、搜索或书架进入详情页，点开章节直接阅读；Reader cache 只服务当前阅读和继续阅读，不作为长期收藏。
+- macOS：适合桌面阅读、调试和管理；可以像普通桌面 App 一样浏览、搜索、打开详情、继续阅读，也可以用 `pnpm tauri dev` 运行开发预览。
+- 日常阅读流程：登录 -> 搜索或打开详情 -> 点开章节 -> Reader 自动记录进度 -> 看完或超过缓存策略后清理不再需要的页面。
+- 普通阅读不要求用户主动打开网页，也不以下载为默认路径；需要长期保存时再使用显式下载、Library 或文件打开能力。
+
+### 未来计划
+
+- Android 手机和平板：计划支持低存储在线阅读、临时缓存和触控/平板布局，但当前尚未完成 Android runtime、打包和真机验证。
+- Apple TV / Android TV：后续研究遥控器输入、横屏 Reader、焦点导航和缓存策略，不承诺时间表。
+
+## 产品方向
+
+- 原生 App 体验：把常用 KMOE 阅读流程收进一个桌面/移动客户端里，减少主动打开网页、切换页面和管理文件的成本。
+- 在线阅读优先：打开一本读一本，不以长期保存漫画文件为默认路径。
+- 临时缓存优先：Reader cache 用于流畅阅读和高清显示，不是收藏式下载库。
+- 低存储占用：阅读完成、切换章节或达到缓存策略限制后，应清理不再需要的缓存。
+- 高画质阅读：在合理网络与设备条件下尽量保持高分辨率漫画阅读体验。
+- 多平台阅读：优先手持阅读设备，同时保留 Windows/macOS 桌面阅读体验。
+- 显式下载保留为高级/兼容能力：当前代码仍有下载队列和 Library，但它们不是公开定位的主卖点。
+
+## 功能概览
+
+- 目录、搜索、分类、详情、账号状态等 live-first 页面。
+- Reader 以临时 cache 打开章节，支持继续阅读和阅读进度保存。
+- 书架、继续阅读、阅读历史、阅读进度和设置。
+- 单页、双页、连续阅读、LTR/RTL、缩放、裁切、旋转、章节导航、缩略图、键盘快捷键和触控手势。
+- 详情页视觉主题从真实封面像素取色；固定色板只能作为失败兜底。
+- 保留单任务顺序下载队列、Library 和文件打开能力，用于明确选择的本地保存或兼容场景。
+
+## 截图策略
+
+仓库可以保留两类图片：
+
+- 可复现的 Playwright visual baseline：`apps/kmoe-app/e2e/visual.spec.ts-snapshots/`。
+- 公开文档使用的脱敏宣传图：`docs/assets/screenshots/`。
+
+不要提交临时手动截图、未打码真实漫画图片、封面缓存、下载文件、runtime cache、账号状态、Cookie、Token、Session 或本机私有路径。若发现 visual snapshot 或宣传图含真实版权素材，应替换为合成 fixture、马赛克版本或移除。
+
+## 快速开始
+
+环境要求：
+
+- Node.js，版本需兼容已提交的 pnpm lockfile。
+- 通过 Corepack 使用 pnpm。
+- Rust stable toolchain。
+- 当前平台对应的 Tauri 系统依赖。
+
+```bash
+corepack enable
+corepack prepare pnpm@11.1.3 --activate
+pnpm install
+pnpm --dir apps/kmoe-app exec playwright install chromium
+pnpm dev
+```
+
+运行 Tauri 桌面应用：
+
+```bash
+pnpm tauri dev
+```
+
+构建 Web 资源：
+
+```bash
+pnpm build
+```
+
+本地 macOS debug app 构建：
+
+```bash
+pnpm tauri:build:mac-app:debug
+```
+
+iPhone / iPad simulator 开发预览构建示例见 [docs/platforms](docs/platforms/README.md)。
+
+## 常用命令
+
+```bash
+pnpm dev                       # Vite 浏览器开发
+pnpm tauri dev                 # Tauri 桌面开发
+pnpm typecheck                 # TypeScript 类型检查
+pnpm test:run                  # Vitest
+pnpm build                     # 生产 Web 构建
+pnpm e2e                       # Playwright
+pnpm check:platforms           # 平台自检
+pnpm check:ios-assets          # iOS 图标/资源自检
+pnpm verify:release            # 本地 release gate
+```
+
+Rust 检查：
+
+```bash
+cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
+cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+```
+
+真实站点 smoke 和真实下载验证默认关闭，只能通过显式 runtime 环境变量执行。详见 [docs/development](docs/development/README.md) 和 [docs/security](docs/security/README.md)。
+
+## 架构
+
+```mermaid
+flowchart TD
+  UI[React UI] --> API[KmoeApi contract]
+  API --> Web[WebKmoeApi]
+  Web --> Native[Tauri commands]
+  Native --> HTTP[Rust website HTTP]
+  Native --> DB[(SQLite)]
+  Native --> TempCache[Temporary Reader cache]
+  Native --> Queue[Optional download queue]
+  Native --> FS[Filesystem guards]
+  TempCache --> Reader[Reader]
+```
+
+目录地图：
+
+- `apps/kmoe-app/src/`：React 页面、路由、store、parser、Reader UI 和样式。
+- `apps/kmoe-app/src-tauri/src/`：Tauri commands、Rust HTTP、SQLite、文件系统、临时 Reader cache 和可选下载能力。
+- `apps/kmoe-app/src/tests/`：Vitest 测试和 fixtures。
+- `apps/kmoe-app/e2e/`：Playwright 测试和 visual snapshots。
+- `scripts/`：发布检查、平台检查、iOS 资源检查和显式 live verification 脚本。
+- `docs/`：架构、开发、发布、安全、平台、状态、Web adapter、Reader/Shelf 文档。
+
+## 贡献
+
+请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。贡献应优先服务轻量在线阅读、临时缓存、低存储占用和高清 Reader 体验；不要添加用户可见 mock/demo 模式，不提交凭证或下载文件，并在行为变化时补充测试和文档。
+
+## 安全
+
+不要提交账号、密码、Cookie、Session、Token、授权 URL、runtime 数据库、本地下载文件、构建产物或本机私有路径。安全问题处理方式见 [SECURITY.md](SECURITY.md)。
+
+## 许可证
+
+Kmoe Client 以 [GNU General Public License v3.0](LICENSE) 发布。

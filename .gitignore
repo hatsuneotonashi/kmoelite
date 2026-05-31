@@ -1,0 +1,43 @@
+.DS_Store
+node_modules/
+.claude/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.vite/
+.turbo/
+target/
+apps/kmoe-app/src-tauri/gen/apple/assets/
+apps/kmoe-app/src-tauri/gen/apple/build/
+apps/kmoe-app/src-tauri/gen/apple/Externals/
+*.xcarchive/
+*.dSYM/
+
+# Local-only runtime state
+.env
+.env.*
+!.env.example
+*.local
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.part
+downloads/
+KmoeDownloads/
+
+# Never persist sensitive web research artifacts
+cookies*.txt
+cookie*.json
+session*.json
+storage-state*.json
+auth-state*.json
+download-url*.json
+tmp/
+.tmp/
+research/private/
+
+# Local Codex/process artifacts
+codex-process/

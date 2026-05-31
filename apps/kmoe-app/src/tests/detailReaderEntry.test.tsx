@@ -1,0 +1,434 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { DetailPage } from '../pages/DetailPage'
+import {
+  enqueueNativeDownloadTasks,
+  listNativeDownloadedFiles,
+  listNativeDownloadTasks,
+  prepareNativeReaderChapterCache,
+  preflightNativeDownloadQueue,
+  prioritizeNativeDownloadTask,
+  startNativeDownloadQueue
+} from '../platform/nativeCommands'
+import { useCacheStore } from '../store/cacheStore'
+import { useDownloadStore } from '../store/downloadStore'
+import type { ChapterCacheRecord, PageCacheRecord } from '../types/cache'
+import type { ComicDetail, DownloadTask, DownloadedFile } from '../types/domain'
+
+const mocks = vi.hoisted(() => ({
+  api: {
+    getComicDetail: vi.fn(),
+    getSession: vi.fn(),
+    createDownloadTasks: vi.fn()
+  }
+}))
+
+vi.mock('../hooks/useKmoeApi', () => ({
+  useKmoeApi: () => mocks.api
+}))
+
+vi.mock('../platform/nativeCommands', () => ({
+  enqueueNativeDownloadTasks: vi.fn(),
+  isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
+  listNativeDownloadedFiles: vi.fn(),
+  listNativeDownloadTasks: vi.fn(),
+  prepareNativeReaderChapterCache: vi.fn(),
+  preflightNativeDownloadQueue: vi.fn(),
+  prioritizeNativeDownloadTask: vi.fn(),
+  startNativeDownloadQueue: vi.fn()
+}))
+
+const enqueueNativeDownloadTasksMock = vi.mocked(enqueueNativeDownloadTasks)
+const listNativeDownloadedFilesMock = vi.mocked(listNativeDownloadedFiles)
+const listNativeDownloadTasksMock = vi.mocked(listNativeDownloadTasks)
+const prepareReaderCacheMock = vi.mocked(prepareNativeReaderChapterCache)
+const preflightNativeDownloadQueueMock = vi.mocked(preflightNativeDownloadQueue)
+const prioritizeNativeDownloadTaskMock = vi.mocked(prioritizeNativeDownloadTask)
+const startNativeDownloadQueueMock = vi.mocked(startNativeDownloadQueue)
+
+let nativeTasks: DownloadTask[]
+let nativeLibrary: DownloadedFile[]
+
+describe('Detail reader entry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    window.localStorage.clear()
+    useDownloadStore.setState({ tasks: [], library: [] })
+    useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
+    nativeTasks = []
+    nativeLibrary = []
+    mocks.api.getComicDetail.mockResolvedValue(sampleComic())
+    mocks.api.getSession.mockResolvedValue({ authenticated: true, mode: 'live', user: { warnings: [] } })
+    mocks.api.createDownloadTasks.mockResolvedValue([sourceZipTask()])
+    listNativeDownloadedFilesMock.mockImplementation(async () => ({
+      ok: true,
+      available: true,
+      message: `已同步 ${nativeLibrary.length} 个资料库项目。`,
+      value: nativeLibrary
+    }))
+    listNativeDownloadTasksMock.mockImplementation(async () => ({
+      ok: true,
+      available: true,
+      message: `已同步 ${nativeTasks.length} 个下载任务。`,
+      value: nativeTasks
+    }))
+    enqueueNativeDownloadTasksMock.mockImplementation(async (tasks) => {
+      nativeTasks = tasks
+      return {
+        ok: true,
+        available: true,
+        message: `已加入 ${tasks.length} 个下载任务。`,
+        value: tasks
+      }
+    })
+    prioritizeNativeDownloadTaskMock.mockImplementation(async (id) => {
+      const target = nativeTasks.find((task) => task.id === id)
+      if (!target) {
+        return { ok: false, available: true, message: 'task not found' }
+      }
+      const prioritized = { ...target, createdAt: '!priority', updatedAt: '200' }
+      nativeTasks = nativeTasks.map((task) => (task.id === id ? prioritized : task))
+      return {
+        ok: true,
+        available: true,
+        message: '已把任务设为下一项。',
+        value: prioritized
+      }
+    })
+    preflightNativeDownloadQueueMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: '队列已准备好。',
+      value: {
+        ok: true,
+        mode: 'real_download',
+        queuedCount: 1,
+        activeCount: 0,
+        checks: [
+          { id: 'download-dir', label: '下载目录', status: 'pass', detail: '目录可用。' },
+          { id: 'queued-task', label: '等待任务', status: 'pass', detail: '有等待任务。' }
+        ]
+      }
+    })
+    startNativeDownloadQueueMock.mockImplementation(async () => {
+      nativeTasks = nativeTasks.map((task) => ({
+        ...task,
+        status: 'completed',
+        progress: 100,
+        downloadedBytes: task.totalBytes ?? 2048,
+        localPath: `/Users/example/Downloads/Kmoe/尖帽子的魔法工房/${task.volumeTitle}.${task.format === 'epub' ? 'epub' : 'zip'}`
+      }))
+      nativeLibrary = nativeTasks
+        .filter((task) => task.status === 'completed')
+        .map((task) => sourceArchive({
+          id: `file-${task.id}`,
+          taskId: task.id,
+          format: task.format,
+          localPath: task.localPath ?? '',
+          sizeBytes: task.totalBytes ?? 2048
+        }))
+      return {
+        ok: true,
+        available: true,
+        message: '下载队列已启动。'
+      }
+    })
+    prepareReaderCacheMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: '已准备 1 页阅读缓存。',
+      value: {
+        chapter: chapter({ id: 'cache-prepared' }),
+        pages: [page({ chapterCacheId: 'cache-prepared' })],
+        manifest: {
+          fileName: 'book.zip',
+          pageCount: 1,
+          pages: [{
+            index: 0,
+            archiveIndex: 0,
+            name: '001.jpg',
+            normalizedPath: '001.jpg',
+            extension: 'jpg',
+            compressedSize: 1,
+            uncompressedSize: 1
+          }]
+        }
+      }
+    })
+  })
+
+  it('shows an explicit back action on the detail page', async () => {
+    renderDetail()
+
+    expect(await screen.findByRole('button', { name: /返回/ })).toBeInTheDocument()
+  })
+
+  it('downloads one local source ZIP task, prepares cache, and opens Reader when reading without a local archive', async () => {
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+
+    await waitFor(() => {
+      expect(mocks.api.createDownloadTasks).toHaveBeenCalledWith({
+        comic: expect.objectContaining({ id: '53339' }),
+        selectedVolIds: ['3089'],
+        format: 'source_zip'
+      })
+      expect(enqueueNativeDownloadTasksMock).toHaveBeenCalledWith([expect.objectContaining({
+        comicId: '53339',
+        volId: '3089',
+        format: 'source_zip',
+        status: 'queued'
+      })])
+      expect(preflightNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(startNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(useDownloadStore.getState().tasks).toHaveLength(1)
+      expect(prepareReaderCacheMock).toHaveBeenCalledWith(expect.objectContaining({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
+        comicId: '53339',
+        volumeId: '3089',
+        format: 'source_zip'
+      }))
+    })
+    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
+  it('blocks queueing reader downloads while logged out', async () => {
+    mocks.api.getSession.mockResolvedValue({ authenticated: false, mode: 'live', error: '未登录' })
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Login Page' })).toBeInTheDocument()
+    })
+    expect(mocks.api.createDownloadTasks).not.toHaveBeenCalled()
+    expect(enqueueNativeDownloadTasksMock).not.toHaveBeenCalled()
+  })
+
+  it('downloads and prepares one local EPUB task when source ZIP is unavailable but EPUB can be downloaded', async () => {
+    mocks.api.getComicDetail.mockResolvedValue(sampleComic({
+      sizes: {
+        mobi: 10,
+        epub: 11,
+        sourceZip: undefined
+      },
+      availableFormats: ['mobi', 'epub']
+    }))
+    mocks.api.createDownloadTasks.mockResolvedValue([sourceZipTask({ format: 'epub', id: '53339-3089-epub' })])
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
+
+    await waitFor(() => {
+      expect(mocks.api.createDownloadTasks).toHaveBeenCalledWith({
+        comic: expect.objectContaining({ id: '53339' }),
+        selectedVolIds: ['3089'],
+        format: 'epub'
+      })
+      expect(enqueueNativeDownloadTasksMock).toHaveBeenCalledWith([expect.objectContaining({
+        comicId: '53339',
+        volId: '3089',
+        format: 'epub',
+        status: 'queued'
+      })])
+      expect(startNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(prepareReaderCacheMock).toHaveBeenCalledWith(expect.objectContaining({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.epub',
+        comicId: '53339',
+        volumeId: '3089',
+        format: 'epub'
+      }))
+    })
+    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
+  it('shows the task failure reason when automatic reader download fails', async () => {
+    startNativeDownloadQueueMock.mockImplementation(async () => {
+      nativeTasks = nativeTasks.map((task) => ({
+        ...task,
+        status: 'failed',
+        progress: 0,
+        downloadedBytes: 0,
+        errorMessage: '登录会话已失效，请重新登录后重试。'
+      }))
+      return {
+        ok: true,
+        available: true,
+        message: '下载队列已启动。'
+      }
+    })
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+
+    expect((await screen.findAllByText(/登录会话已失效/)).length).toBeGreaterThan(0)
+    expect(prepareReaderCacheMock).not.toHaveBeenCalled()
+  })
+
+  it('syncs native source ZIP records on detail entry before preparing Reader cache', async () => {
+    listNativeDownloadedFilesMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: '已同步 1 个资料库项目。',
+      value: [sourceArchive()]
+    })
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    const readButton = await screen.findAllByRole('button', { name: /准备阅读/ })
+    fireEvent.click(readButton[0])
+
+    await waitFor(() => {
+      expect(listNativeDownloadedFilesMock).toHaveBeenCalled()
+      expect(prepareReaderCacheMock).toHaveBeenCalledWith({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
+        comicId: '53339',
+        comicTitle: '尖帽子的魔法工房',
+        volumeId: '3089',
+        volumeTitle: '話 089-095',
+        sourceTaskId: 'task-source',
+        format: 'source_zip',
+        policy: 'balanced'
+      })
+      expect(useCacheStore.getState().chaptersById['cache-prepared']).toMatchObject({ status: 'ready' })
+      expect(useCacheStore.getState().pagesByChapterId['cache-prepared']).toHaveLength(1)
+    })
+    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+})
+
+function renderDetail() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/comic/53339']}>
+        <Routes>
+          <Route path="/comic/:comicId" element={<DetailPage />} />
+          <Route path="/reader/cache/:chapterCacheId" element={<h1>Reader Opened</h1>} />
+          <Route path="/login" element={<h1>Login Page</h1>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
+  )
+}
+
+function sampleComic(optionPatch: Partial<ComicDetail['downloadOptions'][number]> = {}): ComicDetail {
+  return {
+    id: '53339',
+    url: '/c/53339.htm',
+    title: '尖帽子的魔法工房',
+    aliases: [],
+    authors: ['白浜鴎'],
+    status: '连载',
+    region: '日本',
+    language: '繁体中文',
+    categories: ['魔幻'],
+    tags: [],
+    rating: '9.7',
+    heat: '1000',
+    description: '测试详情',
+    downloadOptions: [{
+      id: '53339-3089',
+      comicId: '53339',
+      volId: '3089',
+      title: '話 089-095',
+      displayTitle: '話 089-095',
+      kind: 'chapter_group',
+      pageCount: 180,
+      docPageCount: 180,
+      sizes: {
+        mobi: 10,
+        epub: 11,
+        sourceZip: 12
+      },
+      availableFormats: ['mobi', 'epub', 'source_zip'],
+      restrictions: [],
+      ...optionPatch
+    }]
+  }
+}
+
+function sourceZipTask(patch: Partial<DownloadTask> = {}): DownloadTask {
+  return {
+    id: '53339-3089-source_zip',
+    comicId: '53339',
+    comicTitle: '尖帽子的魔法工房',
+    volId: '3089',
+    volumeTitle: '話 089-095',
+    format: 'source_zip',
+    status: 'queued',
+    progress: 0,
+    downloadedBytes: 0,
+    retryCount: 0,
+    createdAt: '2026-05-24T10:00:00.000Z',
+    updatedAt: '2026-05-24T10:00:00.000Z',
+    ...patch
+  }
+}
+
+function sourceArchive(patch: Partial<DownloadedFile> = {}): DownloadedFile {
+  return {
+    id: 'file-source',
+    taskId: 'task-source',
+    comicId: '53339',
+    comicTitle: '尖帽子的魔法工房',
+    volId: '3089',
+    volumeTitle: '話 089-095',
+    format: 'source_zip',
+    localPath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
+    sizeBytes: 2048,
+    downloadedAt: '2026-05-24T09:00:00.000Z',
+    ...patch
+  }
+}
+
+function chapter(patch: Partial<ChapterCacheRecord> = {}): ChapterCacheRecord & { cacheDir: string } {
+  return {
+    id: 'cache-53339-3089',
+    comicId: '53339',
+    comicTitle: '尖帽子的魔法工房',
+    volumeId: '3089',
+    volumeTitle: '話 089-095',
+    format: 'source_zip',
+    cacheKind: 'reading_cache',
+    cacheDir: '/tmp/Kmoe/ReadingCache/53339/3089/source_zip',
+    sizeBytes: 2048,
+    pageCount: 1,
+    status: 'ready',
+    lastAccessedAt: '2026-05-24T09:00:00.000Z',
+    createdAt: '2026-05-24T09:00:00.000Z',
+    updatedAt: '2026-05-24T09:00:00.000Z',
+    ...patch
+  }
+}
+
+function page(patch: Partial<PageCacheRecord> = {}): PageCacheRecord & { filePath: string } {
+  return {
+    id: 'cache-prepared:0',
+    chapterCacheId: 'cache-prepared',
+    comicId: '53339',
+    volumeId: '3089',
+    pageIndex: 0,
+    filePath: '/tmp/Kmoe/ReadingCache/53339/3089/001.jpg',
+    sizeBytes: 1,
+    createdAt: '2026-05-24T09:00:00.000Z',
+    lastAccessedAt: '2026-05-24T09:00:00.000Z',
+    ...patch
+  }
+}

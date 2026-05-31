@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a focused product or developer improvement.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Requests must respect the unofficial, personal reading-management scope. Do not request bypassing login, membership, quota, verification, anti-abuse, or copyright limits.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / 问题
+      description: What user or developer problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal / 方案
+      description: Describe the smallest useful compliant change.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area / 区域
+      options:
+        - Reader
+        - Detail
+        - Shelf
+        - Library
+        - Download queue
+        - Web adapter
+        - Native storage
+        - Platform packaging
+        - Documentation
+        - Other
+    validations:
+      required: true

@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible product or development issue.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kmoe Client is an unofficial project. Do not include credentials, cookies, tokens, authorization URLs, private local paths, runtime databases, downloads, or copyrighted manga content.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary / 问题摘要
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction / 复现步骤
+      description: List exact steps. Do not include credentials, cookies, tokens, private URLs, or downloaded files.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform / 平台
+      options:
+        - macOS
+        - Windows
+        - iPadOS
+        - iOS
+        - Browser development
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 期望行为
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized logs or screenshots / 脱敏日志或截图
+      description: Attach only redacted output. Do not upload runtime databases, downloads, cookies, tokens, sessions, or manga content.

@@ -1,0 +1,98 @@
+# 开发
+
+## 环境准备
+
+```bash
+corepack enable
+corepack prepare pnpm@11.1.3 --activate
+pnpm install
+pnpm --dir apps/kmoe-app exec playwright install chromium
+```
+
+浏览器开发：
+
+```bash
+pnpm dev
+```
+
+Tauri 桌面开发：
+
+```bash
+pnpm tauri dev
+```
+
+## 仓库结构
+
+- `AGENTS.md`：长期工程约束和项目记忆。
+- `TASK_PROGRESS.md`：脱敏进度和验证记录。
+- `apps/kmoe-app/src/`：前端源码。
+- `apps/kmoe-app/src-tauri/src/`：Rust native source。
+- `apps/kmoe-app/src/tests/`：Vitest tests 和 fixtures。
+- `apps/kmoe-app/e2e/`：Playwright tests 和 approved visual baselines。
+- `scripts/`：release、platform、iOS、guarded live verification scripts。
+- `docs/`：公开文档。
+
+`dist`、`target`、Apple build folders、reports、runtime DB、本地下载、auth state 和 cache 不是业务源码，必须保持 ignored。
+
+## 默认检查
+
+```bash
+pnpm typecheck
+pnpm test:run
+pnpm build
+cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
+cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+pnpm e2e
+pnpm check:platforms
+```
+
+开发时先跑聚焦测试，涉及共享行为、Reader、临时缓存、显式下载、平台或 release 文档时再跑更宽的 gate。
+
+## 真实站点检查
+
+默认测试必须使用 fixture，保证可复现。真实站点 smoke 只在开发者显式设置 runtime 环境变量时运行：
+
+```bash
+KMOE_SMOKE_EMAIL='your-account@example.com' \
+KMOE_SMOKE_PASSWORD='your-runtime-password' \
+pnpm verify:real-site-smoke
+```
+
+单项真实下载验证同样必须显式确认，且可能消耗账号配额：
+
+```bash
+KMOE_VERIFY_EMAIL='your-account@example.com' \
+KMOE_VERIFY_PASSWORD='your-runtime-password' \
+KMOE_REAL_DOWNLOAD_VERIFY=I_UNDERSTAND_THIS_MAY_USE_QUOTA \
+pnpm verify:real-source-zip-reader
+```
+
+不要打印、保存、提交或截图真实凭证、Cookie、Session、授权 URL、私有路径、runtime DB 或下载文件。
+
+## 在线阅读和缓存开发规则
+
+默认产品模型：
+
+```text
+detail option -> temporary Reader cache -> Reader -> progress save -> policy cleanup
+```
+
+普通阅读不应默认长期保存漫画文件。Reader cache 是临时缓存，用于高清显示、快速翻页和短期恢复；读完、切换章节或达到策略限制后应优先清理。
+
+显式下载仍然存在，但属于高级/兼容能力：
+
+```text
+explicit download option -> local task -> native queue -> runtime authorization -> .part file -> final file -> library row
+```
+
+队列是顺序单任务。多选只创建多个普通本地任务，不调用站点 package、VIP batch 或 server-side batch。Browser development 不得伪造已完成文件、Reader cache 或清理状态。
+
+## UI 开发规则
+
+- macOS/Windows：桌面导航、键盘/focus、hover、文件打开和显示位置。
+- iPad/Android tablet：rail/sidebar、分栏或多列布局。
+- iPhone/Android phone：safe-area aware touch navigation 和紧凑控件。
+- Apple TV/Android TV：未来方向，需要单独设计遥控器输入、焦点导航和横屏 Reader。
+
+Cover-aware 页面应尽量从真实封面像素取色。CSS 可以压暗和提高对比，但不能把所有作品洗成固定色板。

@@ -1,0 +1,359 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		001C7D47B047FC441A32299B /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 89378C8886EFED1E59FA04A8 /* assets */; };
+		025432041281C77F7FEB796C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0D22B1BBBAB8173FF03398C /* Assets.xcassets */; };
+		2B56409FB544910A6009765C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEF6DC3089E415726B4E0AC9 /* MetalKit.framework */; };
+		2BE328E79DE0E02F2DC50CE0 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6726796DF0444D041B41F9FA /* libapp.a */; };
+		5322CBF631513DEACBA12FEA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA1CE35D9C9E9941A8A19817 /* CoreGraphics.framework */; };
+		69E1F4C600FACAD50D335E9F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E8BA30817D1EDC3BB07C7F4 /* UIKit.framework */; };
+		812CF02D827FD96A20C90EA0 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C0781BA65B32B6AE67F1F9B /* QuartzCore.framework */; };
+		963EDA171B3AC519CCCEF37B /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AE8D039A9F1E727508764CF6 /* main.mm */; };
+		9B86D9E366BAFEF07B8E516D /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5FCE21C1A1117450E73BDDE /* WebKit.framework */; };
+		B31C8844FB40272E21C8C7A8 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3B852999A2EFB8665E838E80 /* LaunchScreen.storyboard */; };
+		D278871F47A58D182F9E717C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B001CF89C1F8D4F59341A484 /* Metal.framework */; };
+		E03C136DACBEA4A83BC96B7F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BEB58D8818EE5FFF441EEF99 /* Security.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01E29CDCEB96D50174F5CD77 /* fs_utils.rs */ = {isa = PBXFileReference; path = fs_utils.rs; sourceTree = "<group>"; };
+		02127894F6B20E14DA39D05F /* downloader.rs */ = {isa = PBXFileReference; path = downloader.rs; sourceTree = "<group>"; };
+		06C68660845E64AB13232BF8 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		0A2B1353BD2683A317B714D5 /* db.rs */ = {isa = PBXFileReference; path = db.rs; sourceTree = "<group>"; };
+		0AFEB12B540584D2E59097D0 /* kmoe-app_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "kmoe-app_iOS.entitlements"; sourceTree = "<group>"; };
+		1DB6C3E580E2985D3B7B28F3 /* http.rs */ = {isa = PBXFileReference; path = http.rs; sourceTree = "<group>"; };
+		2E8BA30817D1EDC3BB07C7F4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		3B852999A2EFB8665E838E80 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		4DF751A6A051E6F4E49A3DEF /* models.rs */ = {isa = PBXFileReference; path = models.rs; sourceTree = "<group>"; };
+		5430D8804FC0648112FC98A7 /* queue.rs */ = {isa = PBXFileReference; path = queue.rs; sourceTree = "<group>"; };
+		606EEE8DA2E965E8F24B7D89 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		6726796DF0444D041B41F9FA /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		6D082C77671EE48D44AFE1AA /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		6D2EE50132B96CC3FE9903A4 /* commands.rs */ = {isa = PBXFileReference; path = commands.rs; sourceTree = "<group>"; };
+		7D47D7219B687C46BD0C263D /* kmoe-app_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "kmoe-app_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		89378C8886EFED1E59FA04A8 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		8C0781BA65B32B6AE67F1F9B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		A8DF98A23143E2DA906170A1 /* web_adapter.rs */ = {isa = PBXFileReference; path = web_adapter.rs; sourceTree = "<group>"; };
+		AE8D039A9F1E727508764CF6 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		B001CF89C1F8D4F59341A484 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		BA1CE35D9C9E9941A8A19817 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		BEB58D8818EE5FFF441EEF99 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		C51DFA072F74655BA6CDC608 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CEF6DC3089E415726B4E0AC9 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		D5FCE21C1A1117450E73BDDE /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		F0D22B1BBBAB8173FF03398C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E68225AB70514DE51E041667 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2BE328E79DE0E02F2DC50CE0 /* libapp.a in Frameworks */,
+				5322CBF631513DEACBA12FEA /* CoreGraphics.framework in Frameworks */,
+				D278871F47A58D182F9E717C /* Metal.framework in Frameworks */,
+				2B56409FB544910A6009765C /* MetalKit.framework in Frameworks */,
+				812CF02D827FD96A20C90EA0 /* QuartzCore.framework in Frameworks */,
+				E03C136DACBEA4A83BC96B7F /* Security.framework in Frameworks */,
+				69E1F4C600FACAD50D335E9F /* UIKit.framework in Frameworks */,
+				9B86D9E366BAFEF07B8E516D /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0AA7C361622C97989C23CCCC /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				BCE0922F1F768E02C10AE990 /* kmoe-app */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		185E5BFABD6D78E099BB22A3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				6D2EE50132B96CC3FE9903A4 /* commands.rs */,
+				0A2B1353BD2683A317B714D5 /* db.rs */,
+				02127894F6B20E14DA39D05F /* downloader.rs */,
+				01E29CDCEB96D50174F5CD77 /* fs_utils.rs */,
+				1DB6C3E580E2985D3B7B28F3 /* http.rs */,
+				606EEE8DA2E965E8F24B7D89 /* lib.rs */,
+				6D082C77671EE48D44AFE1AA /* main.rs */,
+				4DF751A6A051E6F4E49A3DEF /* models.rs */,
+				5430D8804FC0648112FC98A7 /* queue.rs */,
+				A8DF98A23143E2DA906170A1 /* web_adapter.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		4D6ED946E67D486F487F37C1 /* kmoe-app_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				C51DFA072F74655BA6CDC608 /* Info.plist */,
+				0AFEB12B540584D2E59097D0 /* kmoe-app_iOS.entitlements */,
+			);
+			path = "kmoe-app_iOS";
+			sourceTree = "<group>";
+		};
+		60BDB98DD8BECFFEA7B408D4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7D47D7219B687C46BD0C263D /* kmoe-app_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8E1D9F6FE78B94F0339DD9D6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BA1CE35D9C9E9941A8A19817 /* CoreGraphics.framework */,
+				6726796DF0444D041B41F9FA /* libapp.a */,
+				B001CF89C1F8D4F59341A484 /* Metal.framework */,
+				CEF6DC3089E415726B4E0AC9 /* MetalKit.framework */,
+				8C0781BA65B32B6AE67F1F9B /* QuartzCore.framework */,
+				BEB58D8818EE5FFF441EEF99 /* Security.framework */,
+				2E8BA30817D1EDC3BB07C7F4 /* UIKit.framework */,
+				D5FCE21C1A1117450E73BDDE /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BCE0922F1F768E02C10AE990 /* kmoe-app */ = {
+			isa = PBXGroup;
+			children = (
+				AE8D039A9F1E727508764CF6 /* main.mm */,
+				F2785A81C8E06F677DD31206 /* bindings */,
+			);
+			path = "kmoe-app";
+			sourceTree = "<group>";
+		};
+		CF481B7F5016D4BAB4115787 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		D833607D07523A193151A0FB = {
+			isa = PBXGroup;
+			children = (
+				89378C8886EFED1E59FA04A8 /* assets */,
+				F0D22B1BBBAB8173FF03398C /* Assets.xcassets */,
+				3B852999A2EFB8665E838E80 /* LaunchScreen.storyboard */,
+				CF481B7F5016D4BAB4115787 /* Externals */,
+				4D6ED946E67D486F487F37C1 /* kmoe-app_iOS */,
+				0AA7C361622C97989C23CCCC /* Sources */,
+				185E5BFABD6D78E099BB22A3 /* src */,
+				8E1D9F6FE78B94F0339DD9D6 /* Frameworks */,
+				60BDB98DD8BECFFEA7B408D4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F2785A81C8E06F677DD31206 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				06C68660845E64AB13232BF8 /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E275CBB14270918EBA365B98 /* kmoe-app_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B26F1541EE64C97972569E7 /* Build configuration list for PBXNativeTarget "kmoe-app_iOS" */;
+			buildPhases = (
+				A126FACA94494253A4D59876 /* Build Rust Code */,
+				1C1A42B838421F3E4409C8A2 /* Sources */,
+				C2D69098EFABC8DFB7873BD1 /* Resources */,
+				E68225AB70514DE51E041667 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "kmoe-app_iOS";
+			packageProductDependencies = (
+			);
+			productName = "kmoe-app_iOS";
+			productReference = 7D47D7219B687C46BD0C263D /* kmoe-app_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C35BA1E5053116C807988CCF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = D0E5E88E84B4A0655328668D /* Build configuration list for PBXProject "kmoe-app" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D833607D07523A193151A0FB;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 60BDB98DD8BECFFEA7B408D4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E275CBB14270918EBA365B98 /* kmoe-app_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C2D69098EFABC8DFB7873BD1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				025432041281C77F7FEB796C /* Assets.xcassets in Resources */,
+				B31C8844FB40272E21C8C7A8 /* LaunchScreen.storyboard in Resources */,
+				001C7D47B047FC441A32299B /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A126FACA94494253A4D59876 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1C1A42B838421F3E4409C8A2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				963EDA171B3AC519CCCEF37B /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		15A74A6D3451D383BB1E26D9 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				CODE_SIGN_ENTITLEMENTS = "kmoe-app_iOS/kmoe-app_iOS.entitlements";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "kmoe-app_iOS/Info.plist";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = moe.kzo.client;
+				PRODUCT_NAME = "Kmoe Client";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = debug;
+		};
+		613012F4067560081B219965 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = iphoneos;
+			};
+			name = release;
+		};
+		7D76B86570BDBE5E4D498C43 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = iphoneos;
+			};
+			name = debug;
+		};
+		DF5F9AA9197AEEDC6C048765 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				CODE_SIGN_ENTITLEMENTS = "kmoe-app_iOS/kmoe-app_iOS.entitlements";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "kmoe-app_iOS/Info.plist";
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$(PLATFORM_NAME) $(DEVELOPER_DIR)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = moe.kzo.client;
+				PRODUCT_NAME = "Kmoe Client";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B26F1541EE64C97972569E7 /* Build configuration list for PBXNativeTarget "kmoe-app_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				15A74A6D3451D383BB1E26D9 /* debug */,
+				DF5F9AA9197AEEDC6C048765 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		D0E5E88E84B4A0655328668D /* Build configuration list for PBXProject "kmoe-app" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7D76B86570BDBE5E4D498C43 /* debug */,
+				613012F4067560081B219965 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C35BA1E5053116C807988CCF /* Project object */;
+}

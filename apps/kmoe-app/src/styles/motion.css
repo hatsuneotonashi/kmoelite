@@ -1,0 +1,55 @@
+.stagger-children > * {
+  animation: item-rise var(--spring-normal) both;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 20ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 55ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 125ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 195ms; }
+.stagger-children > *:nth-child(n+7) { animation-delay: 220ms; }
+
+.status-pop {
+  animation: status-pop 360ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.sheet-enter {
+  animation: sheet-enter 280ms cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes item-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes status-pop {
+  0% { transform: scale(.96); }
+  70% { transform: scale(1.025); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sheet-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-children > *,
+  .status-pop,
+  .sheet-enter {
+    animation: none;
+  }
+}

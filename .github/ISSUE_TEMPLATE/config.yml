@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security reports / 安全问题
+    url: ../../security/policy
+    about: Read SECURITY.md first. Do not publish credentials, cookies, tokens, private URLs, or exploit details in issues.

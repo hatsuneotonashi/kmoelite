@@ -1,0 +1,31 @@
+{
+  "name": "kmoe-client-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cross-platform Kmoe client workspace.",
+  "license": "GPL-3.0-only",
+  "packageManager": "pnpm@11.1.3",
+  "scripts": {
+    "dev": "pnpm --dir apps/kmoe-app dev",
+    "build": "pnpm --dir apps/kmoe-app build",
+    "typecheck": "pnpm --dir apps/kmoe-app typecheck",
+    "test": "pnpm --dir apps/kmoe-app test",
+    "test:run": "pnpm --dir apps/kmoe-app test:run",
+    "verify:release": "scripts/verify-release-readiness.sh",
+    "verify:real-site-smoke": "node scripts/verify-real-site-smoke.mjs",
+    "e2e": "pnpm --dir apps/kmoe-app e2e",
+    "e2e:visual:update": "pnpm --dir apps/kmoe-app e2e:visual:update",
+    "tauri": "pnpm --dir apps/kmoe-app tauri",
+    "tauri:info": "pnpm --dir apps/kmoe-app tauri info",
+    "tauri:build:mac-app": "pnpm --dir apps/kmoe-app tauri build --bundles app",
+    "tauri:build:mac-app:debug": "pnpm --dir apps/kmoe-app tauri build --debug --bundles app",
+    "tauri:build:mac-dmg:debug": "scripts/package-macos-dmg.sh",
+    "tauri:build:windows-msi": "pnpm --dir apps/kmoe-app tauri build --bundles msi",
+    "tauri:build:windows-nsis": "pnpm --dir apps/kmoe-app tauri build --bundles nsis",
+    "verify:real-source-zip-reader": "scripts/verify-real-source-zip-reader.sh",
+    "check:platforms": "node scripts/check-platform-readiness.mjs",
+    "check:ios-assets": "node scripts/check-ios-assets.mjs",
+    "setup:ios-tools": "scripts/setup-ios-local-tools.sh",
+    "manifest:release": "node scripts/create-release-manifest.mjs"
+  }
+}

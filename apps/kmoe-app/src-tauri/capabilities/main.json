@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Restrict the Kmoe client frontend to the local main window. File, download, and live-web access are exposed only through guarded Rust commands.",
+  "local": true,
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

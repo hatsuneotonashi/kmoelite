@@ -1,0 +1,25 @@
+[package]
+name = "kmoe-app"
+version = "0.1.0"
+description = "Kmoe cross-platform client"
+authors = ["Kmoe Client Contributors"]
+edition = "2021"
+
+[lib]
+name = "kmoe_app"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+futures-util = "0.3"
+tauri = { version = "2", features = [] }
+thiserror = "2"
+tokio = { version = "1", features = ["fs", "io-util", "macros", "rt-multi-thread", "time"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "cookies", "stream"] }
+zip = { version = "2", default-features = false, features = ["deflate"] }
