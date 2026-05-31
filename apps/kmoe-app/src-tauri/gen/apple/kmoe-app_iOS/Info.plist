@@ -22,6 +22,8 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Kmoe Client needs local network access during iPhone and iPad development to load the app from the development server on this Mac.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIFileSharingEnabled</key>
