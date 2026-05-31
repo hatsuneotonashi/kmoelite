@@ -5,7 +5,7 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "vite",
     "build": "tsc -b && vite build",
     "postbuild": "node ../../scripts/sync-ios-assets.mjs",
     "typecheck": "tsc -b --pretty false",
