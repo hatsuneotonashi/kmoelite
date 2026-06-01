@@ -13,6 +13,13 @@
 - `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 259 tests。
 - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
 - `git diff --check`：passed。
+- 上传前复核：
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 259 tests。
+  - `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，26 files。
+  - tracked risky path scan：未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target` 或 `test-results` 进入 tracked tree。
+  - tracked sensitive text scan：未发现真实账号、密码、Cookie、Token、Session、Authorization header 或本机私有路径；唯一命中为 release 检查脚本自身的安全扫描正则。
 
 ## 2026-06-01 文档分层验证
 
