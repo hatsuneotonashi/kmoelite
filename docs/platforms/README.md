@@ -1,6 +1,6 @@
 # 平台状态
 
-Kmoe Client 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机、Android 平板、Apple TV 和 Android TV 是未来计划。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机、Android 平板、Apple TV 和 Android TV 是未来计划。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 

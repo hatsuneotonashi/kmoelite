@@ -1,6 +1,6 @@
 # 安全政策
 
-Kmoe Client 是 Alpha / 开发预览阶段的非官方项目。请不要在公开 issue、PR、日志、截图或文档中提交账号、密码、Cookie、Session、Token、授权 URL、runtime 数据库、本地下载文件或本机私有路径。
+kmoelite 是 Alpha / 开发预览阶段的非官方项目。请不要在公开 issue、PR、日志、截图或文档中提交账号、密码、Cookie、Session、Token、授权 URL、runtime 数据库、本地下载文件或本机私有路径。
 
 ## 报告安全问题
 

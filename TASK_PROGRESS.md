@@ -25,8 +25,8 @@
 - `pnpm --dir apps/kmoe-app test:run`：passed，45 files / 245 tests。
 - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
 - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
-- `CARGO_TARGET_DIR=$TMPDIR/kmoe-client-cargo-target cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
-- `CARGO_TARGET_DIR=$TMPDIR/kmoe-client-cargo-target cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，76 tests。
+- `CARGO_TARGET_DIR=$TMPDIR/kmoelite-cargo-target cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `CARGO_TARGET_DIR=$TMPDIR/kmoelite-cargo-target cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，76 tests。
 - `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
 - `node scripts/check-ios-assets.mjs`：passed。
 - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。

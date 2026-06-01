@@ -1,6 +1,6 @@
 # 架构
 
-Kmoe Client 是 Tauri 2 应用：React/TypeScript 负责用户界面和前端状态，Rust 负责网站 HTTP、SQLite、文件系统、临时 Reader cache、可选下载执行和缓存清理。
+kmoelite 是 Tauri 2 应用：React/TypeScript 负责用户界面和前端状态，Rust 负责网站 HTTP、SQLite、文件系统、临时 Reader cache、可选下载执行和缓存清理。
 
 项目的默认产品方向是在线阅读优先。Reader cache 是为了高清阅读、快速翻页和短期恢复而存在的临时缓存，不是默认长期下载库。
 

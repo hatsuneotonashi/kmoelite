@@ -1,6 +1,6 @@
-# Kmoe Client
+# kmoelite
 
-Kmoe Client is an **Alpha / developer preview** unofficial KMOE online manga reader built with Tauri 2, React, TypeScript, Rust, and SQLite.
+kmoelite is an **Alpha / developer preview** unofficial KMOE online manga reader built with Tauri 2, React, TypeScript, Rust, and SQLite.
 
 The project is meant to feel closer to a native app than a browser workflow: open the app, search or continue reading, open a title, and start reading without manually managing web tabs or downloaded files.
 
@@ -14,13 +14,13 @@ Chinese documentation is canonical: [README.md](README.md).
 
 The screenshots below are redacted macOS developer-preview captures. Manga covers and pages are pixelated so the public repository can show the app structure without redistributing raw manga artwork.
 
-![macOS detail page with cover-aware theming](docs/assets/screenshots/kmoe-macos-detail-redacted.jpg)
+![macOS detail page with cover-aware theming](docs/assets/screenshots/kmoelite-macos-detail-redacted.jpg)
 
-![macOS home, continue reading, and shelf entry](docs/assets/screenshots/kmoe-macos-home-redacted.jpg)
+![macOS home, continue reading, and shelf entry](docs/assets/screenshots/kmoelite-macos-home-redacted.jpg)
 
-![Reader spread layout](docs/assets/screenshots/kmoe-macos-reader-redacted.jpg)
+![Reader spread layout](docs/assets/screenshots/kmoelite-macos-reader-redacted.jpg)
 
-![Reader page and chapter panel](docs/assets/screenshots/kmoe-macos-reader-menu-redacted.jpg)
+![Reader page and chapter panel](docs/assets/screenshots/kmoelite-macos-reader-menu-redacted.jpg)
 
 ## Status
 
@@ -79,4 +79,4 @@ This repository is prepared as source code. Public binary distribution still req
 
 ## License
 
-Kmoe Client is distributed under the [GNU General Public License v3.0](LICENSE).
+kmoelite is distributed under the [GNU General Public License v3.0](LICENSE).

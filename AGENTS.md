@@ -2,9 +2,9 @@
 
 ## Project Goal
 
-Build Kmoe Client into a lightweight unofficial KMOE online manga reader for personal daily use. The primary product goal is to let users open one comic, read it comfortably in high quality, and avoid long-term local storage growth by using temporary Reader cache and cleanup policies instead of default permanent downloads.
+Build kmoelite into a lightweight unofficial KMOE online manga reader for personal daily use. The primary product goal is to let users open one comic, read it comfortably in high quality, and avoid long-term local storage growth by using temporary Reader cache and cleanup policies instead of default permanent downloads.
 
-Public project positioning: Kmoe Client is an Alpha / developer-preview unofficial KMOE online manga reader and personal reading-management tool. It is not affiliated with KMOE and must not be presented as KMOE-owned software.
+Public project positioning: kmoelite is an Alpha / developer-preview unofficial KMOE online manga reader and personal reading-management tool. It is not affiliated with KMOE and must not be presented as KMOE-owned software.
 
 ## Project Memory Policy
 

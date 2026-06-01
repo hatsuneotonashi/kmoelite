@@ -1,10 +1,10 @@
-# Kmoe Client
+# kmoelite
 
-Kmoe Client 是一个 **Alpha / 开发预览阶段** 的轻量非官方 KMOE 在线漫画阅读器，基于 Tauri 2、React、TypeScript、Rust 和 SQLite 构建。
+kmoelite 是一个 **Alpha / 开发预览阶段** 的轻量非官方 KMOE 在线漫画阅读器，基于 Tauri 2、React、TypeScript、Rust 和 SQLite 构建。
 
 目标是把常用的 KMOE 阅读流程做成一个更像原生 App 的入口：打开应用，搜索或进入书架，点开一本漫画，直接开始阅读。
 
-本项目重点解决“不想长期下载漫画、只希望方便阅读”的需求：在 iPhone、iPad 等适合阅读漫画的手持设备上，存储容量价格很高，漫画资源又容易让本地存储快速膨胀。因此 Kmoe Client 的核心方向是**点开一本看一本，以临时 Reader cache 支撑高清阅读，看完后按策略自动清理，尽量不占用宝贵的长期存储空间**。
+本项目重点解决“不想长期下载漫画、只希望方便阅读”的需求：在 iPhone、iPad 等适合阅读漫画的手持设备上，存储容量价格很高，漫画资源又容易让本地存储快速膨胀。因此 kmoelite 的核心方向是**点开一本看一本，以临时 Reader cache 支撑高清阅读，看完后按策略自动清理，尽量不占用宝贵的长期存储空间**。
 
 本项目不隶属于 KMOE，不代表 KMOE 官方，也不提供任何规避站点限制、绕过会员权限、批量滥用下载或侵犯版权的能力。使用者需要自行遵守目标站点服务条款、版权法律和账号安全要求。
 
@@ -14,17 +14,17 @@ English summary: [README.en.md](README.en.md)
 
 下面是 macOS 开发预览版的公开截图。为避免在开源仓库中直接传播真实漫画封面和页面内容，图片里的漫画画面已经做马赛克处理；截图重点展示 App 结构、详情页封面取色、Reader 和目录面板。
 
-![macOS 详情页封面取色与阅读入口](docs/assets/screenshots/kmoe-macos-detail-redacted.jpg)
+![macOS 详情页封面取色与阅读入口](docs/assets/screenshots/kmoelite-macos-detail-redacted.jpg)
 
-![macOS 首页、继续阅读和书架入口](docs/assets/screenshots/kmoe-macos-home-redacted.jpg)
+![macOS 首页、继续阅读和书架入口](docs/assets/screenshots/kmoelite-macos-home-redacted.jpg)
 
-![Reader 双页阅读界面](docs/assets/screenshots/kmoe-macos-reader-redacted.jpg)
+![Reader 双页阅读界面](docs/assets/screenshots/kmoelite-macos-reader-redacted.jpg)
 
-![Reader 目录与页面缩略图面板](docs/assets/screenshots/kmoe-macos-reader-menu-redacted.jpg)
+![Reader 目录与页面缩略图面板](docs/assets/screenshots/kmoelite-macos-reader-menu-redacted.jpg)
 
 ## 当前状态
 
-Kmoe Client 仍处于 Alpha / 开发预览阶段，部分平台尚未完成完整测试，请不要将其视为稳定版本或正式发行版。
+kmoelite 仍处于 Alpha / 开发预览阶段，部分平台尚未完成完整测试，请不要将其视为稳定版本或正式发行版。
 
 ### 开发预览可用
 
@@ -172,4 +172,4 @@ flowchart TD
 
 ## 许可证
 
-Kmoe Client 以 [GNU General Public License v3.0](LICENSE) 发布。
+kmoelite 以 [GNU General Public License v3.0](LICENSE) 发布。

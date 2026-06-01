@@ -1,6 +1,6 @@
 # 文档目录
 
-本目录是 Kmoe Client 的公开文档入口。中文文档为主，技术词保留英文原名。
+本目录是 kmoelite 的公开文档入口。中文文档为主，技术词保留英文原名。
 
 - [architecture](architecture/README.md)：Tauri/React/Rust 边界、数据模型分离和临时 Reader cache 架构。
 - [development](development/README.md)：开发环境、命令、测试、真实站点检查规则。
