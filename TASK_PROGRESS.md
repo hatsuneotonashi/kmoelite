@@ -4,6 +4,16 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-01 漫画列表分页验证
+
+- 变更范围：首页、分类页、搜索页漫画列表分页，Catalog query URL 工具，共享分页组件和对应测试。
+- 行为摘要：按钮分页覆盖首页/分类/搜索；页码写入 URL；筛选变化重置第 1 页；无 `totalPages` 时隐藏分页；翻页时保留旧列表直到新页加载完成。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run -- catalogQuery catalogPagination homePage categoriesPage searchPagePagination`：passed，49 files / 259 tests。
+- `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 259 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `git diff --check`：passed。
+
 ## 2026-06-01 文档分层验证
 
 - 变更范围：README 最近 5 次更新、CHANGELOG 对外更新记录、TASK_PROGRESS 验证日志定位、release 文档写法说明。

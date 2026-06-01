@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useRef } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { ArrowUpRight, BookOpen, Flame, Sparkles } from 'lucide-react'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { ComicCard } from '../components/ComicCard'
 import { EmptyState } from '../components/EmptyState'
+import { CatalogPagination } from '../components/ui/CatalogPagination'
 import { CatalogSkeleton } from '../components/ui/Skeletons'
+import { catalogQueryToParams, clampCatalogPage, cleanCatalogQueryValue } from '../catalog/catalogQuery'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import type { CatalogQuery } from '../types/domain'
 
@@ -54,25 +57,43 @@ const sortOptions = [
 
 export function CategoriesPage() {
   const api = useKmoeApi()
-  const [category, setCategory] = useState('全部')
-  const [status, setStatus] = useState('全部')
-  const [language, setLanguage] = useState('全部')
-  const [sort, setSort] = useState('sortpoint')
+  const [params, setSearchParams] = useSearchParams()
+  const paramsKey = params.toString()
+  const resultsRef = useRef<HTMLElement | null>(null)
+  const state = useMemo(() => categoryStateFromParams(params), [paramsKey])
+  const { category, status, language, sort, page } = state
 
   const catalogQuery = useMemo<CatalogQuery>(() => ({
-    page: 1,
+    page,
     sort,
     category: category === '全部' ? undefined : category,
     status: status === '全部' ? undefined : status,
     language: language === '全部' ? undefined : language
-  }), [category, language, sort, status])
+  }), [category, language, page, sort, status])
 
   const catalog = useQuery({
     queryKey: ['category-discovery', catalogQuery],
-    queryFn: () => api.search(catalogQuery)
+    queryFn: () => api.search(catalogQuery),
+    placeholderData: keepPreviousData
   })
 
   const activeLabel = category === '全部' ? '全部题材' : category
+
+  useEffect(() => {
+    const totalPages = catalog.data?.totalPages
+    if (totalPages && page > totalPages) {
+      updateCategoryState({ ...state, page: totalPages }, { replace: true, scroll: false })
+    }
+  }, [catalog.data?.totalPages, page, state])
+
+  function updateCategoryState(next: CategoryBrowserState, options: { replace?: boolean; scroll?: boolean } = {}) {
+    setSearchParams(categoryStateToParams(next), { replace: options.replace ?? true })
+    if (options.scroll) scrollResultsIntoView(resultsRef.current)
+  }
+
+  function updateFilter(patch: Partial<CategoryBrowserState>) {
+    updateCategoryState({ ...state, ...patch, page: 1 })
+  }
 
   return (
     <div className="category-discovery-page content-grid">
@@ -106,7 +127,7 @@ export function CategoriesPage() {
                   type="button"
                   className="category-token"
                   data-selected={category === item ? 'true' : undefined}
-                  onClick={() => setCategory(item)}
+                  onClick={() => updateFilter({ category: item })}
                 >
                   {item}
                 </button>
@@ -125,10 +146,7 @@ export function CategoriesPage() {
           <Button
             variant="secondary"
             onClick={() => {
-              setCategory('全部')
-              setStatus('全部')
-              setLanguage('全部')
-              setSort('sortpoint')
+              updateCategoryState(defaultCategoryState())
             }}
           >
             重置
@@ -142,7 +160,7 @@ export function CategoriesPage() {
               type="button"
               className="category-token"
               data-selected={category === item ? 'true' : undefined}
-              onClick={() => setCategory(item)}
+              onClick={() => updateFilter({ category: item })}
             >
               {item}
             </button>
@@ -150,18 +168,18 @@ export function CategoriesPage() {
         </div>
 
         <div className="category-filter-strip">
-          <Segment label="状态" value={status} options={statusOptions} onChange={setStatus} />
-          <Segment label="语言" value={language} options={languageOptions} onChange={setLanguage} />
+          <Segment label="状态" value={status} options={statusOptions} onChange={(value) => updateFilter({ status: value })} />
+          <Segment label="语言" value={language} options={languageOptions} onChange={(value) => updateFilter({ language: value })} />
           <label className="category-sort-select">
             <span>排序</span>
-            <select value={sort} onChange={(event) => setSort(event.target.value)}>
+            <select value={sort} onChange={(event) => updateFilter({ sort: event.target.value })}>
               {sortOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
             </select>
           </label>
         </div>
       </section>
 
-      <section className="category-results-panel">
+      <section ref={resultsRef} className="category-results-panel">
         <div className="category-results-head">
           <div>
             <h2>{activeLabel}</h2>
@@ -173,7 +191,7 @@ export function CategoriesPage() {
           </Badge>
         </div>
 
-        {catalog.isLoading || catalog.isFetching ? <CatalogSkeleton /> : null}
+        {!catalog.data && (catalog.isLoading || catalog.isFetching) ? <CatalogSkeleton /> : null}
         {catalog.isError ? (
           <EmptyState title="分类加载失败">
             <div className="grid gap-3">
@@ -192,9 +210,71 @@ export function CategoriesPage() {
             ))}
           </div>
         ) : null}
+        <CatalogPagination
+          page={catalog.data?.page ?? catalogQuery.page}
+          totalPages={catalog.data?.totalPages}
+          isFetching={catalog.isFetching}
+          onPageChange={(nextPage) => updateCategoryState({ ...state, page: nextPage }, { replace: false, scroll: true })}
+        />
       </section>
     </div>
   )
+}
+
+interface CategoryBrowserState {
+  category: string
+  status: string
+  language: string
+  sort: string
+  page: number
+}
+
+function defaultCategoryState(): CategoryBrowserState {
+  return {
+    category: '全部',
+    status: '全部',
+    language: '全部',
+    sort: 'sortpoint',
+    page: 1
+  }
+}
+
+function categoryStateFromParams(params: URLSearchParams): CategoryBrowserState {
+  const defaults = defaultCategoryState()
+  return {
+    category: choiceFromParam(params.get('category'), allCategories, defaults.category),
+    status: choiceFromParam(params.get('status'), statusOptions, defaults.status),
+    language: choiceFromParam(params.get('language'), languageOptions, defaults.language),
+    sort: sortOptions.some((option) => option.value === params.get('sort')) ? params.get('sort') ?? defaults.sort : defaults.sort,
+    page: clampCatalogPage(params.get('page') ?? 1)
+  }
+}
+
+function categoryStateToParams(state: CategoryBrowserState): URLSearchParams {
+  const query: CatalogQuery = {
+    page: state.page,
+    sort: state.sort,
+    category: state.category === '全部' ? undefined : state.category,
+    status: state.status === '全部' ? undefined : state.status,
+    language: state.language === '全部' ? undefined : state.language
+  }
+  return catalogQueryToParams(query)
+}
+
+function choiceFromParam(value: string | null, options: string[], fallback: string): string {
+  const cleaned = cleanCatalogQueryValue(value)
+  return cleaned && options.includes(cleaned) ? cleaned : fallback
+}
+
+function scrollResultsIntoView(element: HTMLElement | null) {
+  const scroll = () => {
+    element?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+  }
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(scroll)
+  } else {
+    scroll()
+  }
 }
 
 function Segment({

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useRef } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { ComicCard } from '../components/ComicCard'
 import { EmptyState } from '../components/EmptyState'
@@ -8,8 +8,10 @@ import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { ProgressBar } from '../components/ProgressBar'
 import { PageHeader } from '../components/layout/PageHeader'
+import { CatalogPagination } from '../components/ui/CatalogPagination'
 import { FilterChips } from '../components/ui/FilterChips'
 import { CatalogSkeleton } from '../components/ui/Skeletons'
+import { clampCatalogPage, cleanCatalogQueryValue } from '../catalog/catalogQuery'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import { readableAppMessage } from '../lib/format'
 import { resolveContinueReadingTarget } from '../reading/continueTarget'
@@ -22,21 +24,25 @@ export function HomePage() {
   const api = useKmoeApi()
   const progressById = useReadingStore((state) => state.progressById)
   const chaptersById = useCacheStore((state) => state.chaptersById)
-  const [keyword, setKeyword] = useState('')
-  const [chip, setChip] = useState('')
+  const [params, setSearchParams] = useSearchParams()
+  const paramsKey = params.toString()
+  const resultsRef = useRef<HTMLElement | null>(null)
+  const homeState = useMemo(() => homeStateFromParams(params), [paramsKey])
+  const { keyword, chip, page } = homeState
   const query = useMemo(
     () => ({
       keyword,
       status: chip === '連載' ? chip : undefined,
       language: chip === '繁體' ? chip : undefined,
       category: chip && chip !== '連載' && chip !== '繁體' ? chip : undefined,
-      page: 1
+      page
     }),
-    [chip, keyword]
+    [chip, keyword, page]
   )
   const catalog = useQuery({
     queryKey: ['catalog', query],
-    queryFn: () => api.getCatalog(query)
+    queryFn: () => api.getCatalog(query),
+    placeholderData: keepPreviousData
   })
   const session = useQuery({
     queryKey: ['session'],
@@ -53,6 +59,18 @@ export function HomePage() {
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
   const showCatalogSkeleton = !catalog.data && (catalog.isLoading || catalog.isFetching)
 
+  useEffect(() => {
+    const totalPages = catalog.data?.totalPages
+    if (totalPages && page > totalPages) {
+      updateHomeState({ ...homeState, page: totalPages }, { replace: true, scroll: false })
+    }
+  }, [catalog.data?.totalPages, homeState, page])
+
+  function updateHomeState(next: HomeCatalogState, options: { replace?: boolean; scroll?: boolean } = {}) {
+    setSearchParams(homeStateToParams(next), { replace: options.replace ?? true })
+    if (options.scroll) scrollResultsIntoView(resultsRef.current)
+  }
+
   return (
     <div className="content-grid">
       <PageHeader
@@ -66,7 +84,7 @@ export function HomePage() {
           <input
             aria-label="搜索标题、作者、标签"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => updateHomeState({ ...homeState, keyword: event.target.value, page: 1 })}
             className="liquid-input h-12 w-full rounded-full pl-11 pr-4 outline-none phone-touch-target"
           />
         </label>
@@ -107,13 +125,13 @@ export function HomePage() {
       ) : null}
 
       <section className="grid gap-3">
-        <FilterChips items={chips} value={chip} onChange={setChip} />
+        <FilterChips items={chips} value={chip} onChange={(nextChip) => updateHomeState({ ...homeState, chip: nextChip, page: 1 })} />
         <div className="text-sm text-[var(--app-muted)]">
-          {catalog.data ? `第 ${catalog.data.page} 页` : '正在加载最新列表'}
+          {catalog.data ? `第 ${catalog.data.page}${catalog.data.totalPages ? ` / ${catalog.data.totalPages}` : ''} 页` : '正在加载最新列表'}
         </div>
       </section>
 
-      <section className="grid gap-3">
+      <section ref={resultsRef} className="grid gap-3">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold">精选内容</h2>
@@ -147,7 +165,49 @@ export function HomePage() {
             ))}
           </div>
         ) : null}
+        <CatalogPagination
+          page={catalog.data?.page ?? query.page}
+          totalPages={catalog.data?.totalPages}
+          isFetching={catalog.isFetching}
+          onPageChange={(nextPage) => updateHomeState({ ...homeState, page: nextPage }, { replace: false, scroll: true })}
+        />
       </section>
     </div>
   )
+}
+
+interface HomeCatalogState {
+  keyword: string
+  chip: string
+  page: number
+}
+
+function homeStateFromParams(params: URLSearchParams): HomeCatalogState {
+  return {
+    keyword: cleanCatalogQueryValue(params.get('keyword')) ?? '',
+    chip: cleanCatalogQueryValue(params.get('chip')) ?? '',
+    page: clampCatalogPage(params.get('page') ?? 1)
+  }
+}
+
+function homeStateToParams(state: HomeCatalogState): URLSearchParams {
+  const params = new URLSearchParams()
+  const keyword = cleanCatalogQueryValue(state.keyword)
+  const chip = cleanCatalogQueryValue(state.chip)
+  const page = clampCatalogPage(state.page)
+  if (keyword) params.set('keyword', keyword)
+  if (chip) params.set('chip', chip)
+  if (page > 1) params.set('page', String(page))
+  return params
+}
+
+function scrollResultsIntoView(element: HTMLElement | null) {
+  const scroll = () => {
+    element?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+  }
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(scroll)
+  } else {
+    scroll()
+  }
 }

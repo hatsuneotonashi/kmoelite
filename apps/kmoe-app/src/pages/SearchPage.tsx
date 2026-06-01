@@ -1,12 +1,14 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { ComicCard } from '../components/ComicCard'
 import { SelectField, TextField } from '../components/Field'
 import { Button } from '../components/Button'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/layout/PageHeader'
+import { CatalogPagination } from '../components/ui/CatalogPagination'
 import { CatalogSkeleton } from '../components/ui/Skeletons'
+import { catalogFilterKey, catalogQueryFromParams, catalogQueryKey, catalogQueryToParams, normalizeCatalogQuery } from '../catalog/catalogQuery'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import type { CatalogPage, CatalogQuery } from '../types/domain'
 
@@ -15,37 +17,56 @@ export function SearchPage() {
   const [params, setSearchParams] = useSearchParams()
   const paramsKey = params.toString()
   const queryFromParams = useMemo(() => catalogQueryFromParams(params), [paramsKey])
-  const [form, setForm] = useState<CatalogQuery>(queryFromParams)
-  const [submitted, setSubmitted] = useState<CatalogQuery>(form)
+  const resultsRef = useRef<HTMLDivElement | null>(null)
+  const [form, setForm] = useState<CatalogQuery>({ ...queryFromParams, page: 1 })
+  const [submitted, setSubmitted] = useState<CatalogQuery>(queryFromParams)
   const normalizedForm = useMemo(() => normalizeCatalogQuery({ ...form, page: 1 }), [form])
-  const normalizedFormKey = useMemo(() => catalogQueryKey(normalizedForm), [normalizedForm])
+  const normalizedFormKey = useMemo(() => catalogFilterKey(normalizedForm), [normalizedForm])
+  const submittedFilterKey = useMemo(() => catalogFilterKey(submitted), [submitted])
   const submittedKey = useMemo(() => catalogQueryKey(submitted), [submitted])
   const query = useQuery({
     queryKey: ['search', submittedKey],
-    queryFn: () => api.search(submitted)
+    queryFn: () => api.search(submitted),
+    placeholderData: keepPreviousData
   })
   const results = useMemo(() => relevantCatalogPage(query.data, submitted), [query.data, submitted])
-  const isPendingInput = normalizedFormKey !== submittedKey
+  const isPendingInput = normalizedFormKey !== submittedFilterKey
 
   useEffect(() => {
-    setForm(queryFromParams)
+    setForm({ ...queryFromParams, page: 1 })
     setSubmitted(queryFromParams)
   }, [queryFromParams])
 
   useEffect(() => {
-    if (normalizedFormKey === submittedKey) return
+    if (normalizedFormKey === submittedFilterKey) return
     const timer = window.setTimeout(() => {
       setSubmitted(normalizedForm)
       setSearchParams(catalogQueryToParams(normalizedForm), { replace: true })
     }, 520)
     return () => window.clearTimeout(timer)
-  }, [normalizedForm, normalizedFormKey, setSearchParams, submittedKey])
+  }, [normalizedForm, normalizedFormKey, setSearchParams, submittedFilterKey])
+
+  useEffect(() => {
+    const totalPages = results?.totalPages
+    if (totalPages && submitted.page > totalPages) {
+      goToPage(totalPages, false)
+    }
+  }, [results?.totalPages, submitted.page])
 
   function submit(event: FormEvent) {
     event.preventDefault()
-    const next = normalizeCatalogQuery({ ...form, page: 1 })
-    setSubmitted(next)
-    setSearchParams(catalogQueryToParams(next), { replace: true })
+    submitQuery(normalizedForm, true)
+  }
+
+  function submitQuery(next: CatalogQuery, replace: boolean, scroll = false) {
+    const normalized = normalizeCatalogQuery(next)
+    setSubmitted(normalized)
+    setSearchParams(catalogQueryToParams(normalized), { replace })
+    if (scroll) scrollResultsIntoView(resultsRef.current)
+  }
+
+  function goToPage(page: number, scroll = true) {
+    submitQuery({ ...submitted, page }, false, scroll)
   }
 
   return (
@@ -114,7 +135,7 @@ export function SearchPage() {
         </div>
       </form>
 
-      {query.isLoading || query.isFetching ? <CatalogSkeleton /> : null}
+      {!query.data && (query.isLoading || query.isFetching) ? <CatalogSkeleton /> : null}
       {query.isError ? (
         <EmptyState title="搜索失败">
           <div className="grid gap-3">
@@ -126,79 +147,19 @@ export function SearchPage() {
         </EmptyState>
       ) : null}
       {!query.isLoading && !query.isFetching && results?.items.length === 0 ? <EmptyState title="没有结果">调整关键词或筛选条件。</EmptyState> : null}
-      <div className="catalog-grid">
+      <div ref={resultsRef} className="catalog-grid">
         {results?.items.map((comic) => (
           <ComicCard key={comic.id} comic={comic} />
         ))}
       </div>
+      <CatalogPagination
+        page={results?.page ?? submitted.page}
+        totalPages={results?.totalPages}
+        isFetching={query.isFetching}
+        onPageChange={goToPage}
+      />
     </div>
   )
-}
-
-function catalogQueryFromParams(params: URLSearchParams): CatalogQuery {
-  return normalizeCatalogQuery({
-    page: Number(params.get('page')) || 1,
-    sort: params.get('sort') ?? 'sortpoint',
-    keyword: params.get('keyword') ?? undefined,
-    category: params.get('category') ?? undefined,
-    status: params.get('status') ?? undefined,
-    language: params.get('language') ?? undefined,
-    region: params.get('region') ?? undefined,
-    length: params.get('length') ?? undefined,
-    color: params.get('color') === '1',
-    hd: params.get('hd') === '1'
-  })
-}
-
-function normalizeCatalogQuery(query: CatalogQuery): CatalogQuery {
-  return {
-    ...query,
-    page: query.page || 1,
-    sort: query.sort || 'sortpoint',
-    keyword: cleanQueryValue(query.keyword),
-    category: cleanQueryValue(query.category),
-    status: cleanQueryValue(query.status),
-    language: cleanQueryValue(query.language),
-    region: cleanQueryValue(query.region),
-    length: cleanQueryValue(query.length),
-    color: query.color || undefined,
-    hd: query.hd || undefined
-  }
-}
-
-function cleanQueryValue(value?: string): string | undefined {
-  const cleaned = value?.trim()
-  return cleaned || undefined
-}
-
-function catalogQueryToParams(query: CatalogQuery): URLSearchParams {
-  const params = new URLSearchParams()
-  if (query.keyword) params.set('keyword', query.keyword)
-  if (query.category) params.set('category', query.category)
-  if (query.status) params.set('status', query.status)
-  if (query.language) params.set('language', query.language)
-  if (query.region) params.set('region', query.region)
-  if (query.length) params.set('length', query.length)
-  if (query.sort && query.sort !== 'sortpoint') params.set('sort', query.sort)
-  if (query.color) params.set('color', '1')
-  if (query.hd) params.set('hd', '1')
-  if (query.page > 1) params.set('page', String(query.page))
-  return params
-}
-
-function catalogQueryKey(query: CatalogQuery): string {
-  return JSON.stringify({
-    keyword: cleanQueryValue(query.keyword),
-    category: cleanQueryValue(query.category),
-    status: cleanQueryValue(query.status),
-    language: cleanQueryValue(query.language),
-    region: cleanQueryValue(query.region),
-    length: cleanQueryValue(query.length),
-    sort: query.sort || 'sortpoint',
-    color: Boolean(query.color),
-    hd: Boolean(query.hd),
-    page: query.page || 1
-  })
 }
 
 function relevantCatalogPage(page: CatalogPage | undefined, query: CatalogQuery) {
@@ -217,6 +178,17 @@ function relevantCatalogPage(page: CatalogPage | undefined, query: CatalogQuery)
     return haystack.includes(needle)
   })
   return { ...page, items: filtered, totalItems: filtered.length }
+}
+
+function scrollResultsIntoView(element: HTMLElement | null) {
+  const scroll = () => {
+    element?.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+  }
+  if (typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(scroll)
+  } else {
+    scroll()
+  }
 }
 
 const simplifiedToTraditional: Record<string, string> = {

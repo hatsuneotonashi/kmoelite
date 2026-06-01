@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HomePage } from '../pages/HomePage'
@@ -102,5 +102,33 @@ describe('HomePage', () => {
     expect(await screen.findByRole('heading', { name: '继续阅读' })).toBeInTheDocument()
     expect(screen.getByText('接着上次读到的位置继续。')).toBeInTheDocument()
     expect(screen.queryByText(/SQLite|原生/)).not.toBeInTheDocument()
+  })
+
+  it('paginates catalog results through URL-backed state', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false
+        }
+      }
+    })
+    api.getCatalog.mockImplementation(async (query) => ({
+      items: sampleCatalog,
+      page: query.page,
+      totalPages: 3,
+      source: 'data_list'
+    } satisfies CatalogPage))
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    await waitFor(() => expect(api.getCatalog).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1 })))
+    fireEvent.click(await screen.findByRole('button', { name: '下一页' }))
+    await waitFor(() => expect(api.getCatalog).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })))
   })
 })
