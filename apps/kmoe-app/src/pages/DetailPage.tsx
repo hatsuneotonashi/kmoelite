@@ -65,6 +65,7 @@ export function DetailPage() {
   const api = useKmoeApi()
   const settings = useSettingsStore()
   const platformTarget = useMemo(() => detectPlatformTarget(), [])
+  const mobileFileDownload = platformTarget === 'ios' || platformTarget === 'ipados'
   const downloadStore = useDownloadStore()
   const replaceLibrary = useDownloadStore((state) => state.replaceLibrary)
   const replaceWithNativeSnapshot = useDownloadStore((state) => state.replaceWithNativeSnapshot)
@@ -245,7 +246,11 @@ export function DetailPage() {
       const nativeResult = await enqueueNativeDownloadTasks(tasks)
       setNativeQueueMessage(readableAppMessage(nativeResult.message, '暂时无法加入下载队列，请稍后重试。'))
       if (nativeResult.ok && nativeResult.value !== undefined) {
-        return downloadStore.addTasks(nativeResult.value)
+        const created = downloadStore.addTasks(nativeResult.value)
+        if (mobileFileDownload && tasks.length > 0) {
+          void startMobileDownloadQueueAfterEnqueue()
+        }
+        return created
       }
       if (isNativeUnavailable(nativeResult)) {
         throw new Error('请在 Kmoe 客户端中创建真实下载队列。')
@@ -294,6 +299,69 @@ export function DetailPage() {
     setSelected([])
     setSelectionMode(false)
     setLastSelectedIndex(undefined)
+  }
+
+  async function syncNativeDownloadSnapshot(options?: { recoverInterrupted?: boolean }) {
+    const [taskResult, libraryResult] = await Promise.all([
+      listNativeDownloadTasks({ recoverInterrupted: options?.recoverInterrupted ?? false }),
+      listNativeDownloadedFiles()
+    ])
+    if (taskResult.ok && taskResult.value !== undefined && libraryResult.ok && libraryResult.value !== undefined) {
+      return replaceWithNativeSnapshot(
+        { tasks: taskResult.value, library: libraryResult.value },
+        { recoverInterrupted: options?.recoverInterrupted ?? false }
+      )
+    }
+    const nativeError = [taskResult, libraryResult].find((result) => !result.ok && !isNativeUnavailable(result))
+    if (nativeError) {
+      setNativeQueueMessage(readableAppMessage(nativeError.message, '下载已启动，但暂时无法同步队列状态。'))
+    }
+    return undefined
+  }
+
+  async function startMobileDownloadQueueAfterEnqueue() {
+    setNativeQueueMessage('已加入队列，正在 iPhone/iPad 前台启动下载；请保持 App 打开。')
+
+    const preflightResult = await preflightNativeDownloadQueue(settings.downloadDirectory)
+    if (preflightResult.ok && preflightResult.value) {
+      const blockingCheck = preflightResult.value.checks.find((check) => check.status === 'fail' && check.id !== 'active-task')
+      if (blockingCheck) {
+        setNativeQueueMessage(readableAppMessage(blockingCheck.detail, '下载前检查未通过，请处理后重试。'))
+        return
+      }
+      const activeTaskCheck = preflightResult.value.checks.find((check) => check.status === 'fail' && check.id === 'active-task')
+      if (activeTaskCheck) {
+        setNativeQueueMessage('已有下载正在运行，正在刷新 iPhone/iPad 前台队列状态。')
+        await syncNativeDownloadSnapshot({ recoverInterrupted: false })
+        return
+      }
+    } else if (!isNativeUnavailable(preflightResult)) {
+      setNativeQueueMessage(readableAppMessage(preflightResult.message, '暂时无法检查下载队列，请稍后重试。'))
+      return
+    }
+
+    const queueRun = startNativeDownloadQueue(settings.downloadDirectory)
+    const firstResult = await Promise.race([queueRun, delay(220).then(() => undefined)])
+    if (!firstResult) {
+      setNativeQueueMessage('iPhone/iPad 前台下载运行中，请保持 App 打开；完成后会同步资料库。')
+      await delay(300)
+      await syncNativeDownloadSnapshot({ recoverInterrupted: false })
+      const result = await queueRun
+      if (result.ok) {
+        await syncNativeDownloadSnapshot({ recoverInterrupted: false })
+        setNativeQueueMessage('下载完成，已同步本机资料库。')
+        return
+      }
+      setNativeQueueMessage(readableAppMessage(result.message, '下载队列启动失败，请到下载中心重试。'))
+      return
+    }
+
+    if (firstResult.ok) {
+      await syncNativeDownloadSnapshot({ recoverInterrupted: false })
+      setNativeQueueMessage('下载队列已处理完成，已同步本机资料库。')
+      return
+    }
+    setNativeQueueMessage(readableAppMessage(firstResult.message, '下载队列启动失败，请到下载中心重试。'))
   }
 
   function toggleDownloadOption(option: VolumeDownloadOption, index: number, event?: ReactMouseEvent) {
@@ -960,7 +1028,7 @@ export function DetailPage() {
                 }}
               >
                 <Download className="h-4 w-4" />
-                加入队列
+                {mobileFileDownload ? '加入并开始' : '加入队列'}
               </Button>
             </div>
             {createTasks.data ? (
@@ -1023,7 +1091,7 @@ export function DetailPage() {
                     if (requireAuthenticatedForWebsiteTask('download')) createTasks.mutate()
                   }}
                 >
-                  加入下载队列
+                  {mobileFileDownload ? '加入并开始' : '加入下载队列'}
                 </Button>
               </div>
             ) : null}

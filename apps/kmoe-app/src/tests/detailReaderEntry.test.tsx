@@ -55,6 +55,11 @@ describe('Detail reader entry', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    setNavigatorPlatform({
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)',
+      platform: 'MacIntel',
+      maxTouchPoints: 0
+    })
     useDownloadStore.setState({ tasks: [], library: [] })
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
     nativeTasks = []
@@ -196,6 +201,40 @@ describe('Detail reader entry', () => {
     expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
   })
 
+  it('starts the foreground native queue after iPad offline-download enqueue', async () => {
+    setNavigatorPlatform({
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1',
+      platform: 'MacIntel',
+      maxTouchPoints: 5
+    })
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /离线下载/ })[0])
+    fireEvent.click(screen.getByRole('checkbox', { name: '选择 話 089-095' }))
+    const startButton = screen.getAllByRole('button', { name: /加入并开始/ })[0] as HTMLButtonElement
+    expect(startButton.disabled).toBe(false)
+    fireEvent.click(startButton)
+
+    await waitFor(() => {
+      expect(enqueueNativeDownloadTasksMock).toHaveBeenCalledWith([expect.objectContaining({
+        comicId: '53339',
+        volId: '3089',
+        format: 'source_zip',
+        status: 'queued'
+      })])
+      expect(preflightNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(startNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(useDownloadStore.getState().tasks[0]).toMatchObject({
+        comicId: '53339',
+        volId: '3089',
+        status: 'completed'
+      })
+    })
+    expect(screen.getByText(/下载队列已处理完成|下载完成/)).toBeInTheDocument()
+  })
+
   it('blocks queueing reader downloads while logged out', async () => {
     mocks.api.getSession.mockResolvedValue({ authenticated: false, mode: 'live', error: '未登录' })
 
@@ -326,6 +365,21 @@ function renderDetail() {
       </MemoryRouter>
     </QueryClientProvider>
   )
+}
+
+function setNavigatorPlatform(input: { userAgent: string; platform: string; maxTouchPoints: number }) {
+  Object.defineProperty(window.navigator, 'userAgent', {
+    value: input.userAgent,
+    configurable: true
+  })
+  Object.defineProperty(window.navigator, 'platform', {
+    value: input.platform,
+    configurable: true
+  })
+  Object.defineProperty(window.navigator, 'maxTouchPoints', {
+    value: input.maxTouchPoints,
+    configurable: true
+  })
 }
 
 function sampleComic(optionPatch: Partial<ComicDetail['downloadOptions'][number]> = {}): ComicDetail {
