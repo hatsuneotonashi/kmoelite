@@ -38,6 +38,16 @@ Future plan:
 - Android phones and tablets: planned for low-storage online reading and temporary cache.
 - Apple TV and Android TV: future research targets for remote-control input, landscape Reader, focus navigation, and cache policy.
 
+## Recent Updates
+
+- 2026-06-01: the default Reader cache policy now keeps a rolling previous/current/next chapter window.
+- 2026-06-01: Settings and public docs now describe the low-storage online reading behavior consistently.
+- 2026-05-31: public docs were reorganized around Chinese canonical documentation and an English entry point.
+- 2026-05-31: license, contribution, security, release, and GitHub templates were aligned for public source operation.
+- 2026-05-31: redacted screenshot policy, platform status, and source release checks were clarified.
+
+See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
+
 ## Features
 
 - Live-first catalog, search, category, detail, account, and reading flows.

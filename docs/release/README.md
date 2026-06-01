@@ -22,6 +22,7 @@ git push -u origin main
 
 - `CHANGELOG.md`：面向用户和外部贡献者的变化摘要，写功能、修复、文档和安全边界，不写内部验收过程。
 - `TASK_PROGRESS.md`：本地阶段性验证记录和仍未完成的 release blocker，只写脱敏命令结果。
+- `README.md`：只保留最近 5 次公开更新摘要，并链接到 `CHANGELOG.md`、`TASK_PROGRESS.md` 和平台状态文档。
 - PR description / GitHub release notes：复用 `CHANGELOG.md` 的用户可读摘要，再补充验证命令和剩余限制。
 
 本次滚动缓存更新建议使用：
