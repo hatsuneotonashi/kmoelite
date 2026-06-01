@@ -176,11 +176,11 @@ describe('Settings native config sync', () => {
 
     render(<SettingsPage />)
 
-    fireEvent.click(screen.getByRole('button', { name: /按策略清理 1 项/ }))
+    fireEvent.click(screen.getByRole('button', { name: /按滚动窗口清理 1 项/ }))
 
     await waitFor(() => {
       expect(nativeMocks.clearNativeReadingCache).toHaveBeenCalledWith(['cache-001'])
-      expect(screen.getByText(/已按当前策略清理 1 个本机阅读缓存/)).toBeInTheDocument()
+      expect(screen.getByText(/已按滚动窗口清理 1 个本机阅读缓存/)).toBeInTheDocument()
     })
     expect(useCacheStore.getState().chaptersById).not.toHaveProperty('cache-001')
     expect(useCacheStore.getState().chaptersById).toHaveProperty('cache-002')

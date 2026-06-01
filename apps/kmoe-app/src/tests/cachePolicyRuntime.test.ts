@@ -125,7 +125,7 @@ describe('reader cache policy runtime', () => {
       removedIds: ['cache-001', 'cache-005', 'cache-002']
     })
     expect(clearNativeReadingCacheMock).toHaveBeenCalledWith(['cache-001', 'cache-005', 'cache-002'])
-    expect(result.message).toContain('策略 2 个')
+    expect(result.message).toContain('滚动窗口 2 个')
     expect(result.message).toContain('容量 1 个')
     expect(useCacheStore.getState().chaptersById).toHaveProperty('cache-003')
     expect(useCacheStore.getState().chaptersById).toHaveProperty('downloaded-003')

@@ -16,6 +16,35 @@ git push -u origin main
 
 只上传干净 Git tree。不要上传旧 `.git`、workspace 压缩包、local cache、runtime DB、构建产物、临时截图、真实下载文件、凭证、Cookie、Session、Token、授权 URL 或本机私有路径。
 
+## GitHub 更新说明写法
+
+每次准备公开 push 或 GitHub Release 前，更新内容按用途分开写：
+
+- `CHANGELOG.md`：面向用户和外部贡献者的变化摘要，写功能、修复、文档和安全边界，不写内部验收过程。
+- `TASK_PROGRESS.md`：本地阶段性验证记录和仍未完成的 release blocker，只写脱敏命令结果。
+- PR description / GitHub release notes：复用 `CHANGELOG.md` 的用户可读摘要，再补充验证命令和剩余限制。
+
+本次滚动缓存更新建议使用：
+
+```md
+Summary:
+- Added the default rolling Reader cache window: previous chapter, current chapter, and next chapter.
+- Reader cleanup now removes cache entries outside that rolling window as the active chapter advances.
+- Next-chapter prefetch is controlled by the cache policy's next-chapter window, while permanent downloads, shelf records, reading progress, history, and download tasks remain protected.
+- Updated Settings and public docs to describe the low-storage online reading behavior accurately.
+
+Validation:
+- pnpm --dir apps/kmoe-app typecheck
+- pnpm --dir apps/kmoe-app test:run
+- pnpm --dir apps/kmoe-app build
+- cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
+- cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+- cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
+- pnpm check:platforms
+- node scripts/check-ios-assets.mjs
+- pnpm --dir apps/kmoe-app e2e
+```
+
 ## 上传前清理检查
 
 ```bash

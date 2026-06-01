@@ -14,6 +14,7 @@
 - 桌面/平板 shell 应保持 sidebar/rail 固定，主内容区独立滚动。
 - Reader-capable archives 是 source ZIP/CBZ 和 EPUB。MOBI 仍为 file-only。
 - Detail、Shelf、Library、Continue Reading 共享 Reader cache entry model。
+- 默认 Reader cache 策略为滚动章节窗口：保留前一章、当前章和后一章；进入下一章时，窗口外旧阅读缓存成为清理候选，并可从可信本地 archive 预取新的后一章。
 - Download Center 动作由真实 native queue state 和 native snapshot refresh 驱动。
 
 ## 最近历史验证记录
@@ -39,9 +40,31 @@
 - README 改为中文主文档，并新增英文简版。
 - 安全、贡献、发布、平台、状态、Web adapter、Reader/Shelf 文档改为公开合规口径。
 - 真实 KMOE 集成能力保留，但文档不传播站点内部下载授权接口参数，不加入绕过会员、配额、验证、反滥用或版权限制的内容。
-- 公开定位已调整为“不想长期下载漫画、点开一本看一本、读完按策略清理缓存”的 Alpha 产品方向。
+- 公开定位已调整为“不想长期下载漫画、点开一本看一本、用滚动章节窗口清理旧缓存”的 Alpha 产品方向。
 - GitHub issue/PR 模板加入脱敏和合规提示。
 - CI 改为 source checks，不默认上传未签名 app、DMG、MSI 或 NSIS。
+
+## 2026-06-01 Reader 滚动缓存更新
+
+- 按用户最新决策改为默认章节窗口策略，不采用计时延迟删除。
+- 默认均衡策略保留前一章、当前章和后一章；策略清理文案改为“滚动窗口”。
+- 下一章预取不再由 `space_saver` 名称硬禁用，而是由 `keepNextChapters <= 0` 决定；自定义策略保留后一章时可预取。
+- 聚焦验证：`pnpm --dir apps/kmoe-app test:run -- cacheStore cachePolicyRuntime readerPrefetchRuntime settingsNativeConfig` passed，45 files / 247 tests。
+- 完整本地 gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，45 files / 247 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，76 tests。
+  - `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，26 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。设置页文案变化导致的两张视觉基线已按实际新 UI 更新后复跑通过。
+- 发布检查：
+  - tracked 文件未包含 `node_modules`、`dist`、`target`、`test-results`、`.env`、cookie/session 文件、SQLite/runtime DB。
+  - 私有路径扫描未发现本机用户目录、临时目录或系统缓存目录进入待发布源码。
+  - 敏感文本扫描未发现真实账号、密码、Cookie、Token、Session 或 Authorization header；唯一命中为 release 检查脚本自身的安全扫描正则。
 
 ## Release blockers
 

@@ -12,9 +12,9 @@ import type { DownloadFormat, ReaderPageTurnAnimation } from '../types/domain'
 import { useNativeAppConfigSync } from '../hooks/useNativeAppConfigSync'
 
 const cacheModes: Array<{ value: CachePolicyMode; label: string; description: string }> = [
-  { value: 'space_saver', label: '省空间', description: '只保留当前章，适合 iPhone 存储紧张时使用。' },
-  { value: 'balanced', label: '均衡', description: '保留前一章、当前章和下一章，默认策略。' },
-  { value: 'comfort', label: '舒适', description: '保留更多最近章节，适合 iPad 和桌面连续阅读。' }
+  { value: 'space_saver', label: '省空间', description: '只保留当前章；适合极端存储紧张时使用。' },
+  { value: 'balanced', label: '均衡', description: '默认滚动窗口：保留前一章、当前章和后一章，并预取新的后一章。' },
+  { value: 'comfort', label: '舒适', description: '保留更多前后章节，适合 iPad 和桌面连续阅读。' }
 ]
 
 const readerPageTurnAnimations: Array<{ value: ReaderPageTurnAnimation; label: string; description: string }> = [
@@ -198,7 +198,7 @@ export function SettingsPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--app-muted)]">Reader cache</p>
             <h2 className="mt-1 text-xl font-semibold">阅读缓存</h2>
             <p className="mt-1 text-sm text-[var(--app-muted)]">
-              缓存只保存解包后的阅读页面。清理缓存不会删除书架、阅读进度、历史记录或永久下载文件。
+              默认围绕当前章节滚动保留前一章、当前章和后一章；进入下一章后会清理上上章等窗口外 Reader cache。清理缓存不会删除书架、阅读进度、历史记录或永久下载文件。
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-glass)] px-3 py-2 text-sm font-semibold text-[var(--app-muted)]">
@@ -267,7 +267,7 @@ export function SettingsPage() {
           <div>
             <div className="font-semibold">阅读缓存容量上限</div>
             <p className="mt-1 text-sm text-[var(--app-muted)]">
-              超过上限时优先清理最早访问的已就绪阅读缓存，先保留当前阅读章节和策略窗口，硬上限不足时也不会删除当前章节。永久下载、书架和进度不受影响。
+              超过上限时优先清理最早访问的已就绪阅读缓存，先保留当前阅读章节和滚动窗口，硬上限不足时也不会删除当前章节。永久下载、书架和进度不受影响。
             </p>
             <p className="mt-2 text-xs font-semibold text-[var(--app-muted)]">
               当前上限：{cache.policy.maxCacheBytes ? formatBytes(cache.policy.maxCacheBytes) : '未设置'}
@@ -290,7 +290,7 @@ export function SettingsPage() {
 
         {cleanupCandidates.length > 0 ? (
           <div className="metric-tile p-4 text-sm">
-            <div className="font-semibold">最早可清理的阅读缓存</div>
+            <div className="font-semibold">滚动窗口外可清理的阅读缓存</div>
             <div className="mt-3 grid gap-2">
               {cleanupCandidates.slice(0, 3).map((item) => (
                 <div key={item.chapter.id} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[var(--app-glass)] px-3 py-2">
@@ -306,7 +306,7 @@ export function SettingsPage() {
           <div className="metric-tile p-4 text-sm">
             <div className="font-semibold">超过容量上限后可清理</div>
             <p className="mt-1 text-[var(--app-muted)]">
-              这些项目来自容量压力规划，会按最早访问顺序清理，直到阅读缓存回到上限内或只剩当前阅读章节。
+              这些项目来自容量压力规划，会按最早访问顺序清理，直到阅读缓存回到上限内或只剩当前阅读章节和必要窗口。
             </p>
             <div className="mt-3 grid gap-2">
               {storageCleanupCandidates.slice(0, 3).map((item) => (
@@ -329,7 +329,7 @@ export function SettingsPage() {
             onClick={() => void clearReadingCache(cleanupCandidates.map((item) => item.chapter.id), 'policy')}
           >
             <Trash2 className="h-4 w-4" />
-            按策略清理 {cleanupCandidates.length} 项
+            按滚动窗口清理 {cleanupCandidates.length} 项
           </Button>
           <Button
             disabled={storageCleanupCandidates.length === 0}
@@ -367,7 +367,7 @@ function cacheModeLabel(mode: CachePolicyMode): string {
 function cleanupDoneMessage(scope: 'policy' | 'storage' | 'all', count: number, native: boolean): string {
   const runtime = native ? '本机' : '浏览器预览'
   const suffix = '书架、阅读记录和永久下载不会被删除。'
-  if (scope === 'policy') return `已按当前策略清理 ${count} 个${runtime}阅读缓存。${suffix}`
+  if (scope === 'policy') return `已按滚动窗口清理 ${count} 个${runtime}阅读缓存。${suffix}`
   if (scope === 'storage') return `已按容量上限清理 ${count} 个${runtime}阅读缓存。${suffix}`
   return `已清理全部${runtime}阅读缓存。${suffix}`
 }

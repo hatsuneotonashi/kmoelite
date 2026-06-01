@@ -75,10 +75,10 @@ pnpm verify:real-source-zip-reader
 默认产品模型：
 
 ```text
-detail option -> temporary Reader cache -> Reader -> progress save -> policy cleanup
+detail option -> temporary Reader cache -> Reader -> progress save -> rolling window cleanup + next-chapter prefetch
 ```
 
-普通阅读不应默认长期保存漫画文件。Reader cache 是临时缓存，用于高清显示、快速翻页和短期恢复；读完、切换章节或达到策略限制后应优先清理。
+普通阅读不应默认长期保存漫画文件。Reader cache 是临时缓存，用于高清显示、快速翻页和短期恢复；默认策略保留前一章、当前章和后一章，进入下一章时清理上上章等窗口外缓存，并在条件允许时预取新的后一章。
 
 显式下载仍然存在，但属于高级/兼容能力：
 

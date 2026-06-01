@@ -55,7 +55,7 @@ export function planNextReaderChapterPrefetch({
   policy = useCacheStore.getState().policy,
   runtime = getReaderPrefetchRuntimeContext()
 }: ReaderNextChapterPrefetchInput): ReaderNextChapterPrefetchPlan {
-  if (!policy.wifiPrefetch || policy.mode === 'space_saver' || policy.keepNextChapters <= 0) {
+  if (!policy.wifiPrefetch || policy.keepNextChapters <= 0) {
     return { skipReason: 'policy_disabled' }
   }
 

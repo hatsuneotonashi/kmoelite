@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { cacheCleanupCandidates, cacheStats, storagePressureCleanupCandidates, useCacheStore } from '../store/cacheStore'
+import { DEFAULT_CACHE_POLICY, cacheCleanupCandidates, cacheStats, storagePressureCleanupCandidates, useCacheStore } from '../store/cacheStore'
 import type { CachePolicy, ChapterCacheRecord, PageCacheRecord } from '../types/cache'
 
 describe('cacheStore', () => {
@@ -20,6 +20,13 @@ describe('cacheStore', () => {
   })
 
   it('updates cache policy presets for space saver and comfort modes', () => {
+    expect(DEFAULT_CACHE_POLICY).toMatchObject({
+      mode: 'balanced',
+      keepPreviousChapters: 1,
+      keepNextChapters: 1,
+      wifiPrefetch: true
+    })
+
     const spaceSaver = useCacheStore.getState().updatePolicy({ mode: 'space_saver' })
     expect(spaceSaver).toMatchObject({
       mode: 'space_saver',
@@ -66,7 +73,7 @@ describe('cacheStore', () => {
     expect(Object.keys(useCacheStore.getState().chaptersById).sort()).toEqual(['downloaded', 'reading-new'])
   })
 
-  it('keeps active, previous, next, and recent chapters for balanced policy cleanup', () => {
+  it('uses the default rolling window to keep previous, current, and next chapters', () => {
     const chapters = [
       sampleChapter('cache-001', 'reading_cache', 100, '2026-05-24T08:00:00.000Z', { volumeId: '001', volumeTitle: '話 001' }),
       sampleChapter('cache-002', 'reading_cache', 100, '2026-05-24T08:10:00.000Z', { volumeId: '002', volumeTitle: '話 002' }),

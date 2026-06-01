@@ -4,7 +4,7 @@ kmoelite is an **Alpha / developer preview** unofficial KMOE online manga reader
 
 The project is meant to feel closer to a native app than a browser workflow: open the app, search or continue reading, open a title, and start reading without manually managing web tabs or downloaded files.
 
-It focuses on users who do not want to keep manga files downloaded locally. Its product direction is lightweight online reading: open one title, read in high quality through temporary Reader cache, then clean up cache by policy so handheld devices such as iPhone and iPad do not lose large amounts of storage.
+It focuses on users who do not want to keep manga files downloaded locally. Its product direction is lightweight online reading: open one title, read in high quality through temporary Reader cache, keep a rolling previous/current/next chapter window, and clean up older cache so handheld devices such as iPhone and iPad do not lose large amounts of storage.
 
 This project is not affiliated with, endorsed by, or representative of KMOE. Users are responsible for following the target site's terms of service, copyright law, and account-safety requirements. The project must not be used to bypass access controls, membership limits, quotas, anti-abuse mechanisms, or copyright restrictions.
 
@@ -41,7 +41,7 @@ Future plan:
 ## Features
 
 - Live-first catalog, search, category, detail, account, and reading flows.
-- Temporary Reader cache as the primary reading path, with explicit local download kept as an advanced/compatibility capability.
+- Temporary Reader cache as the primary reading path, with a default rolling previous/current/next retention window; explicit local download remains an advanced/compatibility capability.
 - Shelf, Continue Reading, reading history, reading progress, and settings.
 - Reader modes for single page, spread, continuous flow, LTR/RTL, zoom, crop, rotation, chapter navigation, thumbnails, keyboard shortcuts, and touch gestures.
 - Cover-aware visual theming derived from real cover pixels when available.

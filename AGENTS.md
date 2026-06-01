@@ -68,7 +68,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Native list/snapshot commands must return typed errors when SQLite or filesystem reads fail; they must not convert native failures into empty successful snapshots that can overwrite real frontend state.
 - TypeScript owns page composition, reader controls, user-facing state, optimistic local stores, and browser-preview fallbacks.
 - Reading cache, permanent downloaded files, metadata cache, shelf items, reading progress, reading history, and download tasks must remain separate data models.
-- Reading cache should be treated as temporary storage for online reading and high-quality page display. Storage policies should favor cleanup after reading, when moving across chapters, or when pressure limits are reached.
+- Reading cache should be treated as temporary storage for online reading and high-quality page display. The default cache policy is a rolling previous/current/next chapter window: when the active chapter advances, caches outside that window become cleanup candidates, while the next chapter may be prefetched from a trusted local archive.
 - Permanent downloaded files and Library records must require explicit user intent. They should not become the default path for ordinary reading.
 - A multi-select download action creates local queue items; each task still authorizes and downloads one item at a time.
 - Real download progress persistence must be rate-limited before writing SQLite; the network receive loop must not persist every chunk.
@@ -112,10 +112,10 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Cache cleanup may remove reading cache rows, page rows, and registered reader cache directories only. It must preserve permanent downloads, shelf records, reading progress, history, and download tasks.
 - Shelf cache cleanup actions may clear selected reading-cache entries and reset `reading_cache` shelf flags, but must preserve permanent downloads, downloaded shelf state, shelf membership, reading progress, history, and download tasks.
 - Policy cleanup runs after opening/changing a Reader chapter and may remove only the computed candidate IDs.
-- Ordinary Reader flow should prefer automatic temporary-cache cleanup after finishing or leaving content when policy allows. Users should not need to manage storage manually for normal online reading.
+- Ordinary Reader flow should prefer automatic temporary-cache cleanup when moving across chapters or when policy/storage pressure allows. Users should not need to manage storage manually for normal online reading.
 - Storage-pressure cleanup is a hard cap for extracted Reader pages: it removes oldest ready reading-cache entries first, preserves the active chapter, tries policy-window entries last, and never removes permanent downloads, shelf records, reading progress, history, download tasks, or downloaded-file records.
 - Automatic next-chapter prefetch may only prepare cache from a trusted local Reader archive already in the Library. It must not create download tasks, authorize downloads, or access the website.
-- Space-saver cache policy disables aggressive next-chapter prefetch.
+- Cache policies with `keepNextChapters` set to `0` disable next-chapter prefetch; custom policies that keep a next-chapter window may prefetch from trusted local archives.
 - Automatic next-chapter prefetch must honor explicit runtime constraints: data-saver, low-power, metered connection, and very slow connection signals skip prefetch; unknown desktop connection details should not block local-only prefetch.
 - Manual full cleanup must stay explicit in Settings.
 

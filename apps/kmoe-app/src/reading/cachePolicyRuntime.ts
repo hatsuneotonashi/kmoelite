@@ -80,7 +80,7 @@ export async function syncReaderCachePolicyAfterOpen({
 
 function cleanupMessage(policyCount: number, storageCount: number, browserPreview: boolean): string {
   const parts: string[] = []
-  if (policyCount > 0) parts.push(`策略 ${policyCount} 个`)
+  if (policyCount > 0) parts.push(`滚动窗口 ${policyCount} 个`)
   if (storageCount > 0) parts.push(`容量 ${storageCount} 个`)
   const summary = parts.length > 0 ? parts.join('、') : '0 个'
   if (browserPreview) return `已清理${summary}浏览器预览缓存；桌面端会同步清理本机缓存。`

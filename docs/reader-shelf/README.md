@@ -14,7 +14,7 @@
 ## 必须保持的产品原则
 
 - 普通阅读目标是点开一本读一本，不默认长期保存漫画文件。
-- Reader cache 应服务高清阅读、快速翻页和短期恢复；读完、切换章节或达到存储策略限制后应清理。
+- Reader cache 应服务高清阅读、快速翻页和短期恢复；默认滚动保留前一章、当前章和后一章，切换章节或达到存储策略限制后应清理窗口外缓存。
 - 书架、永久下载、Library、Reader cache、阅读进度、阅读历史和下载队列是不同概念。
 - 清理 Reader cache 不能删除永久下载、书架记录、阅读进度、阅读历史或下载任务。
 - Multi-select download 只创建多个本地单项队列任务，不能调用 package、VIP batch 或 server-side batch。
@@ -39,8 +39,8 @@ Cache：
 
 - `ChapterCacheRecord`：reading_cache、metadata_cache 或 permanent_download。
 - `PageCacheRecord`：单页缓存 metadata/path。
-- `CachePolicy`：space_saver、balanced、comfort。
-- 普通在线阅读应优先使用 `reading_cache`，并按策略清理。
+- `CachePolicy`：space_saver、balanced、comfort；默认 balanced 使用前一章/当前章/后一章的滚动窗口。
+- 普通在线阅读应优先使用 `reading_cache`，并在进入下一章时清理上上章等窗口外缓存。
 
 Download：
 
@@ -54,7 +54,7 @@ iPhone / Android phone：
 
 - 触控优先、safe-area aware、底部导航不遮挡内容。
 - Reader 默认突出漫画图片，chrome 轻量显示。
-- 缓存策略默认偏节省空间。
+- 缓存策略默认使用滚动窗口：保留前一章、当前章和后一章，兼顾回看、顺滑进入下一章和低存储占用。
 
 iPad / Android tablet：
 

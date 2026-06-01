@@ -107,6 +107,27 @@ describe('reader prefetch runtime', () => {
     expect(prepareNativeReaderChapterCacheMock).not.toHaveBeenCalled()
   })
 
+  it('allows prefetch when a custom policy keeps a next chapter window', () => {
+    const current = sampleChapter('cache-001', '001', '話 001')
+    const plan = planNextReaderChapterPrefetch({
+      currentChapter: current,
+      chapters: [current],
+      library: [
+        sampleArchive('file-001', '001', '話 001'),
+        sampleArchive('file-002', '002', '話 002')
+      ],
+      policy: {
+        ...useCacheStore.getState().policy,
+        mode: 'space_saver',
+        keepPreviousChapters: 1,
+        keepNextChapters: 1,
+        maxRecentChapters: 1
+      }
+    })
+
+    expect(plan.sourceArchive?.id).toBe('file-002')
+  })
+
   it('skips next chapter prefetch when save-data is enabled and low-power reduction is on', () => {
     const current = sampleChapter('cache-001', '001', '話 001')
     const plan = planNextReaderChapterPrefetch({
