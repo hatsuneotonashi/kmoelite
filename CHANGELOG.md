@@ -25,6 +25,7 @@
 - 收紧 Web Adapter、下载、安全和 release 文档，不公开传播站点内部下载授权接口细节。
 - 保持真实站点集成能力，但强调合规、单项、低频、脱敏和 runtime-only 凭证处理。
 - 将 `TASK_PROGRESS.md` 明确为验证日志，将 `CHANGELOG.md` 明确为对外更新记录。
+- 将 `AGENTS.md` 明确为无上下文 AI 接手入口，并同步文档职责、提交纪律和默认验证 gate。
 
 ### Validation
 

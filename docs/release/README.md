@@ -25,6 +25,36 @@ git push -u origin main
 - `README.md`：只保留最近 5 次公开更新摘要，并链接到 `CHANGELOG.md`、`TASK_PROGRESS.md` 和平台状态文档。
 - PR description / GitHub release notes：复用 `CHANGELOG.md` 的用户可读摘要，再补充验证命令和剩余限制。
 
+## 提交前记录纪律
+
+- 每次提交都必须更新 `TASK_PROGRESS.md`，记录变更范围、实际运行命令、未运行命令、风险和 release blocker。
+- 用户可见或贡献者可理解的变化必须更新 `CHANGELOG.md`。
+- 公开入口变化才更新 `README.md` 的最近 5 次更新，并保持最多 5 条。
+- 长期规则、架构不变量、安全边界、AI 接手流程或提交纪律变化必须更新 `AGENTS.md`。
+- 提交信息使用 `feat:`、`fix:`、`docs:`、`test:`、`chore:` 等 conventional prefix。
+
+## 默认提交前 gate
+
+```bash
+git diff --check
+pnpm --dir apps/kmoe-app typecheck
+pnpm --dir apps/kmoe-app test:run
+pnpm --dir apps/kmoe-app build
+cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
+cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
+pnpm check:platforms
+node scripts/check-ios-assets.mjs
+```
+
+涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流时，再运行：
+
+```bash
+pnpm --dir apps/kmoe-app e2e
+```
+
+无法运行的命令不能记为通过；必须在 `TASK_PROGRESS.md` 写明原因和风险。
+
 本次滚动缓存更新建议使用：
 
 ```md

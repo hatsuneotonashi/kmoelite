@@ -26,29 +26,37 @@ pnpm tauri dev
 ## PR 要求
 
 - 保持改动聚焦，一次 PR 只处理一个行为或一个清理主题。
+- 没有历史上下文的维护者或 AI 必须先阅读 `AGENTS.md`，再按其中顺序阅读核心文档和任务相关源码。
 - 不提交账号、密码、Cookie、Session、Token、授权 URL、本机私有路径、runtime 数据库、本地下载文件或构建产物。
 - 默认测试使用 fixture；测试 fixture 只能放在 `apps/kmoe-app/src/tests/fixtures/` 或 `apps/kmoe-app/e2e/fixtures/`。
 - 行为、平台支持、发布步骤或安全边界变化时，同步更新文档。
+- 每次提交都要更新 `TASK_PROGRESS.md`；用户可见或贡献者可理解的变化同步更新 `CHANGELOG.md`。
 - 不添加用户可见 mock/demo 模式，不伪造下载成功、登录成功或 Reader cache 状态。
 - 不添加绕过登录、会员、配额、验证、反滥用、版权限制或批量滥用下载的功能。
 - 优先支持轻量在线阅读、临时 Reader cache、低存储占用和高清阅读体验。
 - 永久下载、Library 和文件打开能力属于显式用户意图或兼容路径，不应变成普通阅读默认路径。
 
-推荐提交前检查：
+默认提交前检查：
 
 ```bash
-pnpm typecheck
-pnpm test:run
-pnpm build
+git diff --check
+pnpm --dir apps/kmoe-app typecheck
+pnpm --dir apps/kmoe-app test:run
+pnpm --dir apps/kmoe-app build
+cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
 cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
 pnpm check:platforms
+node scripts/check-ios-assets.mjs
 ```
 
 涉及路由、布局、Reader、可访问性或视觉基线时运行：
 
 ```bash
-pnpm e2e
+pnpm --dir apps/kmoe-app e2e
 ```
+
+不能运行的检查必须写入 `TASK_PROGRESS.md`，说明原因和风险。
 
 ## 真实站点检查
 

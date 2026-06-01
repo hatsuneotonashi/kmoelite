@@ -23,8 +23,9 @@ pnpm tauri dev
 
 ## 仓库结构
 
-- `AGENTS.md`：长期工程约束和项目记忆。
-- `TASK_PROGRESS.md`：脱敏进度和验证记录。
+- `AGENTS.md`：无上下文 AI 接手入口、长期工程约束、项目记忆和提交纪律。
+- `TASK_PROGRESS.md`：脱敏验证日志和 release blocker。
+- `CHANGELOG.md`：对外更新记录。
 - `apps/kmoe-app/src/`：前端源码。
 - `apps/kmoe-app/src-tauri/src/`：Rust native source。
 - `apps/kmoe-app/src/tests/`：Vitest tests 和 fixtures。
@@ -37,17 +38,22 @@ pnpm tauri dev
 ## 默认检查
 
 ```bash
-pnpm typecheck
-pnpm test:run
-pnpm build
+git diff --check
+pnpm --dir apps/kmoe-app typecheck
+pnpm --dir apps/kmoe-app test:run
+pnpm --dir apps/kmoe-app build
 cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
 cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
-cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
-pnpm e2e
+cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
 pnpm check:platforms
+node scripts/check-ios-assets.mjs
 ```
 
-开发时先跑聚焦测试，涉及共享行为、Reader、临时缓存、显式下载、平台或 release 文档时再跑更宽的 gate。
+提交前默认运行以上完整 gate。涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流时再运行 `pnpm --dir apps/kmoe-app e2e`。不能运行的命令必须写入 `TASK_PROGRESS.md`，说明原因和风险。
+
+## 无上下文接手
+
+没有历史聊天上下文的 AI 或维护者必须先阅读根目录 `AGENTS.md`。实现前需要完成 `AGENTS.md` 指定的核心文档阅读、任务相关源码/测试/脚本检查，并先输出接手摘要。项目当前状态以 `docs/status/README.md` 和 `TASK_PROGRESS.md` 为准。
 
 ## 真实站点检查
 

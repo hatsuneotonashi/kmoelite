@@ -1,5 +1,46 @@
 # AGENTS.md
 
+## No-Context AI Handoff
+
+This file is the first and canonical entrypoint for any AI or maintainer with no prior chat context. Do not rely on previous conversations, hidden state, local memory, or assumptions from another machine. Treat the repository files as the source of truth.
+
+Before changing code or docs, complete this handoff sequence:
+
+1. Run `git status --short --branch`.
+2. Read this `AGENTS.md` file fully.
+3. Read `README.md`, `docs/README.md`, `docs/status/README.md`, `TASK_PROGRESS.md`, and `CHANGELOG.md`.
+4. Read the docs relevant to the task, such as `docs/architecture/README.md`, `docs/development/README.md`, `docs/release/README.md`, `docs/security/README.md`, `docs/platforms/README.md`, `docs/web-adapter/README.md`, or `docs/reader-shelf/README.md`.
+5. Inspect the task-relevant source, tests, scripts, schemas, platform configs, and native/Rust boundaries before editing.
+6. Produce a handoff summary before implementation. It must cover the project goal, current status, relevant architecture, touched files/modules, risks, verification plan, and documentation updates.
+
+For every new goal, read all core docs plus the task-relevant source. Do not start from memory or from a prior chat transcript. If local observations conflict with `docs/status/README.md` or `TASK_PROGRESS.md`, treat those files as the current status and verification fact sources, then reconcile the inconsistency before claiming a result.
+
+## Project Snapshot
+
+- kmoelite is a lightweight unofficial KMOE online manga reader and personal reading-management app.
+- The project is Alpha / developer preview, not stable public binary software.
+- The main product direction is low-storage online reading: open one comic, read in high quality, and avoid default long-term local downloads.
+- Reader cache is temporary storage. The default cache policy keeps a rolling previous/current/next chapter window.
+- Current user-facing surfaces include Home, Search, Categories, Detail, Reader, Shelf, Library, Download Center, Account, and Settings.
+- iPhone, iPad, and macOS are developer-preview usable targets; Windows has source/package paths but lacks full real-machine validation.
+- Android phone/tablet are planned targets. Apple TV and Android TV remain research targets.
+- Real website smoke and real download validation are explicit, runtime-only, redacted, and disabled by default.
+- The detailed status source is `docs/status/README.md`; the verification log is `TASK_PROGRESS.md`; public changes belong in `CHANGELOG.md`.
+
+## Documentation Source Of Truth
+
+- `AGENTS.md`: no-context AI handoff, durable product/architecture/safety rules, and contribution discipline. Do not use it as a phase log.
+- `README.md`: public project entry, value proposition, platform summary, screenshots, quick start, and recent 5 public updates.
+- `CHANGELOG.md`: public-facing update log. Write only user-visible or contributor-relevant changes.
+- `TASK_PROGRESS.md`: verification log in reverse chronological order. Record scope, commands, results, skipped checks, risks, and release blockers.
+- `docs/status/README.md`: current status and platform/release blocker fact source.
+- `docs/architecture/README.md`: runtime boundaries, data model separation, storage strategy, and test boundaries.
+- `docs/development/README.md`: local development, tests, live-profile rules, and deterministic fixture expectations.
+- `docs/release/README.md`: source release, GitHub update wording, upload checks, and release gates.
+- `CONTRIBUTING.md`: public contributor rules, aligned with this file without duplicating every AI-only instruction.
+
+If documentation conflicts, use this priority order: `docs/status/README.md` and `TASK_PROGRESS.md` for current state and verification facts; `AGENTS.md` for durable rules; `README.md` and `CHANGELOG.md` for public-facing wording.
+
 ## Project Goal
 
 Build kmoelite into a lightweight unofficial KMOE online manga reader for personal daily use. The primary product goal is to let users open one comic, read it comfortably in high quality, and avoid long-term local storage growth by using temporary Reader cache and cleanup policies instead of default permanent downloads.
@@ -19,7 +60,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Before ending a substantial phase, decide whether a durable invariant changed. If it did, update this file; if it did not, leave this file untouched and record only the phase result in `TASK_PROGRESS.md`.
 - If the user asks to clean up "agent" wording, "agent.md", or project memory, reconcile and simplify this file instead of deleting it.
 - Keep this file current-state oriented: it should explain how the project must behave now, not preserve every historical milestone.
-- After context compaction or handoff to another coding agent, the expected resume path is `git status --short`, read `AGENTS.md`, then inspect the relevant code/docs before editing.
+- After context compaction or handoff to another coding agent, follow the no-context handoff sequence at the top of this file.
 
 ## Current Product Memory
 
@@ -121,10 +162,16 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 
 ## Development Hygiene
 
-- Start each phase with `git status --short`.
+- Start each phase with `git status --short --branch`.
 - Keep changes scoped, tested, documented, and committed at stable boundaries.
-- Update `TASK_PROGRESS.md`, `README.md`, and relevant docs when product behavior changes.
+- Every commit must update `TASK_PROGRESS.md` with the change scope, actual validation, skipped checks, and known risks. Keep entries redacted and reverse chronological.
+- Update `CHANGELOG.md` for every user-visible or contributor-relevant change. Do not use it for internal command logs.
+- Keep `README.md` recent updates to at most 5 entries, and update it only for public-facing changes.
+- Update `AGENTS.md` when a durable product invariant, architecture rule, safety boundary, handoff rule, or contribution discipline changes.
 - Use fixtures for default automated tests. Put real website and real download automation behind explicit live-profile env flags so normal local/CI runs stay deterministic while full-function verification remains available.
-- Before committing, run focused tests first, then broader checks when the phase touches shared behavior.
+- Before committing, run the full source gate unless the environment cannot support it. The default gate is `git diff --check`, `pnpm --dir apps/kmoe-app typecheck`, `pnpm --dir apps/kmoe-app test:run`, `pnpm --dir apps/kmoe-app build`, `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`, `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`, `pnpm check:platforms`, and `node scripts/check-ios-assets.mjs`.
+- Run `pnpm --dir apps/kmoe-app e2e` when the change touches routes, layouts, Reader behavior, accessibility, visual baselines, or browser-visible workflows.
+- If any verification cannot run, do not mark it passed. Record the skipped command, reason, and release risk in `TASK_PROGRESS.md`.
+- Commit messages should use conventional prefixes such as `feat:`, `fix:`, `docs:`, `test:`, or `chore:`.
 - Do not commit transient manual validation screenshots, local build products, downloaded files, runtime caches, or auth/session artifacts. Keep reproducible Playwright visual baselines only under the E2E snapshot directory unless a future release policy explicitly requires another tracked artifact class.
 - Public README/docs screenshots may be committed only when they are intentionally prepared release assets under `docs/assets/screenshots/` and do not expose raw manga pages, raw covers, account state, cookies, tokens, private paths, or runtime storage. Use repository-relative image links in Markdown instead of large base64/data-URI image embeds.

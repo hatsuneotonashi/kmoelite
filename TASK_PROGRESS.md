@@ -4,6 +4,24 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-01 无上下文 AI 接手规范验证
+
+- 变更范围：`AGENTS.md` 顶部接手入口、文档职责、提交纪律、默认验证 gate，以及 `docs/README.md`、`docs/development/README.md`、`docs/release/README.md`、`docs/status/README.md`、`CONTRIBUTING.md`、`README.md`、`README.en.md`、`CHANGELOG.md` 的同步说明。
+- 行为摘要：`AGENTS.md` 成为唯一无上下文 AI 第一入口；新 AI 必须先运行 `git status --short --branch`，读全量核心文档和任务相关源码，输出接手摘要，再开始实现；当前状态以 `docs/status/README.md` 和本文件为准。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 259 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，76 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，26 files。
+- `pnpm --dir apps/kmoe-app e2e`：未运行。本轮只改文档和接手规则，不涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。
+- 文档一致性检查：`AGENTS.md` 已包含 `No-Context AI Handoff`、`Project Snapshot`、`Documentation Source Of Truth` 和 `Development Hygiene`；README 最近更新条目数为 5。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target` 或 `test-results` 进入 tracked tree。
+- 敏感文本扫描：修改文档未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL。
+
 ## 2026-06-01 漫画列表分页验证
 
 - 变更范围：首页、分类页、搜索页漫画列表分页，Catalog query URL 工具，共享分页组件和对应测试。
