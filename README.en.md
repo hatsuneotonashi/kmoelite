@@ -40,11 +40,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-07: fixed Chinese IME composition in text inputs and added unified local reading data deletion for Reader cache plus local EPUB/source ZIP reading files.
 - 2026-06-07: fixed stale frontend Reader-cache snapshots after clearing Reader cache from Settings.
 - 2026-06-07: fixed repeated library-read failures on iPhone/iPad when upgrading an older on-device SQLite schema.
 - 2026-06-01: the default Reader cache policy now keeps a rolling previous/current/next chapter window.
 - 2026-06-01: Home, category, and search manga lists now support URL-restorable button pagination.
-- 2026-06-01: `AGENTS.md` is now the no-context AI handoff entrypoint with commit and verification rules.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 
@@ -52,6 +52,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](T
 
 - Live-first catalog, search, category, detail, account, and reading flows.
 - Temporary Reader cache as the primary reading path, with a default rolling previous/current/next retention window; explicit local download remains an advanced/compatibility capability.
+- Explicit local reading data deletion from Detail, Shelf, Library, Reader, and Settings removes Reader cache plus matching EPUB/source ZIP reading files.
 - Shelf, Continue Reading, reading history, reading progress, and settings.
 - Reader modes for single page, spread, continuous flow, LTR/RTL, zoom, crop, rotation, chapter navigation, thumbnails, keyboard shortcuts, and touch gestures.
 - Cover-aware visual theming derived from real cover pixels when available.

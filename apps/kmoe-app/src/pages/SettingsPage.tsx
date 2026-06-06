@@ -4,6 +4,7 @@ import { Button } from '../components/Button'
 import { TextField } from '../components/Field'
 import { PageHeader } from '../components/layout/PageHeader'
 import { clearNativeReadingCache, getNativeCacheStats, getNativeDownloadDir, setNativeDownloadDir } from '../platform/nativeCommands'
+import { deleteLocalReadingData } from '../reading/localReadingData'
 import { useCacheStore } from '../store/cacheStore'
 import { useSettingsStore } from '../store/settingsStore'
 import { formatBytes, mbToBytes, readableAppMessage } from '../lib/format'
@@ -56,6 +57,17 @@ export function SettingsPage() {
   }
 
   async function clearReadingCache(chapterIds?: string[], scope: 'policy' | 'storage' | 'all' = 'all') {
+    if (scope === 'all') {
+      const outcome = await deleteLocalReadingData({ includeSourceFiles: true })
+      if (outcome.ok) {
+        setNativeCacheStats(outcome.value.cacheStats)
+        setCacheMessage(`已删除全部本地阅读数据：${outcome.value.removedChapterIds.length} 个阅读缓存，${outcome.value.deletedFileCount + outcome.value.missingFileCount} 个本地阅读文件记录。书架、进度和历史保留。`)
+      } else {
+        setCacheMessage(outcome.message)
+      }
+      return
+    }
+
     const result = await clearNativeReadingCache(chapterIds)
     if (result.ok && result.value) {
       cache.clearReadingCache(chapterIds)
@@ -157,7 +169,7 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <TextField label="保存位置" value={settings.downloadDirectory} onChange={(event) => settings.setDownloadDirectory(event.target.value)} />
+        <TextField label="保存位置" value={settings.downloadDirectory} onValueChange={settings.setDownloadDirectory} />
 
         <div className="settings-actions flex flex-wrap gap-2">
           <Button
@@ -198,7 +210,7 @@ export function SettingsPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--app-muted)]">Reader cache</p>
             <h2 className="mt-1 text-xl font-semibold">阅读缓存</h2>
             <p className="mt-1 text-sm text-[var(--app-muted)]">
-              默认围绕当前章节滚动保留前一章、当前章和后一章；进入下一章后会清理上上章等窗口外 Reader cache。清理缓存不会删除书架、阅读进度、历史记录或永久下载文件；清理后再次打开章节会重新生成当前章节的临时阅读缓存。
+              默认围绕当前章节滚动保留前一章、当前章和后一章；进入下一章后会清理上上章等窗口外 Reader cache。策略/容量清理只处理临时缓存；手动清理全部会删除 Reader cache 和 EPUB/source ZIP 本地阅读文件记录，书架、阅读进度和历史记录保留。
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-glass)] px-3 py-2 text-sm font-semibold text-[var(--app-muted)]">
@@ -280,8 +292,8 @@ export function SettingsPage() {
             step="64"
             inputMode="numeric"
             value={cacheLimitMb}
-            onChange={(event) => {
-              const next = mbToBytes(event.target.value)
+            onValueChange={(value) => {
+              const next = mbToBytes(value)
               cache.updatePolicy({ maxCacheBytes: next })
               setCacheMessage(next ? `已设置阅读缓存上限为 ${formatBytes(next)}。` : '已取消阅读缓存容量上限。')
             }}
@@ -338,9 +350,9 @@ export function SettingsPage() {
             <Trash2 className="h-4 w-4" />
             按容量清理 {storageCleanupCandidates.length} 项
           </Button>
-          <Button variant="danger" disabled={shownCacheStats.readingCacheBytes <= 0 && cleanupCandidates.length === 0} onClick={() => void clearReadingCache(undefined, 'all')}>
+          <Button variant="danger" onClick={() => void clearReadingCache(undefined, 'all')}>
             <Trash2 className="h-4 w-4" />
-            清理全部阅读缓存
+            删除全部本地阅读数据
           </Button>
         </div>
         {cacheMessage ? <div className="metric-tile p-3 text-sm text-[var(--app-muted)]">{cacheMessage}</div> : null}

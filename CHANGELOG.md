@@ -6,6 +6,7 @@
 
 ### Added
 
+- 新增统一“删除本地阅读数据”入口：Detail、Shelf/Continue Reading、Library、Reader 控制面板和 Settings 可删除 Reader cache 及对应 EPUB/源图 ZIP 本地阅读文件。
 - 新增默认 Reader cache 滚动窗口：保留前一章、当前章和后一章。
 - 首页、分类和搜索漫画列表新增按钮分页，并把页码写入 URL 以支持刷新、返回和分享。
 - README 增加最近 5 次更新摘要，并指向完整更新记录、验证日志和平台限制文档。
@@ -21,6 +22,8 @@
 
 ### Fixed
 
+- 修复中文 IME 输入时，搜索、筛选和路径输入会把拼音中间态重复写入业务状态的问题。
+- 修复“清空阅读缓存”只删除解压页但保留本地源文件，导致再次点击阅读又从旧源文件恢复 cache、看起来没有真正释放空间的问题。
 - 修复设置页清空 Reader cache 后，前端持久化的旧 `reading_cache` 快照可能继续让详情页误判“已有阅读缓存”的问题。
 - 修复“清理全部阅读缓存”只清理 ready 候选，未覆盖 failed/missing/legacy 阅读缓存行的问题。
 - 修复 iPhone/iPad 实机沿用旧 SQLite schema 时，详情页读取下载队列/资料库失败并反复提示“暂时无法读取资料库”的问题。

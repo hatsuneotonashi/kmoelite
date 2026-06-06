@@ -12,7 +12,7 @@ import {
   type WheelEvent as ReactWheelEvent
 } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Columns2, HelpCircle, List, Maximize2, Minus, Plus, RefreshCcw, RotateCcw, RotateCw, Rows3, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Columns2, HelpCircle, List, Maximize2, Minus, Plus, RefreshCcw, RotateCcw, RotateCw, Rows3, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import { TransformComponent, TransformWrapper, type ReactZoomPanPinchContentRef } from 'react-zoom-pan-pinch'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
@@ -39,6 +39,7 @@ import { estimatePageIndexFromScroll, planReaderVirtualWindow } from '../reader/
 import { findUsableReaderArchiveForVolume, isReaderArchiveFormat, readerArchiveFormatLabel, type ReaderArchiveFormat } from '../reading/sourceArchive'
 import { syncReaderCachePolicyAfterOpen } from '../reading/cachePolicyRuntime'
 import { planNextReaderChapterPrefetch, prefetchNextReaderChapter } from '../reading/readerPrefetchRuntime'
+import { deleteLocalReadingData } from '../reading/localReadingData'
 import { useDownloadStore } from '../store/downloadStore'
 import { useReadingStore } from '../store/readingStore'
 import { useSettingsStore } from '../store/settingsStore'
@@ -126,6 +127,7 @@ export function ReaderPage() {
   const [cachePolicyMessage, setCachePolicyMessage] = useState('')
   const [prefetchMessage, setPrefetchMessage] = useState('')
   const [readStateMessage, setReadStateMessage] = useState('')
+  const [deletingLocalData, setDeletingLocalData] = useState(false)
   const [zoom, setZoom] = useState(1)
   const [readerPanel, setReaderPanel] = useState<ReaderPanel>('closed')
   const panelOpen = readerPanel !== 'closed'
@@ -485,6 +487,25 @@ export function ReaderPage() {
     saveProgress(0, { event: 'restart', finished: false, progressPercent: 0, zoom: 1 })
     setReadStateMessage('已从本章开头重读。')
   }, [chapter, continuousMode, pageCount, saveProgress, scrollContinuousPageIntoView])
+
+  const deleteCurrentLocalReadingData = useCallback(async () => {
+    if (!chapter || deletingLocalData) return
+    setDeletingLocalData(true)
+    setReadStateMessage('')
+    setSourceQueueMessage('')
+    const outcome = await deleteLocalReadingData({
+      comicIds: [chapter.comicId],
+      volumeIds: [chapter.volumeId],
+      chapterIds: [chapter.id],
+      includeSourceFiles: true
+    })
+    setDeletingLocalData(false)
+    if (outcome.ok) {
+      navigate(`/comic/${encodeURIComponent(chapter.comicId)}`, { replace: true })
+      return
+    }
+    setReadStateMessage(outcome.message)
+  }, [chapter, deletingLocalData, navigate])
 
   const selectPageFromPanel = useCallback((nextPageIndex: number) => {
     goToPage(nextPageIndex)
@@ -1324,6 +1345,8 @@ export function ReaderPage() {
             markCurrentVolumeRead={markCurrentVolumeRead}
             markCurrentVolumeUnread={markCurrentVolumeUnread}
             restartCurrentVolume={restartCurrentVolume}
+            deletingLocalData={deletingLocalData}
+            deleteCurrentLocalReadingData={deleteCurrentLocalReadingData}
           />
         </ReaderControlsPanel>
       ) : null}
@@ -1383,6 +1406,8 @@ type ReaderControlsContentProps = {
   markCurrentVolumeRead: () => void
   markCurrentVolumeUnread: () => void
   restartCurrentVolume: () => void
+  deletingLocalData: boolean
+  deleteCurrentLocalReadingData: () => void
 }
 
 function ReaderControlsContent({
@@ -1401,7 +1426,9 @@ function ReaderControlsContent({
   setManualCropInset,
   markCurrentVolumeRead,
   markCurrentVolumeUnread,
-  restartCurrentVolume
+  restartCurrentVolume,
+  deletingLocalData,
+  deleteCurrentLocalReadingData
 }: ReaderControlsContentProps) {
   return (
     <div className="reader-controls-content">
@@ -1416,6 +1443,20 @@ function ReaderControlsContent({
           </button>
           <button className="reader-control-pill" onClick={restartCurrentVolume}>
             从头重读
+          </button>
+        </div>
+      </section>
+
+      <section className="reader-control-section" aria-label="本地阅读数据">
+        <div className="reader-control-section-title">本地阅读数据</div>
+        <div className="reader-control-group">
+          <button
+            className="reader-control-pill reader-control-danger"
+            disabled={deletingLocalData}
+            onClick={deleteCurrentLocalReadingData}
+          >
+            <Trash2 className="h-4 w-4" />
+            {deletingLocalData ? '删除中' : '删除本地数据并返回详情'}
           </button>
         </div>
       </section>

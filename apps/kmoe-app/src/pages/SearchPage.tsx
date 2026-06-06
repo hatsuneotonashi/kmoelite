@@ -81,7 +81,7 @@ export function SearchPage() {
           label="关键词"
           type="search"
           value={form.keyword ?? ''}
-          onChange={(event) => setForm({ ...form, keyword: event.target.value })}
+          onValueChange={(value) => setForm({ ...form, keyword: value })}
         />
         <SelectField label="分类" value={form.category ?? ''} onChange={(event) => setForm({ ...form, category: event.target.value })}>
           <option value="">全部</option>

@@ -2,13 +2,35 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { LibraryPage } from '../pages/LibraryPage'
-import { listNativeDownloadedFiles, prepareNativeReaderChapterCache } from '../platform/nativeCommands'
+import { deleteNativeLocalReadingData, listNativeDownloadedFiles, prepareNativeReaderChapterCache } from '../platform/nativeCommands'
 import { useCacheStore } from '../store/cacheStore'
 import { useDownloadStore } from '../store/downloadStore'
 import type { ChapterCacheRecord, PageCacheRecord } from '../types/cache'
 import type { DownloadedFile } from '../types/domain'
 
 vi.mock('../platform/nativeCommands', () => ({
+  deleteNativeLocalReadingData: vi.fn(async () => ({
+    ok: true,
+    available: true,
+    message: 'deleted',
+    value: {
+      cacheStats: {
+        totalBytes: 0,
+        permanentDownloadBytes: 0,
+        readingCacheBytes: 0,
+        metadataCacheBytes: 0,
+        chapterCount: 0,
+        pageCount: 0
+      },
+      removedChapterIds: ['cache-53339-3089'],
+      removedFileIds: ['file-source'],
+      removedTaskIds: ['task-source'],
+      deletedFileCount: 1,
+      missingFileCount: 0,
+      tasks: [],
+      library: []
+    }
+  })),
   isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
   linkNativeDownloadedFile: vi.fn(async () => ({ ok: false, available: false, message: 'unavailable' })),
   listNativeDownloadedFiles: vi.fn(),
@@ -19,6 +41,7 @@ vi.mock('../platform/nativeCommands', () => ({
 
 const listNativeDownloadedFilesMock = vi.mocked(listNativeDownloadedFiles)
 const prepareReaderCacheMock = vi.mocked(prepareNativeReaderChapterCache)
+const deleteLocalReadingDataMock = vi.mocked(deleteNativeLocalReadingData)
 
 describe('Library reader entry', () => {
   beforeEach(() => {
@@ -140,6 +163,23 @@ describe('Library reader entry', () => {
       expect(useCacheStore.getState().chaptersById['cache-prepared-epub']).toMatchObject({ status: 'ready', format: 'epub' })
     })
     expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
+  it('deletes reader-capable local library data through native storage', async () => {
+    renderLibrary()
+
+    expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '删除本地数据' }))
+
+    await waitFor(() => {
+      expect(deleteLocalReadingDataMock).toHaveBeenCalledWith({
+        comicIds: ['53339'],
+        volumeIds: ['3089'],
+        includeSourceFiles: true
+      })
+      expect(useDownloadStore.getState().library).toEqual([])
+      expect(screen.getByText(/已删除本地阅读数据/)).toBeInTheDocument()
+    })
   })
 })
 

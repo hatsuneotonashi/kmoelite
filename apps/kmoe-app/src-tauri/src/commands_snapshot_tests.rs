@@ -1,4 +1,5 @@
 use super::*;
+use crate::models::ReadingHistoryEntry;
 
 #[test]
 fn native_task_shape_rejects_restricted_policy_rows() {
@@ -655,6 +656,191 @@ fn clear_reading_cache_rejects_registered_dirs_outside_cache_root() {
 }
 
 #[test]
+fn delete_local_reading_data_removes_reader_cache_and_source_archive_but_preserves_history() {
+    let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
+    db::init_schema(&conn).expect("schema initializes");
+    let root = std::env::temp_dir().join(format!("kmoe-local-reading-delete-{}", timestamp()));
+    let download_root = root.join("downloads");
+    let cache_root = root.join("cache");
+    let archive_path = download_root.join("Comic").join("chapter.zip");
+    std::fs::create_dir_all(archive_path.parent().unwrap()).expect("download dir creates");
+    write_reader_test_archive(&archive_path, &[("page1.jpg", &[1][..])]);
+    db::set_setting(
+        &conn,
+        "download_dir",
+        &download_root.to_string_lossy(),
+        "100",
+    )
+    .expect("download dir setting persists");
+    db::upsert_download_task(&conn, &sample_source_zip_task("completed", &archive_path))
+        .expect("source task inserts");
+    db::insert_downloaded_file(&conn, &sample_source_zip_file(&archive_path))
+        .expect("source file inserts");
+    db::upsert_shelf(
+        &conn,
+        &Shelf {
+            id: "default".to_string(),
+            name: "书架".to_string(),
+            kind: "default".to_string(),
+            sort_order: 0,
+            created_at: "100".to_string(),
+            updated_at: "100".to_string(),
+            archived_at: None,
+        },
+    )
+    .expect("shelf inserts");
+    db::upsert_shelf_item(
+        &conn,
+        &ShelfItem {
+            id: "default-53339".to_string(),
+            shelf_id: "default".to_string(),
+            comic_id: "53339".to_string(),
+            comic_title: "尖帽子的魔法工房".to_string(),
+            comic_url: Some("/c/53339.htm".to_string()),
+            cover_url: None,
+            comic_status: Some("連載".to_string()),
+            latest_volume: Some("話 095".to_string()),
+            last_read_volume_id: Some("3089".to_string()),
+            last_read_label: Some("继续读 話 089-095".to_string()),
+            unread_count: 0,
+            cached: true,
+            archived: false,
+            added_at: "100".to_string(),
+            updated_at: "100".to_string(),
+            last_read_at: Some("100".to_string()),
+            last_update_at: None,
+        },
+    )
+    .expect("shelf item inserts");
+    db::save_reading_progress(
+        &conn,
+        &SaveReadingProgressInput {
+            progress: sample_reading_progress(),
+            history: Some(ReadingHistoryEntry {
+                id: "history-53339-3089-100".to_string(),
+                comic_id: "53339".to_string(),
+                comic_title: "尖帽子的魔法工房".to_string(),
+                volume_id: "3089".to_string(),
+                volume_title: "話 089-095".to_string(),
+                page_index: 1,
+                progress_percent: 50.0,
+                event: "page_change".to_string(),
+                read_at: "100".to_string(),
+                duration_seconds: None,
+            }),
+        },
+    )
+    .expect("progress inserts");
+
+    let prepared = prepare_reader_chapter_cache_with_root(
+        &conn,
+        PrepareReaderChapterCacheInput {
+            archive_path: archive_path.to_string_lossy().to_string(),
+            comic_id: "53339".to_string(),
+            comic_title: "尖帽子的魔法工房".to_string(),
+            volume_id: "3089".to_string(),
+            volume_title: "話 089-095".to_string(),
+            source_task_id: Some("task-source-zip".to_string()),
+            format: Some("source_zip".to_string()),
+            policy: Some("balanced".to_string()),
+        },
+        &cache_root,
+    )
+    .expect("reader cache prepares");
+    let cache_dir = PathBuf::from(prepared.chapter.cache_dir.clone());
+    assert!(archive_path.exists());
+    assert!(cache_dir.exists());
+
+    let result = delete_local_reading_data_with_root(
+        &conn,
+        DeleteLocalReadingDataInput {
+            comic_ids: Some(vec!["53339".to_string()]),
+            volume_ids: Some(vec!["3089".to_string()]),
+            chapter_ids: None,
+            include_source_files: Some(true),
+        },
+        &cache_root,
+    )
+    .expect("local reading data deletes");
+
+    assert_eq!(result.removed_chapter_ids, vec![prepared.chapter.id]);
+    assert_eq!(result.removed_file_ids, vec!["file-source".to_string()]);
+    assert_eq!(result.removed_task_ids, vec!["task-source-zip".to_string()]);
+    assert_eq!(result.deleted_file_count, 1);
+    assert!(!archive_path.exists());
+    assert!(!cache_dir.exists());
+    assert!(db::list_chapter_cache(&conn).unwrap().is_empty());
+    assert!(db::list_downloaded_files(&conn).unwrap().is_empty());
+    assert!(db::list_download_tasks(&conn).unwrap().is_empty());
+    assert_eq!(db::list_shelf_items(&conn).unwrap().len(), 1);
+    assert!(db::get_reading_progress(&conn, "53339", "3089")
+        .unwrap()
+        .is_some());
+
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
+fn delete_local_reading_data_rejects_active_source_task_without_removing_files() {
+    let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
+    db::init_schema(&conn).expect("schema initializes");
+    let root = std::env::temp_dir().join(format!("kmoe-local-reading-active-{}", timestamp()));
+    let download_root = root.join("downloads");
+    let cache_root = root.join("cache");
+    let archive_path = download_root.join("Comic").join("chapter.zip");
+    std::fs::create_dir_all(archive_path.parent().unwrap()).expect("download dir creates");
+    write_reader_test_archive(&archive_path, &[("page1.jpg", &[1][..])]);
+    db::set_setting(
+        &conn,
+        "download_dir",
+        &download_root.to_string_lossy(),
+        "100",
+    )
+    .expect("download dir setting persists");
+    db::upsert_download_task(&conn, &sample_source_zip_task("downloading", &archive_path))
+        .expect("active task inserts");
+    db::insert_downloaded_file(&conn, &sample_source_zip_file(&archive_path))
+        .expect("source file inserts");
+    let prepared = prepare_reader_chapter_cache_with_root(
+        &conn,
+        PrepareReaderChapterCacheInput {
+            archive_path: archive_path.to_string_lossy().to_string(),
+            comic_id: "53339".to_string(),
+            comic_title: "尖帽子的魔法工房".to_string(),
+            volume_id: "3089".to_string(),
+            volume_title: "話 089-095".to_string(),
+            source_task_id: Some("task-source-zip".to_string()),
+            format: Some("source_zip".to_string()),
+            policy: Some("balanced".to_string()),
+        },
+        &cache_root,
+    )
+    .expect("reader cache prepares");
+    let cache_dir = PathBuf::from(prepared.chapter.cache_dir.clone());
+
+    let error = delete_local_reading_data_with_root(
+        &conn,
+        DeleteLocalReadingDataInput {
+            comic_ids: Some(vec!["53339".to_string()]),
+            volume_ids: Some(vec!["3089".to_string()]),
+            chapter_ids: None,
+            include_source_files: Some(true),
+        },
+        &cache_root,
+    )
+    .expect_err("active source task blocks deletion");
+
+    assert!(error.contains("cannot delete local reading data while task"));
+    assert!(archive_path.exists());
+    assert!(cache_dir.exists());
+    assert_eq!(db::list_chapter_cache(&conn).unwrap().len(), 1);
+    assert_eq!(db::list_downloaded_files(&conn).unwrap().len(), 1);
+    assert_eq!(db::list_download_tasks(&conn).unwrap().len(), 1);
+
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
 fn repairs_reader_cache_from_trusted_downloaded_source_archive() {
     let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
     db::init_schema(&conn).expect("schema initializes");
@@ -1065,6 +1251,55 @@ fn safe_snapshot_json(exported_at: &str) -> String {
     format!(
         r#"{{"version":1,"exportedAt":"{exported_at}","safety":{{"runtimeSettings":"not_exported","authorizationUrls":"omitted","localPaths":"redacted"}},"settings":{{"concurrency":1,"preferredFormat":"mobi"}},"tasks":[],"library":[]}}"#
     )
+}
+
+fn sample_source_zip_task(status: &str, archive_path: &Path) -> DownloadTask {
+    let mut task = sample_download_task();
+    task.id = "task-source-zip".to_string();
+    task.format = "source_zip".to_string();
+    task.status = status.to_string();
+    task.progress = if status == "completed" { 100.0 } else { 42.0 };
+    task.downloaded_bytes = if status == "completed" { 200 } else { 84 };
+    task.local_path = Some(archive_path.to_string_lossy().to_string());
+    task
+}
+
+fn sample_source_zip_file(archive_path: &Path) -> DownloadedFile {
+    DownloadedFile {
+        id: "file-source".to_string(),
+        task_id: Some("task-source-zip".to_string()),
+        comic_id: "53339".to_string(),
+        comic_title: "尖帽子的魔法工房".to_string(),
+        vol_id: "3089".to_string(),
+        volume_title: "話 089-095".to_string(),
+        format: "source_zip".to_string(),
+        local_path: archive_path.to_string_lossy().to_string(),
+        size_bytes: Some(200),
+        downloaded_at: "100".to_string(),
+    }
+}
+
+fn sample_reading_progress() -> ReadingProgress {
+    ReadingProgress {
+        id: "53339-3089".to_string(),
+        comic_id: "53339".to_string(),
+        comic_title: "尖帽子的魔法工房".to_string(),
+        volume_id: "3089".to_string(),
+        volume_title: "話 089-095".to_string(),
+        page_index: 1,
+        page_count: Some(2),
+        progress_percent: 50.0,
+        last_read_at: "100".to_string(),
+        finished: false,
+        reading_mode: "paged".to_string(),
+        reading_direction: "rtl".to_string(),
+        page_layout: "single".to_string(),
+        zoom: Some(1.0),
+        rotation: Some(0),
+        crop_json: None,
+        spread_overrides_json: None,
+        updated_at: "100".to_string(),
+    }
 }
 
 fn sample_download_task() -> DownloadTask {

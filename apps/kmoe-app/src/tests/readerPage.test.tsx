@@ -8,6 +8,7 @@ import { useCacheStore } from '../store/cacheStore'
 import { useSettingsStore } from '../store/settingsStore'
 import {
   clearNativeReadingCache,
+  deleteNativeLocalReadingData,
   enqueueNativeDownloadTasks,
   listNativeCachedChapterPages,
   listNativeChapterCache,
@@ -27,6 +28,7 @@ vi.mock('../hooks/useKmoeApi', () => ({
 
 vi.mock('../platform/nativeCommands', () => ({
   clearNativeReadingCache: vi.fn(),
+  deleteNativeLocalReadingData: vi.fn(),
   enqueueNativeDownloadTasks: vi.fn(),
   isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
   listNativeChapterCache: vi.fn(),
@@ -38,6 +40,7 @@ vi.mock('../platform/nativeCommands', () => ({
 }))
 
 const clearReadingCacheMock = vi.mocked(clearNativeReadingCache)
+const deleteLocalReadingDataMock = vi.mocked(deleteNativeLocalReadingData)
 const enqueueTasksMock = vi.mocked(enqueueNativeDownloadTasks)
 const listChaptersMock = vi.mocked(listNativeChapterCache)
 const listPagesMock = vi.mocked(listNativeCachedChapterPages)
@@ -66,6 +69,28 @@ describe('ReaderPage', () => {
         metadataCacheBytes: 0,
         chapterCount: 0,
         pageCount: 0
+      }
+    })
+    deleteLocalReadingDataMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'deleted',
+      value: {
+        cacheStats: {
+          totalBytes: 0,
+          permanentDownloadBytes: 0,
+          readingCacheBytes: 0,
+          metadataCacheBytes: 0,
+          chapterCount: 0,
+          pageCount: 0
+        },
+        removedChapterIds: ['cache-53339-3089'],
+        removedFileIds: ['file-source'],
+        removedTaskIds: ['task-source'],
+        deletedFileCount: 1,
+        missingFileCount: 0,
+        tasks: [],
+        library: []
       }
     })
   })
@@ -613,6 +638,57 @@ describe('ReaderPage', () => {
     expect(useReadingStore.getState().history.map((entry) => entry.event)).toContain('restart')
     expect(nativeProgressHistoryEvents()).toContain('restart')
     expect(screen.getByText('已从本章开头重读。')).toBeInTheDocument()
+  })
+
+  it('deletes the current local reading data and returns to detail', async () => {
+    listChaptersMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [sampleChapter()]
+    })
+    listPagesMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [samplePage(0), samplePage(1)]
+    })
+    readPageMock.mockImplementation(async (_chapterCacheId, pageIndex) => ({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleImage(pageIndex)
+    }))
+    saveProgressMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleNativeProgress(0)
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/reader/cache/cache-53339-3089']}>
+        <Routes>
+          <Route path="/reader/cache/:chapterCacheId" element={<ReaderPage />} />
+          <Route path="/comic/:comicId" element={<h1>Detail Returned</h1>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByAltText('第 1 页')).toBeInTheDocument()
+
+    openReaderControls()
+    fireEvent.click(screen.getByRole('button', { name: '删除本地数据并返回详情' }))
+
+    await waitFor(() => {
+      expect(deleteLocalReadingDataMock).toHaveBeenCalledWith({
+        comicIds: ['53339'],
+        volumeIds: ['3089'],
+        chapterIds: ['cache-53339-3089'],
+        includeSourceFiles: true
+      })
+      expect(screen.getByRole('heading', { name: 'Detail Returned' })).toBeInTheDocument()
+    })
   })
 
   it('keeps the reader open when a page fails and allows skipping it', async () => {

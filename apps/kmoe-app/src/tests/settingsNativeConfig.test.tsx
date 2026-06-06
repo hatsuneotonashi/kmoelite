@@ -7,12 +7,14 @@ import type { ChapterCacheRecord } from '../types/cache'
 
 const nativeMocks = vi.hoisted(() => ({
   clearNativeReadingCache: vi.fn(),
+  deleteNativeLocalReadingData: vi.fn(),
   getNativeAppConfig: vi.fn(),
   getNativeCacheStats: vi.fn()
 }))
 
 vi.mock('../platform/nativeCommands', () => ({
   clearNativeReadingCache: nativeMocks.clearNativeReadingCache,
+  deleteNativeLocalReadingData: nativeMocks.deleteNativeLocalReadingData,
   getNativeAppConfig: nativeMocks.getNativeAppConfig,
   getNativeCacheStats: nativeMocks.getNativeCacheStats,
   getNativeDownloadDir: () => Promise.resolve({ ok: false, available: false, message: 'Native download directory is available only inside Tauri.' }),
@@ -37,6 +39,7 @@ describe('Settings native config sync', () => {
       pagesByChapterId: {}
     })
     nativeMocks.clearNativeReadingCache.mockReset()
+    nativeMocks.deleteNativeLocalReadingData.mockReset()
     nativeMocks.getNativeAppConfig.mockReset()
     nativeMocks.getNativeCacheStats.mockReset()
     nativeMocks.getNativeAppConfig.mockResolvedValue({
@@ -53,6 +56,11 @@ describe('Settings native config sync', () => {
       ok: false,
       available: false,
       message: 'Native cache cleanup is available only inside Tauri.'
+    })
+    nativeMocks.deleteNativeLocalReadingData.mockResolvedValue({
+      ok: false,
+      available: false,
+      message: 'Native local reading data deletion is available only inside Tauri.'
     })
   })
 
@@ -108,7 +116,7 @@ describe('Settings native config sync', () => {
     expect(screen.getByRole('button', { name: /顺滑滑页/ })).not.toHaveAttribute('data-active')
   })
 
-  it('shows local reader cache stats, updates policy, and clears all browser fallback cache safely', async () => {
+  it('shows local reader cache stats, updates policy, and does not fake device deletion in browser preview', async () => {
     useCacheStore.getState().upsertChapter(sampleChapter('reading-old', 'reading_cache', 2048, { lastAccessedAt: '2026-05-24T08:00:00.000Z' }))
     useCacheStore.getState().upsertChapter(sampleChapter('downloaded', 'permanent_download', 4096))
 
@@ -125,16 +133,16 @@ describe('Settings native config sync', () => {
       maxRecentChapters: 1
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /清理全部阅读缓存/ }))
+    fireEvent.click(screen.getByRole('button', { name: /删除全部本地阅读数据/ }))
 
     await waitFor(() => {
-      expect(screen.getByText(/已清理全部浏览器预览阅读缓存/)).toBeInTheDocument()
+      expect(screen.getByText(/请在 kmoelite 客户端中删除本地阅读数据/)).toBeInTheDocument()
     })
     expect(useCacheStore.getState().chaptersById).toHaveProperty('downloaded')
-    expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-old')
+    expect(useCacheStore.getState().chaptersById).toHaveProperty('reading-old')
   })
 
-  it('clears all native reader cache and removes stale non-ready local cache rows', async () => {
+  it('deletes all native local reading data and removes stale non-ready local cache rows', async () => {
     useCacheStore.getState().upsertChapter(sampleChapter('reading-ready', 'reading_cache', 2048, {
       status: 'ready',
       lastAccessedAt: '2026-05-24T08:00:00.000Z'
@@ -157,18 +165,27 @@ describe('Settings native config sync', () => {
       },
       message: '缓存占用已更新。'
     })
-    nativeMocks.clearNativeReadingCache.mockResolvedValue({
+    nativeMocks.deleteNativeLocalReadingData.mockResolvedValue({
       ok: true,
       available: true,
       value: {
-        totalBytes: 4096,
-        permanentDownloadBytes: 4096,
-        readingCacheBytes: 0,
-        metadataCacheBytes: 0,
-        chapterCount: 1,
-        pageCount: 0
+        cacheStats: {
+          totalBytes: 4096,
+          permanentDownloadBytes: 4096,
+          readingCacheBytes: 0,
+          metadataCacheBytes: 0,
+          chapterCount: 1,
+          pageCount: 0
+        },
+        removedChapterIds: ['reading-ready', 'reading-failed'],
+        removedFileIds: ['file-source'],
+        removedTaskIds: ['task-source'],
+        deletedFileCount: 1,
+        missingFileCount: 0,
+        tasks: [],
+        library: []
       },
-      message: '阅读缓存已清理。'
+      message: '已删除 2 个阅读缓存和 1 个本地阅读文件记录。'
     })
 
     render(<SettingsPage />)
@@ -177,11 +194,13 @@ describe('Settings native config sync', () => {
       expect(screen.getByText('2.0 KB')).toBeInTheDocument()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /清理全部阅读缓存/ }))
+    fireEvent.click(screen.getByRole('button', { name: /删除全部本地阅读数据/ }))
 
     await waitFor(() => {
-      expect(nativeMocks.clearNativeReadingCache).toHaveBeenCalledWith(undefined)
-      expect(screen.getByText(/已清理全部本机阅读缓存/)).toBeInTheDocument()
+      expect(nativeMocks.deleteNativeLocalReadingData).toHaveBeenCalledWith({
+        includeSourceFiles: true
+      })
+      expect(screen.getByText(/已删除全部本地阅读数据/)).toBeInTheDocument()
     })
     expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-ready')
     expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-failed')

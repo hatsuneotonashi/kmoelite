@@ -149,6 +149,24 @@ export interface NativePreparedReaderChapterCache {
   manifest: NativeReaderArchiveManifest
 }
 
+export interface NativeDeleteLocalReadingDataInput {
+  comicIds?: string[]
+  volumeIds?: string[]
+  chapterIds?: string[]
+  includeSourceFiles?: boolean
+}
+
+export interface NativeDeleteLocalReadingDataResult {
+  cacheStats: CacheStats
+  removedChapterIds: string[]
+  removedFileIds: string[]
+  removedTaskIds: string[]
+  deletedFileCount: number
+  missingFileCount: number
+  tasks: DownloadTask[]
+  library: DownloadedFile[]
+}
+
 export interface NativeReaderCachedPageImage {
   chapterCacheId: string
   comicId: string
@@ -367,6 +385,22 @@ export async function getNativeCacheStats(): Promise<NativeCommandResult<CacheSt
 
 export async function clearNativeReadingCache(chapterIds?: string[]): Promise<NativeCommandResult<CacheStats>> {
   return nativeCommand('clear_reading_cache', { chapterIds: chapterIds ?? null }, '阅读缓存已清理。', '当前运行环境暂不支持清理阅读缓存。')
+}
+
+export async function deleteNativeLocalReadingData(
+  input: NativeDeleteLocalReadingDataInput
+): Promise<NativeCommandResult<NativeDeleteLocalReadingDataResult>> {
+  return nativeCommand(
+    'delete_local_reading_data',
+    { input },
+    (value) => {
+      const cacheCount = value.removedChapterIds.length
+      const fileCount = value.deletedFileCount + value.missingFileCount
+      if (fileCount > 0) return `已删除 ${cacheCount} 个阅读缓存和 ${fileCount} 个本地阅读文件记录。`
+      return `已删除 ${cacheCount} 个阅读缓存。`
+    },
+    '当前运行环境暂不支持删除本地阅读数据。'
+  )
 }
 
 export async function listNativeReaderArchivePages(path: string): Promise<NativeCommandResult<NativeReaderArchiveManifest>> {

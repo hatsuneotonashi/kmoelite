@@ -1,9 +1,9 @@
 use crate::models::{
-    AppConfig, CacheStats, CatalogQueryInput, ChapterCache, DownloadPreflight,
-    DownloadPreflightCheck, DownloadTask, DownloadedFile, LoginInput,
-    MigrationSnapshotImportResult, PageCache, PrepareReaderChapterCacheInput,
-    PreparedReaderChapterCache, ReaderCachedPageImage, ReadingProgress, SaveChapterCacheInput,
-    SaveReadingProgressInput, Shelf, ShelfItem,
+    AppConfig, CacheStats, CatalogQueryInput, ChapterCache, DeleteLocalReadingDataInput,
+    DeleteLocalReadingDataResult, DownloadPreflight, DownloadPreflightCheck, DownloadTask,
+    DownloadedFile, LoginInput, MigrationSnapshotImportResult, PageCache,
+    PrepareReaderChapterCacheInput, PreparedReaderChapterCache, ReaderCachedPageImage,
+    ReadingProgress, SaveChapterCacheInput, SaveReadingProgressInput, Shelf, ShelfItem,
 };
 use crate::reader::ReaderArchiveManifest;
 use crate::web_adapter::KmoeHttpClient;
@@ -300,6 +300,14 @@ pub fn clear_reading_cache(chapter_ids: Option<Vec<String>>) -> Result<CacheStat
 }
 
 #[tauri::command]
+pub fn delete_local_reading_data(
+    input: DeleteLocalReadingDataInput,
+) -> Result<DeleteLocalReadingDataResult, String> {
+    let conn = db::open_default_connection().map_err(|error| error.to_string())?;
+    delete_local_reading_data_with_root(&conn, input, &reader_cache_root())
+}
+
+#[tauri::command]
 pub fn list_reader_archive_pages(path: String) -> Result<ReaderArchiveManifest, String> {
     let conn = db::open_default_connection().map_err(|error| error.to_string())?;
     list_reader_archive_pages_with_conn(&conn, &path)
@@ -440,6 +448,279 @@ fn clear_reading_cache_with_root(
         }
     }
     db::cache_stats(conn).map_err(|error| error.to_string())
+}
+
+fn delete_local_reading_data_with_root(
+    conn: &rusqlite::Connection,
+    input: DeleteLocalReadingDataInput,
+    cache_root: &Path,
+) -> Result<DeleteLocalReadingDataResult, String> {
+    let chapter_ids = normalize_optional_ids(input.chapter_ids);
+    let comic_ids = normalize_optional_ids(input.comic_ids);
+    let volume_ids = normalize_optional_ids(input.volume_ids);
+    let include_source_files = input.include_source_files.unwrap_or(false);
+    let targets = local_reading_data_cache_targets(
+        conn,
+        comic_ids.as_deref(),
+        volume_ids.as_deref(),
+        chapter_ids.as_deref(),
+    )?;
+    safe_reader_cache_dirs(cache_root, &targets)?;
+    let target_chapter_ids = targets
+        .iter()
+        .map(|chapter| chapter.id.clone())
+        .collect::<Vec<_>>();
+
+    let source_files = if include_source_files {
+        local_reading_data_source_files(
+            conn,
+            comic_ids.as_deref(),
+            volume_ids.as_deref(),
+            &targets,
+            chapter_ids.as_deref().is_some(),
+        )?
+    } else {
+        Vec::new()
+    };
+    let removable_task_ids = if include_source_files {
+        removable_reader_source_task_ids(
+            conn,
+            comic_ids.as_deref(),
+            volume_ids.as_deref(),
+            &targets,
+        )?
+    } else {
+        Vec::new()
+    };
+
+    let mut deleted_file_count = 0usize;
+    let mut missing_file_count = 0usize;
+    for file in &source_files {
+        if is_metadata_only_downloaded_file(file) {
+            missing_file_count += 1;
+            continue;
+        }
+        match delete_recorded_reader_source_file(conn, file) {
+            Ok(FileDeleteOutcome::Deleted) => deleted_file_count += 1,
+            Ok(FileDeleteOutcome::Missing) => missing_file_count += 1,
+            Err(error) => return Err(error),
+        }
+    }
+
+    let cache_stats = if target_chapter_ids.is_empty() {
+        db::cache_stats(conn).map_err(|error| error.to_string())?
+    } else {
+        clear_reading_cache_with_root(conn, Some(&target_chapter_ids), cache_root)?
+    };
+
+    let removed_file_ids = source_files
+        .iter()
+        .map(|file| file.id.clone())
+        .collect::<Vec<_>>();
+    if !removed_file_ids.is_empty() {
+        db::remove_downloaded_files(conn, &removed_file_ids).map_err(|error| error.to_string())?;
+    }
+    if !removable_task_ids.is_empty() {
+        db::remove_download_tasks(conn, &removable_task_ids).map_err(|error| error.to_string())?;
+    }
+
+    Ok(DeleteLocalReadingDataResult {
+        cache_stats,
+        removed_chapter_ids: target_chapter_ids,
+        removed_file_ids,
+        removed_task_ids: removable_task_ids,
+        deleted_file_count,
+        missing_file_count,
+        tasks: db::list_download_tasks(conn).map_err(|error| error.to_string())?,
+        library: db::list_downloaded_files(conn).map_err(|error| error.to_string())?,
+    })
+}
+
+enum FileDeleteOutcome {
+    Deleted,
+    Missing,
+}
+
+fn normalize_optional_ids(ids: Option<Vec<String>>) -> Option<Vec<String>> {
+    ids.map(|values| {
+        let mut normalized = values
+            .into_iter()
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty())
+            .collect::<Vec<_>>();
+        normalized.sort();
+        normalized.dedup();
+        normalized
+    })
+    .filter(|values| !values.is_empty())
+}
+
+fn local_reading_data_cache_targets(
+    conn: &rusqlite::Connection,
+    comic_ids: Option<&[String]>,
+    volume_ids: Option<&[String]>,
+    chapter_ids: Option<&[String]>,
+) -> Result<Vec<ChapterCache>, String> {
+    let comic_set = set_from_slice(comic_ids);
+    let volume_set = set_from_slice(volume_ids);
+    let chapter_set = set_from_slice(chapter_ids);
+    db::list_chapter_cache(conn)
+        .map_err(|error| error.to_string())
+        .map(|chapters| {
+            chapters
+                .into_iter()
+                .filter(|chapter| {
+                    matches!(chapter.cache_kind.as_str(), "reading_cache" | "reading")
+                })
+                .filter(|chapter| {
+                    chapter_set
+                        .as_ref()
+                        .map(|ids| ids.contains(&chapter.id))
+                        .unwrap_or(true)
+                })
+                .filter(|chapter| {
+                    comic_set
+                        .as_ref()
+                        .map(|ids| ids.contains(&chapter.comic_id))
+                        .unwrap_or(true)
+                })
+                .filter(|chapter| {
+                    volume_set
+                        .as_ref()
+                        .map(|ids| ids.contains(&chapter.volume_id))
+                        .unwrap_or(true)
+                })
+                .collect()
+        })
+}
+
+fn local_reading_data_source_files(
+    conn: &rusqlite::Connection,
+    comic_ids: Option<&[String]>,
+    volume_ids: Option<&[String]>,
+    cache_targets: &[ChapterCache],
+    scoped_by_chapter_ids: bool,
+) -> Result<Vec<DownloadedFile>, String> {
+    let comic_set = set_from_slice(comic_ids);
+    let volume_set = set_from_slice(volume_ids);
+    let chapter_pairs = cache_targets
+        .iter()
+        .map(|chapter| (chapter.comic_id.clone(), chapter.volume_id.clone()))
+        .collect::<HashSet<_>>();
+    db::list_downloaded_files(conn)
+        .map_err(|error| error.to_string())
+        .map(|files| {
+            files
+                .into_iter()
+                .filter(|file| is_reader_archive_format(&file.format))
+                .filter(|file| {
+                    comic_set
+                        .as_ref()
+                        .map(|ids| ids.contains(&file.comic_id))
+                        .unwrap_or(true)
+                })
+                .filter(|file| {
+                    volume_set
+                        .as_ref()
+                        .map(|ids| ids.contains(&file.vol_id))
+                        .unwrap_or(true)
+                })
+                .filter(|file| {
+                    if scoped_by_chapter_ids && comic_set.is_none() && volume_set.is_none() {
+                        return chapter_pairs
+                            .contains(&(file.comic_id.clone(), file.vol_id.clone()));
+                    }
+                    true
+                })
+                .collect()
+        })
+}
+
+fn removable_reader_source_task_ids(
+    conn: &rusqlite::Connection,
+    comic_ids: Option<&[String]>,
+    volume_ids: Option<&[String]>,
+    cache_targets: &[ChapterCache],
+) -> Result<Vec<String>, String> {
+    let comic_set = set_from_slice(comic_ids);
+    let volume_set = set_from_slice(volume_ids);
+    let target_pairs = cache_targets
+        .iter()
+        .map(|chapter| (chapter.comic_id.clone(), chapter.volume_id.clone()))
+        .collect::<HashSet<_>>();
+    let tasks = db::list_download_tasks(conn).map_err(|error| error.to_string())?;
+    let matching = tasks
+        .into_iter()
+        .filter(|task| is_reader_archive_format(&task.format))
+        .filter(|task| {
+            comic_set
+                .as_ref()
+                .map(|ids| ids.contains(&task.comic_id))
+                .unwrap_or(true)
+        })
+        .filter(|task| {
+            volume_set
+                .as_ref()
+                .map(|ids| ids.contains(&task.vol_id))
+                .unwrap_or(true)
+        })
+        .filter(|task| {
+            if comic_set.is_none() && volume_set.is_none() && !target_pairs.is_empty() {
+                return target_pairs.contains(&(task.comic_id.clone(), task.vol_id.clone()));
+            }
+            true
+        })
+        .collect::<Vec<_>>();
+
+    if let Some(active) = matching.iter().find(|task| {
+        matches!(
+            task.status.as_str(),
+            "authorizing" | "downloading" | "verifying"
+        )
+    }) {
+        return Err(format!(
+            "cannot delete local reading data while task {} is {}",
+            active.id, active.status
+        ));
+    }
+
+    let mut ids = matching
+        .into_iter()
+        .filter(|task| matches!(task.status.as_str(), "completed" | "failed" | "cancelled"))
+        .map(|task| task.id)
+        .collect::<Vec<_>>();
+    ids.sort();
+    ids.dedup();
+    Ok(ids)
+}
+
+fn delete_recorded_reader_source_file(
+    conn: &rusqlite::Connection,
+    file: &DownloadedFile,
+) -> Result<FileDeleteOutcome, String> {
+    let target = fs_utils::normalize_user_path(&file.local_path)?;
+    if !target.exists() {
+        return Ok(FileDeleteOutcome::Missing);
+    }
+    if !target.is_file() {
+        return Err("registered local reading file is not a file".to_string());
+    }
+    ensure_open_target_allowed(conn, &target)?;
+    match std::fs::remove_file(&target) {
+        Ok(()) => Ok(FileDeleteOutcome::Deleted),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            Ok(FileDeleteOutcome::Missing)
+        }
+        Err(error) => Err(format!("failed to delete local reading file: {error}")),
+    }
+}
+
+fn set_from_slice(values: Option<&[String]>) -> Option<HashSet<String>> {
+    values.map(|items| items.iter().cloned().collect::<HashSet<_>>())
+}
+
+fn is_metadata_only_downloaded_file(file: &DownloadedFile) -> bool {
+    file.local_path.starts_with("Imported metadata only/")
 }
 
 fn reader_cache_clear_targets(

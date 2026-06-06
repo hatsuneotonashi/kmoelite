@@ -11,6 +11,7 @@ import { PageHeader } from '../components/layout/PageHeader'
 import { CatalogPagination } from '../components/ui/CatalogPagination'
 import { FilterChips } from '../components/ui/FilterChips'
 import { CatalogSkeleton } from '../components/ui/Skeletons'
+import { ImeAwareInput } from '../components/ImeAwareInput'
 import { clampCatalogPage, cleanCatalogQueryValue } from '../catalog/catalogQuery'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import { readableAppMessage } from '../lib/format'
@@ -81,10 +82,10 @@ export function HomePage() {
       <section className="home-search-panel glass-toolbar grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3">
         <label className="relative min-w-0">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--app-muted)]" />
-          <input
+          <ImeAwareInput
             aria-label="搜索标题、作者、标签"
             value={keyword}
-            onChange={(event) => updateHomeState({ ...homeState, keyword: event.target.value, page: 1 })}
+            onValueChange={(value) => updateHomeState({ ...homeState, keyword: value, page: 1 })}
             className="liquid-input h-12 w-full rounded-full pl-11 pr-4 outline-none phone-touch-target"
           />
         </label>

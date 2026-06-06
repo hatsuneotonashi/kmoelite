@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, ExternalLink, FolderOpen, Link2, RefreshCcw, Search } from 'lucide-react'
+import { BookOpen, ExternalLink, FolderOpen, Link2, RefreshCcw, Search, Trash2 } from 'lucide-react'
 import { Button } from '../components/Button'
 import { Badge } from '../components/Badge'
 import { EmptyState } from '../components/EmptyState'
+import { ImeAwareInput } from '../components/ImeAwareInput'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useDownloadStore } from '../store/downloadStore'
 import { useCacheStore } from '../store/cacheStore'
@@ -13,6 +14,7 @@ import { linkNativeDownloadedFile, openLocalFile, prepareNativeReaderChapterCach
 import { isMetadataOnlyDownloadedFile, isReaderArchiveFormat } from '../reading/sourceArchive'
 import { resolveLibraryReaderEntryState } from '../reading/readerEntry'
 import { syncNativeLibraryRecords } from '../library/nativeLibrarySync'
+import { deleteLocalReadingData } from '../reading/localReadingData'
 
 export function LibraryPage() {
   const store = useDownloadStore()
@@ -71,7 +73,7 @@ export function LibraryPage() {
       <div className="glass-toolbar flex flex-col gap-3 p-3 md:flex-row md:items-center">
         <label className="relative flex-1">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--app-muted)]" />
-          <input aria-label="搜索漫画、卷号、ID" value={keyword} onChange={(event) => setKeyword(event.target.value)} className="liquid-input h-12 w-full rounded-full pl-11 pr-4 outline-none" />
+          <ImeAwareInput aria-label="搜索漫画、卷号、ID" value={keyword} onValueChange={setKeyword} className="liquid-input h-12 w-full rounded-full pl-11 pr-4 outline-none" />
         </label>
         <select aria-label="资料库格式筛选" value={format} onChange={(event) => setFormat(event.target.value as DownloadFormat | 'all')} className="liquid-input h-12 rounded-full px-4 outline-none">
           <option value="all">全部格式</option>
@@ -117,6 +119,8 @@ function LibraryFileCard({
   const metadataOnly = isMetadataOnlyDownloadedFile(file)
   const expectedExtension = extensionForFormat(file.format)
   const fileName = displayFileName(file.localPath)
+  const canDeleteLocalReadingData = isReaderArchiveFormat(file.format)
+  const [deletingLocalData, setDeletingLocalData] = useState(false)
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
   const readerState = useMemo(
     () => resolveLibraryReaderEntryState({ file, chapters: cachedChapters }),
@@ -150,6 +154,19 @@ function LibraryFileCard({
       return
     }
     onMessage(readableAppMessage(result.message, '暂时无法准备阅读缓存，请确认源图 ZIP 仍在本机。'))
+  }
+
+  async function deleteLocalData() {
+    setDeletingLocalData(true)
+    const outcome = await deleteLocalReadingData({
+      comicIds: [file.comicId],
+      volumeIds: [file.volId],
+      includeSourceFiles: true
+    })
+    setDeletingLocalData(false)
+    onMessage(outcome.ok
+      ? '已删除本地阅读数据；再次阅读会重新获取。'
+      : outcome.message)
   }
 
   return (
@@ -196,6 +213,17 @@ function LibraryFileCard({
           <FolderOpen className="h-4 w-4" />
           查看位置
         </Button>
+        {canDeleteLocalReadingData ? (
+          <Button
+            className="w-full sm:w-auto"
+            variant="danger"
+            disabled={deletingLocalData}
+            onClick={() => void deleteLocalData()}
+          >
+            <Trash2 className="h-4 w-4" />
+            {deletingLocalData ? '删除中' : '删除本地数据'}
+          </Button>
+        ) : null}
       </div>
       <div className="text-xs leading-5 text-[var(--app-muted)]">{readerState.helper}</div>
       {metadataOnly ? (
@@ -203,10 +231,10 @@ function LibraryFileCard({
           <div className="library-link-panel flex flex-col gap-2 border-dashed p-3 md:flex-row md:items-start">
             <label className="min-w-0 flex-1">
               <span className="sr-only">文件路径</span>
-              <input
+              <ImeAwareInput
                 aria-label="文件路径"
                 value={linkPath}
-                onChange={(event) => setLinkPath(event.target.value)}
+                onValueChange={setLinkPath}
                 className="liquid-input h-11 w-full rounded-full px-4 text-sm outline-none"
               />
               <span className="mt-1 block text-xs text-[var(--app-muted)]">期望文件扩展名：{expectedExtension}</span>

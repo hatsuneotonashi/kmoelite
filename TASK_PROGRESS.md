@@ -4,6 +4,29 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-07 中文输入与本地阅读数据删除修复验证
+
+- 变更范围：IME-safe 输入组件、首页/搜索/资料库/书架/设置文本输入、统一本地阅读数据删除 helper、Detail/Shelf/Library/Reader/Settings 删除入口、native `delete_local_reading_data` 命令、SQLite 删除函数、Reader 控制样式、visual baselines、README/CHANGELOG/AGENTS/Reader/Shelf/Architecture 文档。
+- 行为摘要：中文 IME 组合输入期间只更新输入框草稿，不写入业务状态、URL query 或筛选条件；组合结束后只提交最终中文一次。显式“删除本地阅读数据”会通过 native 边界删除 Reader cache、对应 Reader-capable `source_zip` / `epub` 本地源文件、资料库记录和终态源文件任务；保留书架、阅读进度和阅读历史；native 不可用或失败时不伪造成功。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，51 files / 270 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，81 tests。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，51 files / 270 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，81 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，26 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。Settings 和 Library 文案/按钮变更导致的三张 visual baseline 已按实际稳定 UI 更新后复跑通过。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target`、`test-results`、`playwright-report` 或本地下载目录进入 tracked tree；本地 `node_modules` 仅作为 ignored 依赖目录存在。
+- 敏感文本扫描：未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL；唯一命中为 release 检查脚本自身的安全扫描正则。
+- 未运行项：本轮未运行真实站点 smoke、真实下载验证、Tauri app bundle/DMG、Windows 真机、iPhone/iPad 物理签名设备验证或 iPad 部署；这些不属于本轮默认修复 gate。
+- 待发布风险：删除本地阅读数据的真实设备文件行为仍需在 iPad/macOS Tauri runtime 做手动 smoke，确认删除后再次阅读会重新获取且设备存储释放符合预期。
+
 ## 2026-06-07 设置页 Reader cache 清理修复验证
 
 - 变更范围：前端 Reader cache store、native chapter-cache 同步、Tauri command 参数桥接、设置页清理文案、Reader/Shelf 文档、README 最近更新、CHANGELOG 和视觉基线。

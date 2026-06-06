@@ -45,6 +45,28 @@ pub struct DownloadedFile {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DeleteLocalReadingDataInput {
+    pub comic_ids: Option<Vec<String>>,
+    pub volume_ids: Option<Vec<String>>,
+    pub chapter_ids: Option<Vec<String>>,
+    pub include_source_files: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DeleteLocalReadingDataResult {
+    pub cache_stats: CacheStats,
+    pub removed_chapter_ids: Vec<String>,
+    pub removed_file_ids: Vec<String>,
+    pub removed_task_ids: Vec<String>,
+    pub deleted_file_count: usize,
+    pub missing_file_count: usize,
+    pub tasks: Vec<DownloadTask>,
+    pub library: Vec<DownloadedFile>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Shelf {
     pub id: String,
     pub name: String,

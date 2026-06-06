@@ -93,6 +93,7 @@ pub fn run() {
             commands::list_cached_chapter_pages,
             commands::get_cache_stats,
             commands::clear_reading_cache,
+            commands::delete_local_reading_data,
             commands::list_reader_archive_pages,
             commands::prepare_reader_chapter_cache,
             commands::repair_reader_chapter_cache,

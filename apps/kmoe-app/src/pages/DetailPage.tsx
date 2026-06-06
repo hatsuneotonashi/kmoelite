@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useNavigationType, useParams } from 'react-router-dom'
-import { ArrowLeft, BookMarked, BookmarkPlus, BookOpen, CheckSquare, Download, MoreHorizontal, Play, Square, X } from 'lucide-react'
+import { ArrowLeft, BookMarked, BookmarkPlus, BookOpen, CheckSquare, Download, MoreHorizontal, Play, Square, Trash2, X } from 'lucide-react'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { EmptyState } from '../components/EmptyState'
@@ -45,6 +45,7 @@ import {
   type ReaderArchiveFormat
 } from '../reading/sourceArchive'
 import { readerEntryNeedsDownloadCenter, resolveReaderEntryState, type ReaderEntryState } from '../reading/readerEntry'
+import { deleteLocalReadingData } from '../reading/localReadingData'
 import { syncNativeLibraryRecords } from '../library/nativeLibrarySync'
 
 type DownloadModeFormat = 'auto' | DownloadFormat
@@ -87,6 +88,7 @@ export function DetailPage() {
   const [readerFlow, setReaderFlow] = useState<ReaderFlowState | undefined>()
   const [librarySyncMessage, setLibrarySyncMessage] = useState('')
   const [preparingReaderVolId, setPreparingReaderVolId] = useState('')
+  const [deletingReaderVolId, setDeletingReaderVolId] = useState('')
   const readerFlowRunId = useRef(0)
   const downloadListRef = useRef<HTMLDivElement | null>(null)
   const detailPollTimer = useRef<number | undefined>(undefined)
@@ -586,6 +588,22 @@ export function DetailPage() {
     await prepareReaderCacheFromSourceArchive(option, sourceArchive, sourceArchive.format as ReaderArchiveFormat)
   }
 
+  async function deleteLocalDataForOption(option: VolumeDownloadOption, state = readerOptionState(option)) {
+    setDeletingReaderVolId(option.volId)
+    setReaderMessage('')
+    const outcome = await deleteLocalReadingData({
+      comicIds: [comic.id],
+      volumeIds: [option.volId],
+      chapterIds: state.cache ? [state.cache.id] : undefined,
+      includeSourceFiles: true
+    })
+    setDeletingReaderVolId('')
+    setReaderMessage(outcome.ok
+      ? `已删除「${option.displayTitle}」的本地阅读数据；再次阅读会重新获取。`
+      : outcome.message
+    )
+  }
+
   async function runQueuedReaderDownloadFlow(input: {
     option: VolumeDownloadOption
     readerFormat: ReaderArchiveFormat
@@ -924,6 +942,16 @@ export function DetailPage() {
               <Play className="h-4 w-4" />
               从头阅读
             </Button>
+            {primaryReaderEntry && hasReaderLocalData(primaryReaderEntry.state) ? (
+              <Button
+                variant="danger"
+                disabled={deletingReaderVolId === primaryReaderEntry.option.volId}
+                onClick={() => void deleteLocalDataForOption(primaryReaderEntry.option, primaryReaderEntry.state)}
+              >
+                <Trash2 className="h-4 w-4" />
+                {deletingReaderVolId === primaryReaderEntry.option.volId ? '删除中' : '删除本地数据'}
+              </Button>
+            ) : null}
             <Button variant={isInShelf ? 'secondary' : 'primary'} onClick={toggleShelf}>
               {isInShelf ? <BookMarked className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
               {isInShelf ? '已在书架' : '加入书架'}
@@ -971,7 +999,9 @@ export function DetailPage() {
               state={state}
               index={index}
               readerBusy={preparingReaderVolId === option.volId}
+              deletingLocalData={deletingReaderVolId === option.volId}
               onRead={() => void openReaderOption(option, state)}
+              onDelete={hasReaderLocalData(state) ? () => void deleteLocalDataForOption(option, state) : undefined}
             />
           ))}
         </div>
@@ -1308,6 +1338,10 @@ function detailPrimaryReaderActionLabel(state: ReaderEntryState | undefined): st
   return state.label
 }
 
+function hasReaderLocalData(state: ReaderEntryState): boolean {
+  return Boolean(state.cache || state.sourceFile)
+}
+
 function DownloadModeFormatPicker({
   value,
   onChange
@@ -1341,13 +1375,17 @@ function ReadingDirectoryCard({
   state,
   index,
   readerBusy,
-  onRead
+  deletingLocalData,
+  onRead,
+  onDelete
 }: {
   option: VolumeDownloadOption
   state: ReaderEntryState
   index: number
   readerBusy: boolean
+  deletingLocalData: boolean
   onRead: () => void
+  onDelete?: () => void
 }) {
   const status = readerStatus(state)
   const visibleLabel = visibleReaderActionLabel(state)
@@ -1372,6 +1410,12 @@ function ReadingDirectoryCard({
           {readerBusy ? '处理中' : visibleLabel}
           {needsHiddenOriginalLabel ? <span className="sr-only">{state.label}</span> : null}
         </Button>
+        {onDelete ? (
+          <Button disabled={deletingLocalData} variant="danger" onClick={onDelete}>
+            <Trash2 className="h-4 w-4" />
+            {deletingLocalData ? '删除中' : '删除本地数据'}
+          </Button>
+        ) : null}
       </div>
     </article>
   )

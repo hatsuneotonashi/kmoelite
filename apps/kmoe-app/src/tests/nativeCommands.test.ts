@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   clearNativeReadingCache,
   clearNativeQueue,
+  deleteNativeLocalReadingData,
   enqueueNativeDownloadTasks,
   getNativeAppConfig,
   getNativeCacheStats,
@@ -390,6 +391,57 @@ describe('native command bridge', () => {
     expect(invokeMock).toHaveBeenNthCalledWith(4, 'get_cache_stats', undefined)
     expect(invokeMock).toHaveBeenNthCalledWith(5, 'clear_reading_cache', { chapterIds: ['cache-53339-3089'] })
     expect(invokeMock).toHaveBeenNthCalledWith(6, 'clear_reading_cache', { chapterIds: null })
+  })
+
+  it('routes local reading data deletion through the native storage boundary', async () => {
+    enableTauriRuntime()
+    const stats = {
+      totalBytes: 0,
+      permanentDownloadBytes: 0,
+      readingCacheBytes: 0,
+      metadataCacheBytes: 0,
+      chapterCount: 0,
+      pageCount: 0
+    }
+    invokeMock.mockResolvedValueOnce({
+      cacheStats: stats,
+      removedChapterIds: ['cache-53339-3089'],
+      removedFileIds: ['file-source'],
+      removedTaskIds: ['task-source'],
+      deletedFileCount: 1,
+      missingFileCount: 0,
+      tasks: [],
+      library: []
+    })
+
+    const result = await deleteNativeLocalReadingData({
+      comicIds: ['53339'],
+      volumeIds: ['3089'],
+      includeSourceFiles: true
+    })
+
+    expect(result).toEqual({
+      ok: true,
+      available: true,
+      value: {
+        cacheStats: stats,
+        removedChapterIds: ['cache-53339-3089'],
+        removedFileIds: ['file-source'],
+        removedTaskIds: ['task-source'],
+        deletedFileCount: 1,
+        missingFileCount: 0,
+        tasks: [],
+        library: []
+      },
+      message: '已删除 1 个阅读缓存和 1 个本地阅读文件记录。'
+    })
+    expect(invokeMock).toHaveBeenCalledWith('delete_local_reading_data', {
+      input: {
+        comicIds: ['53339'],
+        volumeIds: ['3089'],
+        includeSourceFiles: true
+      }
+    })
   })
 
   it('routes native reader archive manifests through the guarded native command', async () => {

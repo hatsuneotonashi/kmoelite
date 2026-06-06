@@ -16,14 +16,19 @@ import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { CoverImage } from '../components/CoverImage'
 import { EmptyState } from '../components/EmptyState'
+import { ImeAwareInput } from '../components/ImeAwareInput'
 import { PageHeader } from '../components/layout/PageHeader'
 import { ProgressBar } from '../components/ProgressBar'
 import { readableAppMessage } from '../lib/format'
-import { clearNativeReadingCache } from '../platform/nativeCommands'
 import { resolveContinueReadingTarget } from '../reading/continueTarget'
+import { deleteLocalReadingData } from '../reading/localReadingData'
+import { isReaderArchiveFormat } from '../reading/sourceArchive'
 import { useCacheStore } from '../store/cacheStore'
+import { useDownloadStore } from '../store/downloadStore'
 import { useReadingStore } from '../store/readingStore'
 import { queryShelfItems, useShelfStore } from '../store/shelfStore'
+import type { ChapterCacheRecord } from '../types/cache'
+import type { DownloadedFile } from '../types/domain'
 import type { ShelfBatchAction, ShelfItem, ShelfQuery, ShelfSortKey } from '../types/shelf'
 
 type ShelfFilter = 'all' | 'updates' | 'unfinished' | 'completed' | 'series_completed' | 'cached' | 'downloaded' | 'archived'
@@ -57,7 +62,7 @@ export function ShelfPage() {
   const markProgressRead = useReadingStore((state) => state.markRead)
   const markProgressUnread = useReadingStore((state) => state.markUnread)
   const chaptersById = useCacheStore((state) => state.chaptersById)
-  const clearLocalReadingCache = useCacheStore((state) => state.clearReadingCache)
+  const library = useDownloadStore((state) => state.library)
   const [keyword, setKeyword] = useState('')
   const [filter, setFilter] = useState<ShelfFilter>('all')
   const [sortBy, setSortBy] = useState<ShelfSortKey>('recent_read')
@@ -66,6 +71,7 @@ export function ShelfPage() {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [selectedComicIds, setSelectedComicIds] = useState<string[]>([])
   const [cacheMessage, setCacheMessage] = useState('')
+  const [deletingLocalDataComicIds, setDeletingLocalDataComicIds] = useState<string[]>([])
 
   const items = useMemo(() => Object.values(itemsByComicId), [itemsByComicId])
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
@@ -97,9 +103,10 @@ export function ShelfPage() {
     .slice(0, 8), [items])
 
   const selectedSet = useMemo(() => new Set(selectedComicIds), [selectedComicIds])
-  const selectedReadingCacheIds = useMemo(() => cachedChapters
-    .filter((chapter) => selectedSet.has(chapter.comicId) && chapter.cacheKind === 'reading_cache')
-    .map((chapter) => chapter.id), [cachedChapters, selectedSet])
+  const selectedLocalReadingDataComicIds = useMemo(
+    () => selectedComicIds.filter((comicId) => hasShelfLocalReadingData(comicId, cachedChapters, library)),
+    [cachedChapters, library, selectedComicIds]
+  )
   const allFilteredSelected = filteredItems.length > 0 && filteredItems.every((item) => selectedSet.has(item.comicId))
   const unreadCount = items.reduce((total, item) => total + item.unreadCount, 0)
   const cachedCount = items.filter((item) => item.cached).length
@@ -162,35 +169,30 @@ export function ShelfPage() {
     runSelectedBatch({ type: 'move_categories', categoryIds: [activeBatchCategoryId], mode })
   }
 
-  async function clearSelectedReadingCache() {
-    const chapterIds = [...selectedReadingCacheIds]
-    if (chapterIds.length === 0) {
-      setCacheMessage('所选漫画没有可清理的阅读缓存。永久下载、书架和阅读记录不受影响。')
+  async function deleteSelectedLocalReadingData() {
+    const comicIds = [...selectedLocalReadingDataComicIds]
+    if (comicIds.length === 0) {
+      setCacheMessage('所选漫画没有可删除的本地阅读数据。书架、阅读进度和历史不受影响。')
       return
     }
 
-    const result = await clearNativeReadingCache(chapterIds)
-    if (result.ok || !result.available) {
-      clearLocalReadingCache(chapterIds)
-      syncShelfCacheFlagsAfterClear(selectedComicIds)
-      setCacheMessage(`已清理 ${chapterIds.length} 个${result.ok ? '本机' : '浏览器预览'}阅读缓存。永久下载、书架和阅读记录不受影响。`)
-      return
-    }
-
-    setCacheMessage(readableAppMessage(result.message, '暂时无法清理阅读缓存，请稍后重试。'))
+    setDeletingLocalDataComicIds(comicIds)
+    const outcome = await deleteLocalReadingData({ comicIds, includeSourceFiles: true })
+    setDeletingLocalDataComicIds([])
+    setCacheMessage(outcome.ok
+      ? `已删除 ${comicIds.length} 本漫画的本地阅读数据；再次阅读会重新获取。`
+      : readableAppMessage(outcome.message, '暂时无法删除本地阅读数据，请稍后重试。')
+    )
   }
 
-  function syncShelfCacheFlagsAfterClear(comicIds: string[]) {
-    const remainingReadingCacheComicIds = new Set(Object.values(useCacheStore.getState().chaptersById)
-      .filter((chapter) => chapter.cacheKind === 'reading_cache')
-      .map((chapter) => chapter.comicId))
-    const readingCacheOnlyComicIds = comicIds.filter((comicId) => {
-      const item = itemsByComicId[comicId]
-      return item?.cacheStatus === 'reading_cache' && !remainingReadingCacheComicIds.has(comicId)
-    })
-    if (readingCacheOnlyComicIds.length > 0) {
-      batchUpdate(readingCacheOnlyComicIds, { type: 'set_cached', cached: false, cacheStatus: 'none' })
-    }
+  async function deleteItemLocalReadingData(item: ShelfItem) {
+    setDeletingLocalDataComicIds((current) => [...new Set([...current, item.comicId])])
+    const outcome = await deleteLocalReadingData({ comicIds: [item.comicId], includeSourceFiles: true })
+    setDeletingLocalDataComicIds((current) => current.filter((comicId) => comicId !== item.comicId))
+    setCacheMessage(outcome.ok
+      ? `已删除「${item.comicTitle}」的本地阅读数据；再次阅读会重新获取。`
+      : readableAppMessage(outcome.message, '暂时无法删除本地阅读数据，请稍后重试。')
+    )
   }
 
   return (
@@ -210,10 +212,10 @@ export function ShelfPage() {
       <section className="shelf-toolbar glass-toolbar grid gap-3 p-3 lg:grid-cols-[1fr_auto_auto] lg:items-center">
         <label className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--app-muted)]" />
-          <input
+          <ImeAwareInput
             aria-label="搜索书架标题、作者、卷话"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onValueChange={setKeyword}
             className="liquid-input h-12 w-full rounded-full pl-11 pr-4 outline-none phone-touch-target"
           />
         </label>
@@ -259,10 +261,10 @@ export function ShelfPage() {
             ))}
           </div>
           <div className="flex gap-2">
-            <input
+            <ImeAwareInput
               aria-label="新分类名称"
               value={newCategoryName}
-              onChange={(event) => setNewCategoryName(event.target.value)}
+              onValueChange={setNewCategoryName}
               className="liquid-input h-11 min-w-0 rounded-full px-4 text-sm outline-none"
             />
             <Button onClick={createNewCategory} disabled={!newCategoryName.trim()}>
@@ -279,9 +281,9 @@ export function ShelfPage() {
           <Button onClick={() => runSelectedBatch({ type: 'mark_read' })}>标为已读</Button>
           <Button onClick={() => runSelectedBatch({ type: 'mark_unread' })}>标为未读</Button>
           <Button onClick={() => runSelectedBatch({ type: 'set_cached', cached: true, cacheStatus: 'reading_cache' })}>标记已缓存</Button>
-          <Button onClick={() => void clearSelectedReadingCache()} disabled={selectedReadingCacheIds.length === 0}>
+          <Button onClick={() => void deleteSelectedLocalReadingData()} disabled={selectedLocalReadingDataComicIds.length === 0}>
             <Trash2 className="h-4 w-4" />
-            删除阅读缓存 {selectedReadingCacheIds.length}
+            删除本地阅读数据 {selectedLocalReadingDataComicIds.length}
           </Button>
           <Button onClick={() => runSelectedBatch({ type: 'archive', archived: true })}>归档</Button>
           {categories.length > 0 ? (
@@ -325,7 +327,7 @@ export function ShelfPage() {
       {continueReading.length > 0 ? (
         <ShelfSection title="继续阅读" description="按最近阅读时间排序；有本地阅读缓存时会直接进入 Reader。">
           {continueReading.map((item) => (
-            <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} compact />
+            <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} hasLocalReadingData={hasShelfLocalReadingData(item.comicId, cachedChapters, library)} deletingLocalData={deletingLocalDataComicIds.includes(item.comicId)} onDeleteLocalData={() => void deleteItemLocalReadingData(item)} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} compact />
           ))}
         </ShelfSection>
       ) : null}
@@ -333,7 +335,7 @@ export function ShelfPage() {
       {updated.length > 0 ? (
         <ShelfSection title="有更新" description="来自本地记录的未读数或最近更新时间，后续可接入网站收藏同步。">
           {updated.map((item) => (
-            <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} compact />
+            <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} hasLocalReadingData={hasShelfLocalReadingData(item.comicId, cachedChapters, library)} deletingLocalData={deletingLocalDataComicIds.includes(item.comicId)} onDeleteLocalData={() => void deleteItemLocalReadingData(item)} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} compact />
           ))}
         </ShelfSection>
       ) : null}
@@ -350,7 +352,7 @@ export function ShelfPage() {
           {filteredItems.length === 0 ? <EmptyState title="没有匹配的书架项目">调整搜索词、分类或筛选条件。</EmptyState> : null}
           <div className="grid gap-3 xl:grid-cols-2">
             {filteredItems.map((item) => (
-              <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} />
+              <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} hasLocalReadingData={hasShelfLocalReadingData(item.comicId, cachedChapters, library)} deletingLocalData={deletingLocalDataComicIds.includes(item.comicId)} onDeleteLocalData={() => void deleteItemLocalReadingData(item)} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} />
             ))}
           </div>
         </section>
@@ -389,6 +391,9 @@ function ShelfItemCard({
   item,
   selected,
   cachedChapters,
+  hasLocalReadingData,
+  deletingLocalData,
+  onDeleteLocalData,
   onSelect,
   onRemove,
   onBatch,
@@ -397,6 +402,9 @@ function ShelfItemCard({
   item: ShelfItem
   selected: boolean
   cachedChapters: Parameters<typeof resolveContinueReadingTarget>[1]
+  hasLocalReadingData: boolean
+  deletingLocalData: boolean
+  onDeleteLocalData: () => void
   onSelect: () => void
   onRemove: () => void
   onBatch: (comicIds: string[], action: ShelfBatchAction) => void
@@ -444,6 +452,12 @@ function ShelfItemCard({
           <Link to={primaryTarget}>
             <Button variant="primary">{item.readingProgress ? '继续阅读' : '打开详情'}</Button>
           </Link>
+          {hasLocalReadingData ? (
+            <Button variant="danger" disabled={deletingLocalData} onClick={onDeleteLocalData}>
+              <Trash2 className="h-4 w-4" />
+              {deletingLocalData ? '删除中' : '删除本地数据'}
+            </Button>
+          ) : null}
           <Button onClick={() => onBatch([item.comicId], { type: 'mark_read' })}>已读</Button>
           <Button onClick={() => onBatch([item.comicId], { type: 'mark_unread' })}>未读</Button>
           <Button onClick={() => onBatch([item.comicId], { type: 'set_cached', cached: !item.cached, cacheStatus: item.cached ? 'none' : 'reading_cache' })}>
@@ -465,4 +479,18 @@ function ShelfItemCard({
 
 function hasUpdates(item: ShelfItem): boolean {
   return item.unreadCount > 0 || Boolean(item.latestUpdatedAt && (!item.lastReadAt || item.latestUpdatedAt > item.lastReadAt))
+}
+
+function hasShelfLocalReadingData(
+  comicId: string,
+  cachedChapters: ChapterCacheRecord[],
+  library: DownloadedFile[]
+): boolean {
+  return cachedChapters.some((chapter) =>
+    chapter.comicId === comicId
+    && chapter.cacheKind === 'reading_cache'
+  ) || library.some((file) =>
+    file.comicId === comicId
+    && isReaderArchiveFormat(file.format)
+  )
 }

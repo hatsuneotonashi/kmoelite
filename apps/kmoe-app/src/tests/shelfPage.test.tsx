@@ -1,17 +1,48 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ShelfPage } from '../pages/ShelfPage'
+import { deleteLocalReadingData } from '../reading/localReadingData'
 import { useCacheStore } from '../store/cacheStore'
+import { useDownloadStore } from '../store/downloadStore'
 import { useReadingStore } from '../store/readingStore'
 import { useShelfStore } from '../store/shelfStore'
 
+vi.mock('../reading/localReadingData', () => ({
+  deleteLocalReadingData: vi.fn()
+}))
+
+const deleteLocalReadingDataMock = vi.mocked(deleteLocalReadingData)
+
 describe('ShelfPage', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     window.localStorage.clear()
     useShelfStore.setState({ itemsByComicId: {}, categories: [] })
     useReadingStore.setState({ progressById: {}, history: [] })
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
+    useDownloadStore.setState({ tasks: [], library: [] })
+    deleteLocalReadingDataMock.mockResolvedValue({
+      ok: true,
+      message: '已删除本地阅读数据；再次阅读会重新获取。',
+      value: {
+        cacheStats: {
+          totalBytes: 0,
+          permanentDownloadBytes: 0,
+          readingCacheBytes: 0,
+          metadataCacheBytes: 0,
+          chapterCount: 0,
+          pageCount: 0
+        },
+        removedChapterIds: ['cache-53339-3089'],
+        removedFileIds: [],
+        removedTaskIds: [],
+        deletedFileCount: 0,
+        missingFileCount: 0,
+        tasks: [],
+        library: []
+      }
+    })
   })
 
   it('renders an actionable empty shelf state', () => {
@@ -126,7 +157,7 @@ describe('ShelfPage', () => {
     })
   })
 
-  it('clears selected reading cache without removing downloaded shelf state', async () => {
+  it('deletes selected local reading data through the shared deletion flow', async () => {
     seedShelfCacheCleanupItems()
     render(
       <MemoryRouter>
@@ -135,14 +166,15 @@ describe('ShelfPage', () => {
     )
 
     fireEvent.click(screen.getByRole('button', { name: '选择当前' }))
-    fireEvent.click(screen.getByRole('button', { name: '删除阅读缓存 1' }))
+    fireEvent.click(screen.getByRole('button', { name: '删除本地阅读数据 1' }))
 
     await waitFor(() => {
-      expect(useCacheStore.getState().chaptersById['cache-53339-3089']).toBeUndefined()
-      expect(useShelfStore.getState().itemsByComicId['53339']).toMatchObject({ cached: false, cacheStatus: 'none' })
-      expect(useShelfStore.getState().itemsByComicId['14140']).toMatchObject({ cached: true, cacheStatus: 'downloaded' })
+      expect(deleteLocalReadingDataMock).toHaveBeenCalledWith({
+        comicIds: ['53339'],
+        includeSourceFiles: true
+      })
+      expect(screen.getByText(/已删除 1 本漫画的本地阅读数据/)).toBeInTheDocument()
     })
-    expect(screen.getByText(/永久下载、书架和阅读记录不受影响/)).toBeInTheDocument()
   })
 })
 

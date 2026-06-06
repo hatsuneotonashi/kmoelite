@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { DetailPage } from '../pages/DetailPage'
 import {
+  deleteNativeLocalReadingData,
   enqueueNativeDownloadTasks,
   listNativeDownloadedFiles,
   listNativeDownloadTasks,
@@ -30,6 +31,7 @@ vi.mock('../hooks/useKmoeApi', () => ({
 }))
 
 vi.mock('../platform/nativeCommands', () => ({
+  deleteNativeLocalReadingData: vi.fn(),
   enqueueNativeDownloadTasks: vi.fn(),
   isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
   listNativeDownloadedFiles: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('../platform/nativeCommands', () => ({
 }))
 
 const enqueueNativeDownloadTasksMock = vi.mocked(enqueueNativeDownloadTasks)
+const deleteNativeLocalReadingDataMock = vi.mocked(deleteNativeLocalReadingData)
 const listNativeDownloadedFilesMock = vi.mocked(listNativeDownloadedFiles)
 const listNativeDownloadTasksMock = vi.mocked(listNativeDownloadTasks)
 const prepareReaderCacheMock = vi.mocked(prepareNativeReaderChapterCache)
@@ -67,6 +70,28 @@ describe('Detail reader entry', () => {
     mocks.api.getComicDetail.mockResolvedValue(sampleComic())
     mocks.api.getSession.mockResolvedValue({ authenticated: true, mode: 'live', user: { warnings: [] } })
     mocks.api.createDownloadTasks.mockResolvedValue([sourceZipTask()])
+    deleteNativeLocalReadingDataMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'deleted',
+      value: {
+        cacheStats: {
+          totalBytes: 0,
+          permanentDownloadBytes: 0,
+          readingCacheBytes: 0,
+          metadataCacheBytes: 0,
+          chapterCount: 0,
+          pageCount: 0
+        },
+        removedChapterIds: [],
+        removedFileIds: ['file-source'],
+        removedTaskIds: ['task-source'],
+        deletedFileCount: 1,
+        missingFileCount: 0,
+        tasks: [],
+        library: []
+      }
+    })
     listNativeDownloadedFilesMock.mockImplementation(async () => ({
       ok: true,
       available: true,
@@ -344,6 +369,25 @@ describe('Detail reader entry', () => {
       expect(useCacheStore.getState().pagesByChapterId['cache-prepared']).toHaveLength(1)
     })
     expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
+  it('deletes local reading data for a directory entry without faking success', async () => {
+    nativeLibrary = [sourceArchive()]
+
+    renderDetail()
+
+    expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
+    fireEvent.click((await screen.findAllByRole('button', { name: '删除本地数据' }))[0])
+
+    await waitFor(() => {
+      expect(deleteNativeLocalReadingDataMock).toHaveBeenCalledWith({
+        comicIds: ['53339'],
+        volumeIds: ['3089'],
+        chapterIds: undefined,
+        includeSourceFiles: true
+      })
+      expect(screen.getByText(/再次阅读会重新获取/)).toBeInTheDocument()
+    })
   })
 })
 

@@ -137,6 +137,12 @@
   color: #111113;
 }
 
+.reader-control-danger {
+  border-color: rgb(255 122 150 / 0.32);
+  background: rgb(157 63 83 / 0.28);
+  color: rgb(255 236 241 / 0.92);
+}
+
 .reader-control-pill:disabled {
   cursor: not-allowed;
   opacity: .45;

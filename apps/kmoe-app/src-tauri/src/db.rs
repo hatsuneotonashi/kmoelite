@@ -920,6 +920,22 @@ pub fn list_downloaded_files(conn: &Connection) -> rusqlite::Result<Vec<Download
     rows.collect()
 }
 
+pub fn remove_downloaded_files(conn: &Connection, ids: &[String]) -> rusqlite::Result<usize> {
+    let mut removed = 0;
+    for id in ids {
+        removed += conn.execute("DELETE FROM downloaded_files WHERE id = ?1", params![id])?;
+    }
+    Ok(removed)
+}
+
+pub fn remove_download_tasks(conn: &Connection, ids: &[String]) -> rusqlite::Result<usize> {
+    let mut removed = 0;
+    for id in ids {
+        removed += conn.execute("DELETE FROM download_tasks WHERE id = ?1", params![id])?;
+    }
+    Ok(removed)
+}
+
 pub fn list_shelves(conn: &Connection) -> rusqlite::Result<Vec<Shelf>> {
     let mut stmt = conn.prepare(
         r#"
