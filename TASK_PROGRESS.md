@@ -4,6 +4,27 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-07 iPad 实机资料库读取修复验证
+
+- 变更范围：iOS app data 目录选择、SQLite schema 兼容迁移、旧下载队列/资料库表回归测试、README 最近更新和 CHANGELOG 对外记录。
+- 行为摘要：iPhone/iPad native SQLite 默认数据目录改为 app-private `Library/Application Support`；旧版实机数据库若缺少当前 `download_tasks` / `downloaded_files` 等表列，会在 `init_schema` 时补齐，避免详情页读取本地下载队列/资料库时反复显示“暂时无法读取资料库”。
+- 聚焦验证：
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml init_schema_migrates_existing_download_library_columns --lib`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml legacy_ios_database_migration_copies_without_overwriting --lib`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml ios_app_data_dir_uses_private_application_support --lib`：passed。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 259 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，79 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，26 files。
+- `pnpm --dir apps/kmoe-app e2e`：未运行。本轮没有改 React 路由、布局、Reader、accessibility、视觉基线或浏览器可见交互；问题根因位于 native SQLite/schema 和 iOS app data 目录。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target` 或 `test-results` 进入 tracked tree。
+- 敏感文本扫描：未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL；命中均为运行时环境变量名、文档示例占位符或 release 检查脚本自身的安全扫描正则。
+
 ## 2026-06-01 无上下文 AI 接手规范验证
 
 - 变更范围：`AGENTS.md` 顶部接手入口、文档职责、提交纪律、默认验证 gate，以及 `docs/README.md`、`docs/development/README.md`、`docs/release/README.md`、`docs/status/README.md`、`CONTRIBUTING.md`、`README.md`、`README.en.md`、`CHANGELOG.md` 的同步说明。

@@ -225,9 +225,134 @@ CREATE TABLE IF NOT EXISTS app_settings (
 
 pub fn init_schema(conn: &Connection) -> rusqlite::Result<()> {
     conn.execute_batch(SQLITE_SCHEMA)?;
+    ensure_column(conn, "download_tasks", "progress", "REAL DEFAULT 0")?;
+    ensure_column(
+        conn,
+        "download_tasks",
+        "downloaded_bytes",
+        "INTEGER DEFAULT 0",
+    )?;
+    ensure_column(conn, "download_tasks", "total_bytes", "INTEGER")?;
+    ensure_column(conn, "download_tasks", "retry_count", "INTEGER DEFAULT 0")?;
+    ensure_column(conn, "download_tasks", "error_message", "TEXT")?;
+    ensure_column(conn, "download_tasks", "local_path", "TEXT")?;
+    ensure_column(conn, "downloaded_files", "task_id", "TEXT")?;
+    ensure_column(conn, "downloaded_files", "size_bytes", "INTEGER")?;
+    ensure_column(conn, "shelves", "kind", "TEXT NOT NULL DEFAULT 'custom'")?;
+    ensure_column(conn, "shelves", "sort_order", "INTEGER NOT NULL DEFAULT 0")?;
+    ensure_column(conn, "shelves", "archived_at", "TEXT")?;
+    ensure_column(conn, "shelf_items", "comic_url", "TEXT")?;
+    ensure_column(conn, "shelf_items", "cover_url", "TEXT")?;
     ensure_column(conn, "shelf_items", "comic_status", "TEXT")?;
+    ensure_column(conn, "shelf_items", "latest_volume", "TEXT")?;
+    ensure_column(conn, "shelf_items", "last_read_volume_id", "TEXT")?;
+    ensure_column(conn, "shelf_items", "last_read_label", "TEXT")?;
+    ensure_column(
+        conn,
+        "shelf_items",
+        "unread_count",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    ensure_column(conn, "shelf_items", "cached", "INTEGER NOT NULL DEFAULT 0")?;
+    ensure_column(
+        conn,
+        "shelf_items",
+        "archived",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    ensure_column(conn, "shelf_items", "last_read_at", "TEXT")?;
+    ensure_column(conn, "shelf_items", "last_update_at", "TEXT")?;
+    ensure_column(conn, "reading_progress", "page_count", "INTEGER")?;
+    ensure_column(
+        conn,
+        "reading_progress",
+        "finished",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    ensure_column(
+        conn,
+        "reading_progress",
+        "reading_mode",
+        "TEXT NOT NULL DEFAULT 'paged'",
+    )?;
+    ensure_column(
+        conn,
+        "reading_progress",
+        "reading_direction",
+        "TEXT NOT NULL DEFAULT 'rtl'",
+    )?;
+    ensure_column(
+        conn,
+        "reading_progress",
+        "page_layout",
+        "TEXT NOT NULL DEFAULT 'auto'",
+    )?;
+    ensure_column(conn, "reading_progress", "zoom", "REAL")?;
     ensure_column(conn, "reading_progress", "rotation", "INTEGER")?;
+    ensure_column(conn, "reading_progress", "crop_json", "TEXT")?;
     ensure_column(conn, "reading_progress", "spread_overrides_json", "TEXT")?;
+    ensure_column(
+        conn,
+        "chapter_cache",
+        "cache_kind",
+        "TEXT NOT NULL DEFAULT 'reading'",
+    )?;
+    ensure_column(conn, "chapter_cache", "source_task_id", "TEXT")?;
+    ensure_column(
+        conn,
+        "chapter_cache",
+        "size_bytes",
+        "INTEGER NOT NULL DEFAULT 0",
+    )?;
+    ensure_column(conn, "chapter_cache", "page_count", "INTEGER")?;
+    ensure_column(
+        conn,
+        "chapter_cache",
+        "status",
+        "TEXT NOT NULL DEFAULT 'ready'",
+    )?;
+    ensure_column(conn, "chapter_cache", "policy", "TEXT")?;
+    ensure_column(conn, "chapter_cache", "expires_at", "TEXT")?;
+    ensure_column(conn, "page_cache", "width", "INTEGER")?;
+    ensure_column(conn, "page_cache", "height", "INTEGER")?;
+    ensure_column(conn, "page_cache", "size_bytes", "INTEGER")?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "mode",
+        "TEXT NOT NULL DEFAULT 'balanced'",
+    )?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "keep_previous_chapters",
+        "INTEGER NOT NULL DEFAULT 1",
+    )?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "keep_next_chapters",
+        "INTEGER NOT NULL DEFAULT 1",
+    )?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "max_recent_chapters",
+        "INTEGER NOT NULL DEFAULT 3",
+    )?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "wifi_prefetch",
+        "INTEGER NOT NULL DEFAULT 1",
+    )?;
+    ensure_column(
+        conn,
+        "cache_policy",
+        "low_power_reduce_prefetch",
+        "INTEGER NOT NULL DEFAULT 1",
+    )?;
+    ensure_column(conn, "cache_policy", "max_cache_bytes", "INTEGER")?;
     Ok(())
 }
 
@@ -252,7 +377,11 @@ fn ensure_column(
 }
 
 pub fn open_default_connection() -> rusqlite::Result<Connection> {
-    open_connection(default_database_path())
+    let path = default_database_path();
+    if std::env::consts::OS == "ios" {
+        migrate_legacy_database_if_needed(&path, &legacy_ios_database_path())?;
+    }
+    open_connection(path)
 }
 
 pub fn default_database_path() -> PathBuf {
@@ -263,6 +392,31 @@ pub fn default_database_path() -> PathBuf {
 
 pub fn database_path_in_app_data_dir(app_data_dir: &Path) -> PathBuf {
     app_data_dir.join(SQLITE_FILENAME)
+}
+
+fn legacy_ios_database_path() -> PathBuf {
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+    Path::new(&home)
+        .join(".local")
+        .join("share")
+        .join(fs_utils::APP_IDENTIFIER)
+        .join(SQLITE_FILENAME)
+}
+
+fn migrate_legacy_database_if_needed(path: &Path, legacy_path: &Path) -> rusqlite::Result<()> {
+    if path.exists() || !legacy_path.exists() {
+        return Ok(());
+    }
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent)
+            .map_err(|_| rusqlite::Error::InvalidPath(path.to_path_buf()))?;
+    }
+    std::fs::copy(legacy_path, path)
+        .map_err(|_| rusqlite::Error::InvalidPath(path.to_path_buf()))?;
+    Ok(())
 }
 
 pub fn open_connection(path: PathBuf) -> rusqlite::Result<Connection> {

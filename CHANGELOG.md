@@ -19,6 +19,11 @@
 - 将公开文档改为中文主文档和英文轻入口。
 - 将许可证更新为 GNU General Public License v3.0。
 
+### Fixed
+
+- 修复 iPhone/iPad 实机沿用旧 SQLite schema 时，详情页读取下载队列/资料库失败并反复提示“暂时无法读取资料库”的问题。
+- iOS 本地 app data 改为使用 app-private `Library/Application Support`，避免落到 Linux-style fallback 路径。
+
 ### Docs
 
 - 明确项目为非官方 KMOE 漫画阅读器和个人阅读管理工具。

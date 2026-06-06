@@ -40,11 +40,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-07: fixed repeated library-read failures on iPhone/iPad when upgrading an older on-device SQLite schema.
 - 2026-06-01: the default Reader cache policy now keeps a rolling previous/current/next chapter window.
 - 2026-06-01: Home, category, and search manga lists now support URL-restorable button pagination.
 - 2026-06-01: `AGENTS.md` is now the no-context AI handoff entrypoint with commit and verification rules.
 - 2026-06-01: Settings and public docs now describe the low-storage online reading behavior consistently.
-- 2026-05-31: public docs were reorganized around Chinese canonical documentation and an English entry point.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

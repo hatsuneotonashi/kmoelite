@@ -78,6 +78,38 @@ fn open_connection_creates_parent_directories() {
 }
 
 #[test]
+fn legacy_ios_database_migration_copies_without_overwriting() {
+    let root = std::env::temp_dir().join(format!("kmoe-db-legacy-ios-{}", timestamp()));
+    let legacy = root
+        .join(".local")
+        .join("share")
+        .join(fs_utils::APP_IDENTIFIER)
+        .join(SQLITE_FILENAME);
+    let current = root
+        .join("Library")
+        .join("Application Support")
+        .join(fs_utils::APP_IDENTIFIER)
+        .join(SQLITE_FILENAME);
+    std::fs::create_dir_all(legacy.parent().unwrap()).expect("legacy parent creates");
+    std::fs::write(&legacy, "legacy-db").expect("legacy db writes");
+
+    migrate_legacy_database_if_needed(&current, &legacy).expect("legacy db migrates");
+    assert_eq!(
+        std::fs::read_to_string(&current).expect("current db reads"),
+        "legacy-db"
+    );
+
+    std::fs::write(&current, "current-db").expect("current db writes");
+    migrate_legacy_database_if_needed(&current, &legacy).expect("existing current db is preserved");
+    assert_eq!(
+        std::fs::read_to_string(&current).expect("current db still reads"),
+        "current-db"
+    );
+
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
 fn schema_includes_shelves_reading_progress_and_cache_tables() {
     let conn = Connection::open_in_memory().expect("memory db opens");
     init_schema(&conn).expect("schema initializes");
@@ -191,6 +223,88 @@ fn init_schema_migrates_existing_shelf_items_comic_status_column() {
         table_columns(&conn, "shelf_items").contains(&"comic_status".to_string()),
         "existing shelf_items table gains comic_status"
     );
+}
+
+#[test]
+fn init_schema_migrates_existing_download_library_columns() {
+    let conn = Connection::open_in_memory().expect("memory db opens");
+    conn.execute_batch(
+        r#"
+            CREATE TABLE download_tasks (
+              id TEXT PRIMARY KEY,
+              comic_id TEXT NOT NULL,
+              comic_title TEXT NOT NULL,
+              vol_id TEXT NOT NULL,
+              volume_title TEXT NOT NULL,
+              format TEXT NOT NULL,
+              status TEXT NOT NULL,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE downloaded_files (
+              id TEXT PRIMARY KEY,
+              comic_id TEXT NOT NULL,
+              comic_title TEXT NOT NULL,
+              vol_id TEXT NOT NULL,
+              volume_title TEXT NOT NULL,
+              format TEXT NOT NULL,
+              local_path TEXT NOT NULL,
+              downloaded_at TEXT NOT NULL
+            );
+
+            INSERT INTO download_tasks (
+              id, comic_id, comic_title, vol_id, volume_title, format, status,
+              created_at, updated_at
+            ) VALUES (
+              'task-old', '10817', '来自深渊', '1', '卷 01', 'source_zip',
+              'queued', '100', '100'
+            );
+
+            INSERT INTO downloaded_files (
+              id, comic_id, comic_title, vol_id, volume_title, format, local_path,
+              downloaded_at
+            ) VALUES (
+              'file-old', '10817', '来自深渊', '1', '卷 01', 'source_zip',
+              '/tmp/Kmoe/来自深渊 - 卷 01.zip', '101'
+            );
+            "#,
+    )
+    .expect("old download schema creates");
+
+    init_schema(&conn).expect("schema migrates");
+
+    for column in [
+        "progress",
+        "downloaded_bytes",
+        "total_bytes",
+        "retry_count",
+        "error_message",
+        "local_path",
+    ] {
+        assert!(
+            table_columns(&conn, "download_tasks").contains(&column.to_string()),
+            "existing download_tasks table gains {column}"
+        );
+    }
+    for column in ["task_id", "size_bytes"] {
+        assert!(
+            table_columns(&conn, "downloaded_files").contains(&column.to_string()),
+            "existing downloaded_files table gains {column}"
+        );
+    }
+
+    let tasks = list_download_tasks(&conn).expect("migrated download tasks list");
+    assert_eq!(tasks.len(), 1);
+    assert_eq!(tasks[0].progress, 0.0);
+    assert_eq!(tasks[0].downloaded_bytes, 0);
+    assert_eq!(tasks[0].retry_count, 0);
+    assert!(tasks[0].local_path.is_none());
+
+    let files = list_downloaded_files(&conn).expect("migrated downloaded files list");
+    assert_eq!(files.len(), 1);
+    assert!(files[0].task_id.is_none());
+    assert!(files[0].size_bytes.is_none());
 }
 
 #[test]

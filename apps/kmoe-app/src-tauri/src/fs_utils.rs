@@ -136,17 +136,25 @@ fn expand_user_path(input: &str) -> String {
 }
 
 fn platform_app_data_dir() -> PathBuf {
-    if cfg!(target_os = "macos") {
-        return home_dir().join("Library").join("Application Support");
+    platform_app_data_dir_for(
+        std::env::consts::OS,
+        home_dir(),
+        std::env::var("APPDATA").ok().map(PathBuf::from),
+        std::env::var("XDG_DATA_HOME").ok().map(PathBuf::from),
+    )
+}
+
+fn platform_app_data_dir_for(
+    os: &str,
+    home: PathBuf,
+    appdata: Option<PathBuf>,
+    xdg_data_home: Option<PathBuf>,
+) -> PathBuf {
+    match os {
+        "macos" | "ios" => home.join("Library").join("Application Support"),
+        "windows" => appdata.unwrap_or_else(|| home.join("AppData").join("Roaming")),
+        _ => xdg_data_home.unwrap_or_else(|| home.join(".local").join("share")),
     }
-    if cfg!(target_os = "windows") {
-        return std::env::var("APPDATA")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| home_dir().join("AppData").join("Roaming"));
-    }
-    std::env::var("XDG_DATA_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| home_dir().join(".local").join("share"))
 }
 
 fn home_dir() -> PathBuf {
@@ -246,6 +254,23 @@ mod tests {
                 .to_string_lossy()
                 .contains("Library/Application Support"));
         }
+    }
+
+    #[test]
+    fn ios_app_data_dir_uses_private_application_support() {
+        let home = PathBuf::from("/var/mobile/Containers/Data/Application/Example");
+        let path = platform_app_data_dir_for("ios", home.clone(), None, None).join(APP_IDENTIFIER);
+
+        assert_eq!(
+            path,
+            home.join("Library")
+                .join("Application Support")
+                .join(APP_IDENTIFIER)
+        );
+        assert!(
+            !path.to_string_lossy().contains(".local/share"),
+            "iOS app data must not use Linux-style fallback paths"
+        );
     }
 
     #[test]
