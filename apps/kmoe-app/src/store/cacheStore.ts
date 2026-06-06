@@ -10,6 +10,7 @@ interface CacheState {
   updatePolicy: (patch: Partial<CachePolicy>) => CachePolicy
   upsertChapter: (chapter: ChapterCacheRecord) => ChapterCacheRecord
   mergeChapterSnapshot: (chapters: ChapterCacheRecord[]) => number
+  reconcileNativeChapterSnapshot: (chapters: ChapterCacheRecord[]) => number
   markChapterStatus: (chapterId: string, status: ChapterCacheStatus, errorMessage?: string) => ChapterCacheRecord | undefined
   registerPages: (chapterId: string, pages: PageCacheRecord[]) => PageCacheRecord[]
   touchChapter: (chapterId: string, accessedAt?: string) => ChapterCacheRecord | undefined
@@ -69,6 +70,37 @@ export const useCacheStore = create<CacheState>()(
         })
         return changed
       },
+      reconcileNativeChapterSnapshot: (chapters) => {
+        const sanitized = sanitizeChapterList(chapters)
+        const nativeReadingCacheIds = new Set(
+          sanitized
+            .filter((chapter) => isReadingCacheKind(chapter.cacheKind))
+            .map((chapter) => chapter.id)
+        )
+        let changed = 0
+        set((state) => {
+          const chaptersById = { ...state.chaptersById }
+          const pagesByChapterId = { ...state.pagesByChapterId }
+
+          for (const [id, chapter] of Object.entries(chaptersById)) {
+            if (!isReadingCacheKind(chapter.cacheKind) || nativeReadingCacheIds.has(id)) continue
+            delete chaptersById[id]
+            delete pagesByChapterId[id]
+            changed += 1
+          }
+
+          for (const chapter of sanitized) {
+            const existing = chaptersById[chapter.id]
+            if (!existing || chapter.updatedAt.localeCompare(existing.updatedAt) > 0) {
+              chaptersById[chapter.id] = chapter
+              changed += 1
+            }
+          }
+
+          return changed > 0 ? { chaptersById, pagesByChapterId } : state
+        })
+        return changed
+      },
       markChapterStatus: (chapterId, status, errorMessage) => {
         const existing = get().chaptersById[chapterId]
         if (!existing) return undefined
@@ -108,13 +140,15 @@ export const useCacheStore = create<CacheState>()(
         })
       },
       clearReadingCache: (chapterIds) => {
-        const removable = chapterIds ?? get().cleanupCandidates({ reason: 'manual', limit: Number.MAX_SAFE_INTEGER }).map((item) => item.chapter.id)
+        const removable = chapterIds ?? Object.values(get().chaptersById)
+          .filter((chapter) => isReadingCacheKind(chapter.cacheKind))
+          .map((chapter) => chapter.id)
         set((state) => {
           const chaptersById = { ...state.chaptersById }
           const pagesByChapterId = { ...state.pagesByChapterId }
           for (const id of removable) {
             const chapter = chaptersById[id]
-            if (!chapter || chapter.cacheKind !== 'reading_cache') continue
+            if (!chapter || !isReadingCacheKind(chapter.cacheKind)) continue
             delete chaptersById[id]
             delete pagesByChapterId[id]
           }
@@ -148,7 +182,7 @@ export function cacheStats(chapters: ChapterCacheRecord[], pagesByChapterId: Rec
     (acc, chapter) => {
       acc.totalBytes += chapter.sizeBytes
       if (chapter.cacheKind === 'permanent_download') acc.permanentDownloadBytes += chapter.sizeBytes
-      if (chapter.cacheKind === 'reading_cache') acc.readingCacheBytes += chapter.sizeBytes
+      if (isReadingCacheKind(chapter.cacheKind)) acc.readingCacheBytes += chapter.sizeBytes
       if (chapter.cacheKind === 'metadata_cache') acc.metadataCacheBytes += chapter.sizeBytes
       return acc
     },
@@ -174,7 +208,7 @@ export function cacheCleanupCandidates(
   const reason = options.reason ?? 'policy'
   const limit = options.limit ?? 20
   const readingChapters = chapters
-    .filter((chapter) => chapter.cacheKind === 'reading_cache' && chapter.status === 'ready')
+    .filter((chapter) => isReadingCacheKind(chapter.cacheKind) && chapter.status === 'ready')
     .sort((left, right) => left.lastAccessedAt.localeCompare(right.lastAccessedAt))
   if (!options.respectPolicy || readingChapters.length === 0) {
     return readingChapters.slice(0, limit).map((chapter) => ({ chapter, reason }))
@@ -201,7 +235,7 @@ export function storagePressureCleanupCandidates(
     : undefined
   if (!maxCacheBytes) return []
 
-  const readingChapters = chapters.filter((chapter) => chapter.cacheKind === 'reading_cache' && chapter.status === 'ready')
+  const readingChapters = chapters.filter((chapter) => isReadingCacheKind(chapter.cacheKind) && chapter.status === 'ready')
   let projectedBytes = readingChapters.reduce((total, chapter) => total + Math.max(0, chapter.sizeBytes), 0)
   if (projectedBytes <= maxCacheBytes) return []
 
@@ -282,12 +316,23 @@ function normalizePolicy(value: unknown): CachePolicy {
 function normalizeChapter(chapter: ChapterCacheRecord): ChapterCacheRecord {
   return {
     ...chapter,
+    cacheKind: normalizeCacheKind(chapter.cacheKind),
     sizeBytes: Math.max(0, chapter.sizeBytes),
     pageCount: chapter.pageCount && chapter.pageCount > 0 ? chapter.pageCount : undefined,
     status: chapter.status,
     updatedAt: chapter.updatedAt || nowIso(),
     lastAccessedAt: chapter.lastAccessedAt || nowIso()
   }
+}
+
+function normalizeCacheKind(value: string): ChapterCacheRecord['cacheKind'] {
+  if (value === 'reading' || value === 'reading_cache') return 'reading_cache'
+  if (value === 'permanent_download' || value === 'metadata_cache') return value
+  return 'metadata_cache'
+}
+
+function isReadingCacheKind(value: string): boolean {
+  return value === 'reading_cache' || value === 'reading'
 }
 
 function resolveActiveChapter(chapters: ChapterCacheRecord[], activeChapterId?: string): ChapterCacheRecord | undefined {

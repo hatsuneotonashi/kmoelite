@@ -367,6 +367,7 @@ describe('native command bridge', () => {
     invokeMock.mockResolvedValueOnce([page])
     invokeMock.mockResolvedValueOnce(stats)
     invokeMock.mockResolvedValueOnce({ ...stats, totalBytes: 0, readingCacheBytes: 0, chapterCount: 0, pageCount: 0 })
+    invokeMock.mockResolvedValueOnce({ ...stats, totalBytes: 0, readingCacheBytes: 0, chapterCount: 0, pageCount: 0 })
 
     await expect(saveNativeChapterCache(input)).resolves.toMatchObject({ ok: true, available: true, value: chapter })
     await expect(listNativeChapterCache()).resolves.toMatchObject({ ok: true, available: true, value: [chapter] })
@@ -377,12 +378,18 @@ describe('native command bridge', () => {
       available: true,
       value: { ...stats, totalBytes: 0, readingCacheBytes: 0, chapterCount: 0, pageCount: 0 }
     })
+    await expect(clearNativeReadingCache()).resolves.toMatchObject({
+      ok: true,
+      available: true,
+      value: { ...stats, totalBytes: 0, readingCacheBytes: 0, chapterCount: 0, pageCount: 0 }
+    })
 
     expect(invokeMock).toHaveBeenNthCalledWith(1, 'save_chapter_cache', { input })
     expect(invokeMock).toHaveBeenNthCalledWith(2, 'list_chapter_cache', undefined)
     expect(invokeMock).toHaveBeenNthCalledWith(3, 'list_cached_chapter_pages', { chapterCacheId: 'cache-53339-3089' })
     expect(invokeMock).toHaveBeenNthCalledWith(4, 'get_cache_stats', undefined)
     expect(invokeMock).toHaveBeenNthCalledWith(5, 'clear_reading_cache', { chapterIds: ['cache-53339-3089'] })
+    expect(invokeMock).toHaveBeenNthCalledWith(6, 'clear_reading_cache', { chapterIds: null })
   })
 
   it('routes native reader archive manifests through the guarded native command', async () => {

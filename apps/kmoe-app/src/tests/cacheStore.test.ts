@@ -73,6 +73,37 @@ describe('cacheStore', () => {
     expect(Object.keys(useCacheStore.getState().chaptersById).sort()).toEqual(['downloaded', 'reading-new'])
   })
 
+  it('clears every local reading cache record for full cleanup, including non-ready rows', () => {
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-ready', 'reading_cache', 2048, '2026-05-24T08:00:00.000Z'))
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-failed', 'reading_cache', 0, '2026-05-24T09:00:00.000Z', { status: 'failed' }))
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-missing', 'reading_cache', 0, '2026-05-24T10:00:00.000Z', { status: 'missing' }))
+    useCacheStore.getState().upsertChapter(sampleChapter('downloaded', 'permanent_download', 4096, '2026-05-24T07:00:00.000Z'))
+    useCacheStore.getState().registerPages('reading-ready', [samplePage('reading-ready', 0)])
+    useCacheStore.getState().registerPages('reading-failed', [samplePage('reading-failed', 0)])
+
+    useCacheStore.getState().clearReadingCache()
+
+    expect(Object.keys(useCacheStore.getState().chaptersById)).toEqual(['downloaded'])
+    expect(useCacheStore.getState().pagesByChapterId).toEqual({})
+  })
+
+  it('reconciles native chapter cache snapshots by removing local reading cache rows missing from native SQLite', () => {
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-stale', 'reading_cache', 2048, '2026-05-24T08:00:00.000Z'))
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-kept', 'reading_cache', 2048, '2026-05-24T08:00:00.000Z'))
+    useCacheStore.getState().upsertChapter(sampleChapter('downloaded', 'permanent_download', 4096, '2026-05-24T07:00:00.000Z'))
+    useCacheStore.getState().registerPages('reading-stale', [samplePage('reading-stale', 0)])
+
+    const changed = useCacheStore.getState().reconcileNativeChapterSnapshot([
+      sampleChapter('reading-kept', 'reading_cache', 4096, '2026-05-24T11:00:00.000Z')
+    ])
+
+    expect(changed).toBe(2)
+    expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-stale')
+    expect(useCacheStore.getState().chaptersById['reading-kept'].sizeBytes).toBe(4096)
+    expect(useCacheStore.getState().chaptersById).toHaveProperty('downloaded')
+    expect(useCacheStore.getState().pagesByChapterId).not.toHaveProperty('reading-stale')
+  })
+
   it('uses the default rolling window to keep previous, current, and next chapters', () => {
     const chapters = [
       sampleChapter('cache-001', 'reading_cache', 100, '2026-05-24T08:00:00.000Z', { volumeId: '001', volumeTitle: '話 001' }),

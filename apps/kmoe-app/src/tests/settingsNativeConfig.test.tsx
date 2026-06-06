@@ -134,6 +134,60 @@ describe('Settings native config sync', () => {
     expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-old')
   })
 
+  it('clears all native reader cache and removes stale non-ready local cache rows', async () => {
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-ready', 'reading_cache', 2048, {
+      status: 'ready',
+      lastAccessedAt: '2026-05-24T08:00:00.000Z'
+    }))
+    useCacheStore.getState().upsertChapter(sampleChapter('reading-failed', 'reading_cache', 0, {
+      status: 'failed',
+      lastAccessedAt: '2026-05-24T09:00:00.000Z'
+    }))
+    useCacheStore.getState().upsertChapter(sampleChapter('downloaded', 'permanent_download', 4096))
+    nativeMocks.getNativeCacheStats.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: {
+        totalBytes: 6144,
+        permanentDownloadBytes: 4096,
+        readingCacheBytes: 2048,
+        metadataCacheBytes: 0,
+        chapterCount: 3,
+        pageCount: 2
+      },
+      message: '缓存占用已更新。'
+    })
+    nativeMocks.clearNativeReadingCache.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: {
+        totalBytes: 4096,
+        permanentDownloadBytes: 4096,
+        readingCacheBytes: 0,
+        metadataCacheBytes: 0,
+        chapterCount: 1,
+        pageCount: 0
+      },
+      message: '阅读缓存已清理。'
+    })
+
+    render(<SettingsPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('2.0 KB')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /清理全部阅读缓存/ }))
+
+    await waitFor(() => {
+      expect(nativeMocks.clearNativeReadingCache).toHaveBeenCalledWith(undefined)
+      expect(screen.getByText(/已清理全部本机阅读缓存/)).toBeInTheDocument()
+    })
+    expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-ready')
+    expect(useCacheStore.getState().chaptersById).not.toHaveProperty('reading-failed')
+    expect(useCacheStore.getState().chaptersById).toHaveProperty('downloaded')
+  })
+
   it('clears only policy cleanup candidate cache ids when native cleanup is available', async () => {
     useCacheStore.getState().upsertChapter(sampleChapter('cache-001', 'reading_cache', 1024, {
       volumeId: '001',

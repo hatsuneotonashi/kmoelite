@@ -18,7 +18,7 @@ export function useNativeChapterCacheSync() {
         return
       }
 
-      useCacheStore.getState().mergeChapterSnapshot(result.value)
+      useCacheStore.getState().reconcileNativeChapterSnapshot(result.value)
     }
 
     void sync()

@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-07 设置页 Reader cache 清理修复验证
+
+- 变更范围：前端 Reader cache store、native chapter-cache 同步、Tauri command 参数桥接、设置页清理文案、Reader/Shelf 文档、README 最近更新、CHANGELOG 和视觉基线。
+- 行为摘要：设置页“清理全部阅读缓存”在 Tauri runtime 会调用 native `clear_reading_cache`，并同步移除前端所有 reading-cache 行，包括 failed/missing/legacy 状态；native SQLite 已不存在的 reading cache 会在同步时从前端持久化 store 删除，避免详情页沿用旧缓存快照。再次打开章节仍会按在线阅读路径重新生成当前章节临时缓存。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run -- cacheStore nativeChapterCacheSync settingsNativeConfig nativeCommands`：passed，49 files / 263 tests。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，49 files / 263 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，79 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，26 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。设置页说明文案和当前移动端 Chromium 字形渲染导致的视觉基线已按实际稳定 UI 更新后复跑通过。
+- iPad debug 部署验证：`pnpm --dir apps/kmoe-app tauri ios build --debug --export-method debugging` passed；已安装并启动到已连接 iPad。临时 Xcode 自动签名改动已恢复，生成的 iOS build/Externals 目录已清理，未跟踪 IPA/app 产物。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target` 或 `test-results` 进入 tracked tree。
+- 敏感文本扫描：未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL；命中均为运行时环境变量名、文档示例占位符或 release 检查脚本自身的安全扫描正则。
+
 ## 2026-06-07 iPad 实机资料库读取修复验证
 
 - 变更范围：iOS app data 目录选择、SQLite schema 兼容迁移、旧下载队列/资料库表回归测试、README 最近更新和 CHANGELOG 对外记录。

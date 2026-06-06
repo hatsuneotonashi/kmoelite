@@ -66,6 +66,29 @@ describe('native chapter cache sync', () => {
       expect(useCacheStore.getState().chaptersById['cache-native'].status).toBe('failed')
     })
   })
+
+  it('removes persisted reading cache records when native SQLite no longer has them', async () => {
+    useCacheStore.getState().upsertChapter(chapter({ id: 'cache-stale' }))
+    useCacheStore.getState().upsertChapter(chapter({
+      id: 'downloaded',
+      cacheKind: 'permanent_download',
+      sizeBytes: 4096
+    }))
+    listNativeChapterCacheMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: []
+    })
+
+    render(<NativeChapterCacheSyncHarness />)
+
+    await waitFor(() => {
+      expect(listNativeChapterCacheMock).toHaveBeenCalledTimes(1)
+      expect(useCacheStore.getState().chaptersById).not.toHaveProperty('cache-stale')
+      expect(useCacheStore.getState().chaptersById).toHaveProperty('downloaded')
+    })
+  })
 })
 
 function NativeChapterCacheSyncHarness() {

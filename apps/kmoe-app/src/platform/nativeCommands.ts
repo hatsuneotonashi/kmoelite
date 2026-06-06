@@ -366,7 +366,7 @@ export async function getNativeCacheStats(): Promise<NativeCommandResult<CacheSt
 }
 
 export async function clearNativeReadingCache(chapterIds?: string[]): Promise<NativeCommandResult<CacheStats>> {
-  return nativeCommand('clear_reading_cache', { chapterIds }, '阅读缓存已清理。', '当前运行环境暂不支持清理阅读缓存。')
+  return nativeCommand('clear_reading_cache', { chapterIds: chapterIds ?? null }, '阅读缓存已清理。', '当前运行环境暂不支持清理阅读缓存。')
 }
 
 export async function listNativeReaderArchivePages(path: string): Promise<NativeCommandResult<NativeReaderArchiveManifest>> {

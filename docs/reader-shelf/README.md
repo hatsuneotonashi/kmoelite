@@ -17,6 +17,8 @@
 - Reader cache 应服务高清阅读、快速翻页和短期恢复；默认滚动保留前一章、当前章和后一章，切换章节或达到存储策略限制后应清理窗口外缓存。
 - 书架、永久下载、Library、Reader cache、阅读进度、阅读历史和下载队列是不同概念。
 - 清理 Reader cache 不能删除永久下载、书架记录、阅读进度、阅读历史或下载任务。
+- 在 Tauri 运行时，本机 SQLite 是 Reader cache 是否存在的事实源。同步本机章节缓存时，native 已不存在的 `reading_cache` 必须从前端 store 移除，避免设置页清空后详情页继续显示旧缓存。
+- 设置页“清理全部阅读缓存”应清空所有阅读缓存状态，包括 failed/missing/legacy 行；再次打开章节会重新生成当前章节临时缓存，这是在线阅读路径的正常行为。
 - Multi-select download 只创建多个本地单项队列任务，不能调用 package、VIP batch 或 server-side batch。
 - Missing/corrupt cache 应提供从可信本地 archive 修复、单项重新获取或返回 Detail/Library 的恢复路径。
 - MOBI 只能作为文件打开，除非实现真实 parser。

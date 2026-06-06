@@ -198,7 +198,7 @@ export function SettingsPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--app-muted)]">Reader cache</p>
             <h2 className="mt-1 text-xl font-semibold">阅读缓存</h2>
             <p className="mt-1 text-sm text-[var(--app-muted)]">
-              默认围绕当前章节滚动保留前一章、当前章和后一章；进入下一章后会清理上上章等窗口外 Reader cache。清理缓存不会删除书架、阅读进度、历史记录或永久下载文件。
+              默认围绕当前章节滚动保留前一章、当前章和后一章；进入下一章后会清理上上章等窗口外 Reader cache。清理缓存不会删除书架、阅读进度、历史记录或永久下载文件；清理后再次打开章节会重新生成当前章节的临时阅读缓存。
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-[var(--app-glass)] px-3 py-2 text-sm font-semibold text-[var(--app-muted)]">

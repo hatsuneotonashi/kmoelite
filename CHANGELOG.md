@@ -21,6 +21,8 @@
 
 ### Fixed
 
+- 修复设置页清空 Reader cache 后，前端持久化的旧 `reading_cache` 快照可能继续让详情页误判“已有阅读缓存”的问题。
+- 修复“清理全部阅读缓存”只清理 ready 候选，未覆盖 failed/missing/legacy 阅读缓存行的问题。
 - 修复 iPhone/iPad 实机沿用旧 SQLite schema 时，详情页读取下载队列/资料库失败并反复提示“暂时无法读取资料库”的问题。
 - iOS 本地 app data 改为使用 app-private `Library/Application Support`，避免落到 Linux-style fallback 路径。
 
