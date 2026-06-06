@@ -7,7 +7,8 @@ const settings: AppSettings = {
   preferredFormat: 'epub',
   downloadDirectory: '/Users/example/Downloads/Kmoe',
   colorizeDetailPage: true,
-  readerPageTurnAnimation: 'slide'
+  readerPageTurnAnimation: 'slide',
+  showReaderStatusBar: false
 }
 
 const task: DownloadTask = {

@@ -12,7 +12,7 @@ import {
   type WheelEvent as ReactWheelEvent
 } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Columns2, HelpCircle, List, Maximize2, Minus, Plus, RefreshCcw, RotateCcw, RotateCw, Rows3, SlidersHorizontal, Trash2, X } from 'lucide-react'
+import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Columns2, Eye, EyeOff, HelpCircle, List, Maximize2, Minus, Plus, RefreshCcw, RotateCcw, RotateCw, Rows3, SlidersHorizontal, Trash2, X } from 'lucide-react'
 import { TransformComponent, TransformWrapper, type ReactZoomPanPinchContentRef } from 'react-zoom-pan-pinch'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
@@ -26,6 +26,7 @@ import {
   readNativeCachedReaderPage,
   repairNativeReaderChapterCache,
   saveNativeReadingProgress,
+  setNativeIosStatusBarHidden,
   type NativeReaderCachedPageImage
 } from '../platform/nativeCommands'
 import {
@@ -91,6 +92,8 @@ export function ReaderPage() {
   const addDownloadTasks = useDownloadStore((state) => state.addTasks)
   const library = useDownloadStore((state) => state.library)
   const pageTurnAnimation = useSettingsStore((state) => state.readerPageTurnAnimation)
+  const showReaderStatusBar = useSettingsStore((state) => state.showReaderStatusBar)
+  const setShowReaderStatusBar = useSettingsStore((state) => state.setShowReaderStatusBar)
   const lastWheelAtRef = useRef(0)
   const swipeStartRef = useRef<ReaderSwipeStart>(null)
   const autoPreparedSourceRef = useRef('')
@@ -148,6 +151,13 @@ export function ReaderPage() {
     }),
     [direction, manualSpreadOverrides, pageIndex, pageLayout, pages, viewportSupportsDouble]
   )
+
+  useEffect(() => {
+    void setNativeIosStatusBarHidden(!showReaderStatusBar)
+    return () => {
+      void setNativeIosStatusBarHidden(false)
+    }
+  }, [showReaderStatusBar])
   const title = chapter ? `${chapter.comicTitle} · ${chapter.volumeTitle}` : '阅读器'
   const continuousMode = readingMode !== 'paged'
   const zoomTargetPageIndexes = useMemo(
@@ -1022,6 +1032,7 @@ export function ReaderPage() {
       data-page-animation={pageTurnAnimation}
       data-page-motion={pageMotion}
       data-reading-direction={direction}
+      data-status-bar={showReaderStatusBar ? 'visible' : 'hidden'}
       onClick={handleReaderClick}
       onPointerCancel={() => {
         swipeStartRef.current = null
@@ -1347,6 +1358,8 @@ export function ReaderPage() {
             restartCurrentVolume={restartCurrentVolume}
             deletingLocalData={deletingLocalData}
             deleteCurrentLocalReadingData={deleteCurrentLocalReadingData}
+            showReaderStatusBar={showReaderStatusBar}
+            setShowReaderStatusBar={setShowReaderStatusBar}
           />
         </ReaderControlsPanel>
       ) : null}
@@ -1408,6 +1421,8 @@ type ReaderControlsContentProps = {
   restartCurrentVolume: () => void
   deletingLocalData: boolean
   deleteCurrentLocalReadingData: () => void
+  showReaderStatusBar: boolean
+  setShowReaderStatusBar: (visible: boolean) => void
 }
 
 function ReaderControlsContent({
@@ -1428,7 +1443,9 @@ function ReaderControlsContent({
   markCurrentVolumeUnread,
   restartCurrentVolume,
   deletingLocalData,
-  deleteCurrentLocalReadingData
+  deleteCurrentLocalReadingData,
+  showReaderStatusBar,
+  setShowReaderStatusBar
 }: ReaderControlsContentProps) {
   return (
     <div className="reader-controls-content">
@@ -1443,6 +1460,28 @@ function ReaderControlsContent({
           </button>
           <button className="reader-control-pill" onClick={restartCurrentVolume}>
             从头重读
+          </button>
+        </div>
+      </section>
+
+      <section className="reader-control-section" aria-label="系统状态栏">
+        <div className="reader-control-section-title">全屏显示</div>
+        <div className="reader-control-group">
+          <button
+            className="reader-control-pill"
+            data-selected={!showReaderStatusBar}
+            onClick={() => setShowReaderStatusBar(false)}
+          >
+            <EyeOff className="h-4 w-4" />
+            隐藏状态栏
+          </button>
+          <button
+            className="reader-control-pill"
+            data-selected={showReaderStatusBar}
+            onClick={() => setShowReaderStatusBar(true)}
+          >
+            <Eye className="h-4 w-4" />
+            显示状态栏
           </button>
         </div>
       </section>

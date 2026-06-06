@@ -44,6 +44,23 @@ describe('reader entry state resolver', () => {
     expect(state.label).toBe('获取 EPUB')
   })
 
+  it('offers source ZIP reading even when metadata detected availability without a size', () => {
+    const state = resolveReaderEntryState({
+      option: option({
+        sizes: { mobi: undefined, epub: undefined, sourceZip: undefined },
+        availableFormats: ['source_zip']
+      }),
+      chapters: [],
+      library: [],
+      tasks: []
+    })
+
+    expect(state.kind).toBe('queue_source_zip')
+    expect(state.enabled).toBe(true)
+    expect(state.readerFormat).toBe('source_zip')
+    expect(state.label).toBe('获取源图')
+  })
+
   it('explains mobi-only rows as external file only', () => {
     const state = resolveReaderEntryState({
       option: option({ availableFormats: ['mobi'] }),

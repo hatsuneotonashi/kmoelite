@@ -403,6 +403,15 @@ export async function deleteNativeLocalReadingData(
   )
 }
 
+export async function setNativeIosStatusBarHidden(hidden: boolean): Promise<NativeCommandResult<boolean>> {
+  return nativeCommand(
+    'set_ios_status_bar_hidden',
+    { hidden },
+    (value) => value ? 'Reader 状态栏显示已更新。' : '当前平台无需切换 iOS 状态栏。',
+    '当前运行环境暂不支持切换 iOS 状态栏。'
+  )
+}
+
 export async function listNativeReaderArchivePages(path: string): Promise<NativeCommandResult<NativeReaderArchiveManifest>> {
   return nativeCommand(
     'list_reader_archive_pages',

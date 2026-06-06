@@ -104,6 +104,55 @@ describe('HomePage', () => {
     expect(screen.queryByText(/SQLite|原生/)).not.toBeInTheDocument()
   })
 
+  it('shows up to six recent continue-reading items in a stable grid', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false
+        }
+      }
+    })
+    const progress = Array.from({ length: 7 }, (_, index): ReadingProgress => ({
+      id: `comic-${index + 1}:vol-1`,
+      comicId: `comic-${index + 1}`,
+      comicTitle: `继续阅读 ${index + 1}`,
+      volumeId: 'vol-1',
+      volumeTitle: `超长章节标题 ${index + 1}`,
+      pageIndex: 1200 + index,
+      pageCount: 2400 + index,
+      progressPercent: 20 + index,
+      lastReadAt: `2026-05-30T12:0${6 - index}:00.000Z`,
+      finished: false,
+      readingMode: 'paged',
+      readingDirection: 'rtl',
+      pageLayout: 'single'
+    }))
+    useReadingStore.setState({
+      progressById: Object.fromEntries(progress.map((item) => [item.id, item])),
+      history: []
+    })
+    api.getCatalog.mockResolvedValue({
+      items: [],
+      page: 1,
+      source: 'data_list'
+    } satisfies CatalogPage)
+
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      </QueryClientProvider>
+    )
+
+    expect(await screen.findByRole('heading', { name: '继续阅读' })).toBeInTheDocument()
+    expect(container.querySelector('.home-continue-list')).toHaveAttribute('data-count', '6')
+    expect(screen.getByText('继续阅读 1')).toBeInTheDocument()
+    expect(screen.getByText('继续阅读 6')).toBeInTheDocument()
+    expect(screen.queryByText('继续阅读 7')).not.toBeInTheDocument()
+    expect(screen.getByText('第 1201 / 2400 页')).toHaveClass('home-continue-page')
+  })
+
   it('paginates catalog results through URL-backed state', async () => {
     const queryClient = new QueryClient({
       defaultOptions: {

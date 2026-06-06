@@ -1119,3 +1119,15 @@
     border-radius: 18px;
   }
 }
+
+.reader-shell[data-status-bar="hidden"] .reader-stage {
+  --reader-stage-padding-top: 0px;
+}
+
+.reader-shell[data-status-bar="hidden"][data-controls-visible="true"] .reader-stage {
+  --reader-stage-padding-top: 58px;
+}
+
+.reader-shell[data-status-bar="hidden"] .reader-topbar {
+  top: 8px;
+}

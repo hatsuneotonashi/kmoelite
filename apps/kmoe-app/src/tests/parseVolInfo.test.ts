@@ -14,7 +14,7 @@ describe('parseVolInfo', () => {
       displayTitle: '話 001-006',
       pageCount: 232,
       docPageCount: 232,
-      availableFormats: ['mobi', 'epub']
+      availableFormats: ['mobi', 'epub', 'source_zip']
     })
     expect(options[0].sizes.mobi).toBeGreaterThan(50 * 1024 * 1024)
   })
@@ -32,6 +32,7 @@ describe('parseVolInfo', () => {
     expect(options.map((option) => option.volId)).toEqual(['3001', '3007'])
     expect(options.every((option) => option.availableFormats.includes('mobi'))).toBe(true)
     expect(options.every((option) => option.availableFormats.includes('epub'))).toBe(true)
+    expect(options.every((option) => option.availableFormats.includes('source_zip'))).toBe(true)
   })
 
   it('parses single-quoted postMessage rows without swallowing script suffixes', () => {
@@ -43,6 +44,20 @@ describe('parseVolInfo', () => {
       volId: '3089',
       displayTitle: '話 089-095',
       availableFormats: ['mobi', 'epub']
+    })
+  })
+
+  it('treats source-image metadata as reader-capable even when the size field is zero', () => {
+    const option = parseVolInfoLine(
+      '9001,0,0,話,1,圣洁少女的秘密情事,24,24,0,0,0,0,,,2026-06-01 1440x2048',
+      '99999'
+    )
+
+    expect(option).toMatchObject({
+      volId: '9001',
+      displayTitle: '圣洁少女的秘密情事',
+      availableFormats: ['source_zip'],
+      restrictions: []
     })
   })
 

@@ -106,6 +106,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Native Kmoe website HTTP must use a browser-compatible user agent plus normal browser headers where needed. The site can return legacy success markers while failing to preserve an authenticated session for non-browser-like clients.
 - Native Kmoe website HTTP must use bounded connection/read timeouts, and frontend native website commands must surface a retryable timeout error instead of leaving catalog, detail, account, or cover-image UI in an indefinite loading state.
 - Native cover-image recovery may fetch only HTTPS images from explicitly allowlisted Kmoe cover hosts, return in-memory `data:image/*` content to the UI, and must not persist cover bytes, private URLs, cookies, or credentials.
+- Kmoe volume/source availability parsing must consider both per-format size fields and per-format generation/resolution metadata. Do not mark a chapter as `无源图` only because the source ZIP size field is zero when source-image metadata indicates the format exists.
 - Native list/snapshot commands must return typed errors when SQLite or filesystem reads fail; they must not convert native failures into empty successful snapshots that can overwrite real frontend state.
 - TypeScript owns page composition, reader controls, user-facing state, optimistic local stores, and browser-preview fallbacks.
 - Reading cache, permanent downloaded files, metadata cache, shelf items, reading progress, reading history, and download tasks must remain separate data models.
@@ -147,6 +148,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Reader gestures and shortcuts must stay discoverable in the product UI through a help/guide panel; opening help or other Reader panels pauses page navigation shortcuts until the panel closes.
 - Reader directory UI should expose both local chapter navigation and page thumbnails when cached sibling chapters are available; users should not need to leave the Reader to move across prepared chapters.
 - Reader viewport, orientation, and app background/foreground changes must preserve the current page anchor and flush reading progress before the app is suspended.
+- Reader should default to a chrome-light fullscreen experience on iPhone/iPad by hiding the iOS status bar through the native command boundary while the Reader is open. Users must be able to show the status bar from Settings or the Reader control panel, and the app should restore normal status-bar visibility when leaving Reader.
 - Reader archive enumeration and extraction must enforce page-count, per-page, and total extracted-size limits before writing cache pages, so malformed or oversized ZIP/CBZ/EPUB files cannot exhaust storage or memory.
 - EPUB Reader archive ordering must prefer the EPUB OPF spine/document image order when available, and fall back to natural archive path order only when spine parsing cannot produce image pages.
 - Reader archive paths must be trusted through downloaded-file records or the configured download directory before inspection or extraction.

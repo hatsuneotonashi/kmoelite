@@ -19,8 +19,15 @@ export function sampleCoverTheme(image: HTMLImageElement): CoverTheme | undefine
 }
 
 export function sampleCoverThemePixels(data: ArrayLike<number>): CoverTheme | undefined {
-  let best: CoverTheme | undefined
-  let bestScore = -1
+  const buckets = new Map<string, {
+    count: number
+    r: number
+    g: number
+    b: number
+    saturation: number
+    brightness: number
+  }>()
+
   for (let index = 0; index < data.length; index += 4) {
     const alpha = (data[index + 3] ?? 255) / 255
     if (alpha < 0.82) continue
@@ -31,11 +38,37 @@ export function sampleCoverThemePixels(data: ArrayLike<number>): CoverTheme | un
     const min = Math.min(r, g, b)
     const saturation = max - min
     const brightness = (r + g + b) / 3
-    if (saturation < 24 || brightness < 34 || brightness > 236) continue
-    const score = saturation * 1.65 + (180 - Math.abs(brightness - 138)) * 0.22 + max * 0.02
+    if (saturation < 18 || brightness < 30 || brightness > 238) continue
+
+    const key = `${quantizeChannel(r)}:${quantizeChannel(g)}:${quantizeChannel(b)}`
+    const bucket = buckets.get(key)
+    if (bucket) {
+      bucket.count += 1
+      bucket.r += r
+      bucket.g += g
+      bucket.b += b
+      bucket.saturation += saturation
+      bucket.brightness += brightness
+    } else {
+      buckets.set(key, { count: 1, r, g, b, saturation, brightness })
+    }
+  }
+
+  let best: CoverTheme | undefined
+  let bestScore = -1
+  for (const bucket of buckets.values()) {
+    const saturation = bucket.saturation / bucket.count
+    const brightness = bucket.brightness / bucket.count
+    const brightnessWeight = 1 - Math.min(0.55, Math.abs(brightness - 132) / 220)
+    const saturationWeight = 0.72 + Math.min(0.62, saturation / 180)
+    const score = bucket.count * brightnessWeight * saturationWeight
     if (score > bestScore) {
       bestScore = score
-      best = { r, g, b }
+      best = {
+        r: bucket.r / bucket.count,
+        g: bucket.g / bucket.count,
+        b: bucket.b / bucket.count
+      }
     }
   }
   return best ? normalizeCoverTheme(best) : undefined
@@ -70,6 +103,10 @@ function clampColorChannel(value: number): number {
 
 function clampNumber(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value))
+}
+
+function quantizeChannel(value: number): number {
+  return Math.round(value / 24) * 24
 }
 
 function rgbToHsl(theme: CoverTheme): { h: number; s: number; l: number } {

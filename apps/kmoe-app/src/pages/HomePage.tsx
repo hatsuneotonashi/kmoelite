@@ -56,7 +56,7 @@ export function HomePage() {
   const continueReading = useMemo(() => Object.values(progressById)
     .filter((item) => !item.finished)
     .sort((left, right) => right.lastReadAt.localeCompare(left.lastReadAt))
-    .slice(0, 3), [progressById])
+    .slice(0, 6), [progressById])
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
   const showCatalogSkeleton = !catalog.data && (catalog.isLoading || catalog.isFetching)
 
@@ -116,7 +116,7 @@ export function HomePage() {
                   <Badge tone="info">{Math.round(item.progressPercent)}%</Badge>
                 </div>
                 <ProgressBar value={item.progressPercent} />
-                <div className="truncate text-xs text-[var(--app-muted)]">
+                <div className="home-continue-page truncate text-xs text-[var(--app-muted)]">
                   第 {item.pageIndex + 1}{item.pageCount ? ` / ${item.pageCount}` : ''} 页
                 </div>
               </Link>

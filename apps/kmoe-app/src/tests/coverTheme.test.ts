@@ -27,4 +27,18 @@ describe('cover theme sampling', () => {
     expect(sampled?.g).toBeGreaterThan(sampled?.r ?? 0)
     expect(sampled?.g).toBeGreaterThan(sampled?.b ?? 0)
   })
+
+  it('uses the dominant cover color instead of a single accent pixel', () => {
+    const sampled = sampleCoverThemePixels([
+      76, 111, 128, 255,
+      82, 116, 132, 255,
+      73, 108, 126, 255,
+      84, 118, 134, 255,
+      236, 44, 58, 255
+    ])
+
+    expect(sampled).toBeDefined()
+    expect(sampled?.b).toBeGreaterThan(sampled?.r ?? 0)
+    expect(sampled?.g).toBeGreaterThan(sampled?.r ?? 0)
+  })
 })

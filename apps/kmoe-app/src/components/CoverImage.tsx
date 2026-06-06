@@ -40,17 +40,12 @@ export function CoverImage({
     if (image.naturalWidth <= 2 || image.naturalHeight <= 2) {
       setFailed(true)
       setLoaded(false)
-      return
+      return false
     }
     setLoaded(true)
     setFailed(false)
+    return true
   }, [])
-
-  useEffect(() => {
-    const image = imageRef.current
-    if (!image || !displaySrc || failed || !image.complete) return
-    acceptLoadedImage(image)
-  }, [acceptLoadedImage, displaySrc, failed])
 
   const recoverFromFailedSource = useCallback(async () => {
     if (!src || !isRemoteImageSource(src) || nativeAttemptedRef.current || displaySrc?.startsWith('data:')) {
@@ -74,6 +69,14 @@ export function CoverImage({
     setLoaded(false)
   }, [displaySrc, src])
 
+  useEffect(() => {
+    const image = imageRef.current
+    if (!image || !displaySrc || failed || !image.complete) return
+    if (!acceptLoadedImage(image)) {
+      void recoverFromFailedSource()
+    }
+  }, [acceptLoadedImage, displaySrc, failed, recoverFromFailedSource])
+
   return (
     <div className={clsx('relative h-full w-full overflow-hidden', className)}>
       {(!displaySrc || failed || !loaded) ? <CoverFallback mark={mark} /> : null}
@@ -90,7 +93,9 @@ export function CoverImage({
             loaded ? 'opacity-100' : 'opacity-0'
           )}
           onLoad={(event) => {
-            acceptLoadedImage(event.currentTarget)
+            if (!acceptLoadedImage(event.currentTarget)) {
+              void recoverFromFailedSource()
+            }
           }}
           onError={() => {
             void recoverFromFailedSource()

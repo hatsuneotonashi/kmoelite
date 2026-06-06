@@ -157,6 +157,7 @@ export interface AppSettings {
   downloadDirectory: string
   colorizeDetailPage: boolean
   readerPageTurnAnimation: ReaderPageTurnAnimation
+  showReaderStatusBar: boolean
 }
 
 export interface DownloadAuthorizeInput {

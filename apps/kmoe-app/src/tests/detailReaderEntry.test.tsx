@@ -8,6 +8,7 @@ import {
   enqueueNativeDownloadTasks,
   listNativeDownloadedFiles,
   listNativeDownloadTasks,
+  nativeFetchCoverImage,
   prepareNativeReaderChapterCache,
   preflightNativeDownloadQueue,
   prioritizeNativeDownloadTask,
@@ -36,6 +37,7 @@ vi.mock('../platform/nativeCommands', () => ({
   isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
   listNativeDownloadedFiles: vi.fn(),
   listNativeDownloadTasks: vi.fn(),
+  nativeFetchCoverImage: vi.fn(),
   prepareNativeReaderChapterCache: vi.fn(),
   preflightNativeDownloadQueue: vi.fn(),
   prioritizeNativeDownloadTask: vi.fn(),
@@ -46,6 +48,7 @@ const enqueueNativeDownloadTasksMock = vi.mocked(enqueueNativeDownloadTasks)
 const deleteNativeLocalReadingDataMock = vi.mocked(deleteNativeLocalReadingData)
 const listNativeDownloadedFilesMock = vi.mocked(listNativeDownloadedFiles)
 const listNativeDownloadTasksMock = vi.mocked(listNativeDownloadTasks)
+const nativeFetchCoverImageMock = vi.mocked(nativeFetchCoverImage)
 const prepareReaderCacheMock = vi.mocked(prepareNativeReaderChapterCache)
 const preflightNativeDownloadQueueMock = vi.mocked(preflightNativeDownloadQueue)
 const prioritizeNativeDownloadTaskMock = vi.mocked(prioritizeNativeDownloadTask)
@@ -67,6 +70,11 @@ describe('Detail reader entry', () => {
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
     nativeTasks = []
     nativeLibrary = []
+    nativeFetchCoverImageMock.mockResolvedValue({
+      ok: false,
+      available: false,
+      message: 'Native cover image recovery is available only inside Tauri.'
+    })
     mocks.api.getComicDetail.mockResolvedValue(sampleComic())
     mocks.api.getSession.mockResolvedValue({ authenticated: true, mode: 'live', user: { warnings: [] } })
     mocks.api.createDownloadTasks.mockResolvedValue([sourceZipTask()])
@@ -192,7 +200,26 @@ describe('Detail reader entry', () => {
   it('shows an explicit back action on the detail page', async () => {
     renderDetail()
 
-    expect(await screen.findByRole('button', { name: /返回/ })).toBeInTheDocument()
+    expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
+    expect(document.querySelector('.detail-back-button')).toHaveTextContent('返回')
+  })
+
+  it('shows a themed loading page with the route preview before detail data resolves', async () => {
+    mocks.api.getComicDetail.mockReturnValue(new Promise(() => {}))
+
+    renderDetail({
+      pathname: '/comic/53339',
+      state: {
+        comicPreview: {
+          title: '圣洁少女的秘密情事',
+          coverUrl: 'https://kmimg.mxomo.com/cover/secret.jpg'
+        }
+      }
+    })
+
+    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '圣洁少女的秘密情事' })).toBeInTheDocument()
+    expect(screen.getByAltText('圣洁少女的秘密情事')).toHaveAttribute('src', 'https://kmimg.mxomo.com/cover/secret.jpg')
   })
 
   it('downloads one local source ZIP task, prepares cache, and opens Reader when reading without a local archive', async () => {
@@ -391,7 +418,7 @@ describe('Detail reader entry', () => {
   })
 })
 
-function renderDetail() {
+function renderDetail(initialEntry: string | { pathname: string; state?: unknown } = '/comic/53339') {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -400,7 +427,7 @@ function renderDetail() {
   })
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/comic/53339']}>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/comic/:comicId" element={<DetailPage />} />
           <Route path="/reader/cache/:chapterCacheId" element={<h1>Reader Opened</h1>} />

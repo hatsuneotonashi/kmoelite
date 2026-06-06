@@ -24,7 +24,8 @@ const settings: AppSettings = {
   preferredFormat: 'mobi',
   downloadDirectory: '~/Downloads/Kmoe',
   colorizeDetailPage: true,
-  readerPageTurnAnimation: 'slide'
+  readerPageTurnAnimation: 'slide',
+  showReaderStatusBar: false
 }
 
 describe('download path planner', () => {

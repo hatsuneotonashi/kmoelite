@@ -16,10 +16,13 @@ export function parseVolInfoLine(payload: string, comicId: string): VolumeDownlo
   const sourceZip = mbToBytes(fields[8])
   const mobi = mbToBytes(fields[9])
   const epub = mbToBytes(fields[11])
+  const sourceZipAvailable = Boolean(sourceZip) || hasFormatMetadata(fields[14])
+  const mobiAvailable = Boolean(mobi) || hasFormatMetadata(fields[15])
+  const epubAvailable = Boolean(epub) || hasFormatMetadata(fields[16])
   const availableFormats: DownloadFormat[] = []
-  if (mobi) availableFormats.push('mobi')
-  if (epub) availableFormats.push('epub')
-  if (sourceZip) availableFormats.push('source_zip')
+  if (mobiAvailable) availableFormats.push('mobi')
+  if (epubAvailable) availableFormats.push('epub')
+  if (sourceZipAvailable) availableFormats.push('source_zip')
 
   return {
     id: `${comicId}-${volId}`,
@@ -55,4 +58,9 @@ function extractVolInfoPayloads(input: string): string[] {
 function toNumber(input: string | undefined): number | undefined {
   const parsed = Number.parseInt(input ?? '', 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function hasFormatMetadata(input: string | undefined): boolean {
+  const value = input?.trim()
+  return Boolean(value && !/^[-0.]+$/.test(value) && /\d{3,5}x\d{3,5}|\d{4}-\d{2}-\d{2}/.test(value))
 }

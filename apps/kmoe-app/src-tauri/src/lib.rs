@@ -94,6 +94,7 @@ pub fn run() {
             commands::get_cache_stats,
             commands::clear_reading_cache,
             commands::delete_local_reading_data,
+            commands::set_ios_status_bar_hidden,
             commands::list_reader_archive_pages,
             commands::prepare_reader_chapter_cache,
             commands::repair_reader_chapter_cache,

@@ -15,7 +15,8 @@ import {
   prepareNativeReaderChapterCache,
   readNativeCachedReaderPage,
   repairNativeReaderChapterCache,
-  saveNativeReadingProgress
+  saveNativeReadingProgress,
+  setNativeIosStatusBarHidden
 } from '../platform/nativeCommands'
 
 const apiMock = vi.hoisted(() => ({
@@ -36,7 +37,8 @@ vi.mock('../platform/nativeCommands', () => ({
   prepareNativeReaderChapterCache: vi.fn(),
   readNativeCachedReaderPage: vi.fn(),
   repairNativeReaderChapterCache: vi.fn(),
-  saveNativeReadingProgress: vi.fn()
+  saveNativeReadingProgress: vi.fn(),
+  setNativeIosStatusBarHidden: vi.fn()
 }))
 
 const clearReadingCacheMock = vi.mocked(clearNativeReadingCache)
@@ -48,6 +50,7 @@ const prepareCacheMock = vi.mocked(prepareNativeReaderChapterCache)
 const readPageMock = vi.mocked(readNativeCachedReaderPage)
 const repairCacheMock = vi.mocked(repairNativeReaderChapterCache)
 const saveProgressMock = vi.mocked(saveNativeReadingProgress)
+const setStatusBarHiddenMock = vi.mocked(setNativeIosStatusBarHidden)
 
 describe('ReaderPage', () => {
   beforeEach(() => {
@@ -92,6 +95,12 @@ describe('ReaderPage', () => {
         tasks: [],
         library: []
       }
+    })
+    setStatusBarHiddenMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: false,
+      message: 'no-op'
     })
   })
 
@@ -175,6 +184,60 @@ describe('ReaderPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '纵向' }))
     expect(await screen.findByAltText('第 1 页')).toBeInTheDocument()
+  })
+
+  it('hides the iOS status bar by default and restores it after leaving Reader', async () => {
+    listChaptersMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [sampleChapter()]
+    })
+    listPagesMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [samplePage(0), samplePage(1)]
+    })
+    readPageMock.mockImplementation(async (_chapterCacheId, pageIndex) => ({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleImage(pageIndex)
+    }))
+    saveProgressMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleNativeProgress(0)
+    })
+
+    const rendered = render(
+      <MemoryRouter initialEntries={['/reader/cache/cache-53339-3089']}>
+        <Routes>
+          <Route path="/reader/cache/:chapterCacheId" element={<ReaderPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const reader = await screen.findByRole('main')
+    expect(await screen.findByAltText('第 1 页')).toBeInTheDocument()
+    expect(reader).toHaveAttribute('data-status-bar', 'hidden')
+    await waitFor(() => {
+      expect(setStatusBarHiddenMock).toHaveBeenCalledWith(true)
+    })
+
+    openReaderControls()
+    fireEvent.click(screen.getByRole('button', { name: /显示状态栏/ }))
+
+    await waitFor(() => {
+      expect(reader).toHaveAttribute('data-status-bar', 'visible')
+      expect(setStatusBarHiddenMock).toHaveBeenCalledWith(false)
+    })
+
+    rendered.unmount()
+
+    expect(setStatusBarHiddenMock).toHaveBeenLastCalledWith(false)
   })
 
   it('keeps layout and direction controls in the bottom bar and maps physical page buttons by direction', async () => {

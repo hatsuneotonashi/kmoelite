@@ -9,6 +9,7 @@ interface SettingsState extends AppSettings {
   setDownloadDirectory: (path: string) => void
   setColorizeDetailPage: (enabled: boolean) => void
   setReaderPageTurnAnimation: (animation: ReaderPageTurnAnimation) => void
+  setShowReaderStatusBar: (visible: boolean) => void
   resetSafetyDefaults: () => void
 }
 
@@ -27,7 +28,8 @@ export function sanitizePersistedSettings(stored: Partial<AppSettings>): Partial
     preferredFormat,
     downloadDirectory: stored.downloadDirectory ?? DEFAULT_SETTINGS.downloadDirectory,
     colorizeDetailPage: stored.colorizeDetailPage ?? DEFAULT_SETTINGS.colorizeDetailPage,
-    readerPageTurnAnimation: normalizeReaderPageTurnAnimation(stored.readerPageTurnAnimation)
+    readerPageTurnAnimation: normalizeReaderPageTurnAnimation(stored.readerPageTurnAnimation),
+    showReaderStatusBar: typeof stored.showReaderStatusBar === 'boolean' ? stored.showReaderStatusBar : DEFAULT_SETTINGS.showReaderStatusBar
   }
 }
 
@@ -40,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDownloadDirectory: (downloadDirectory) => set({ downloadDirectory }),
       setColorizeDetailPage: (colorizeDetailPage) => set({ colorizeDetailPage }),
       setReaderPageTurnAnimation: (readerPageTurnAnimation) => set({ readerPageTurnAnimation: normalizeReaderPageTurnAnimation(readerPageTurnAnimation) }),
+      setShowReaderStatusBar: (showReaderStatusBar) => set({ showReaderStatusBar }),
       resetSafetyDefaults: () => set(DEFAULT_SETTINGS)
     }),
     {
@@ -48,7 +51,8 @@ export const useSettingsStore = create<SettingsState>()(
         preferredFormat: state.preferredFormat,
         downloadDirectory: state.downloadDirectory,
         colorizeDetailPage: state.colorizeDetailPage,
-        readerPageTurnAnimation: state.readerPageTurnAnimation
+        readerPageTurnAnimation: state.readerPageTurnAnimation,
+        showReaderStatusBar: state.showReaderStatusBar
       }),
       merge: (persisted, current) => {
         const stored = typeof persisted === 'object' && persisted && 'state' in persisted ? (persisted.state as Partial<AppSettings>) : {}

@@ -108,12 +108,14 @@
 }
 
 .detail-reader-hero,
+.detail-loading-hero,
 .reading-directory-panel {
   border: 1px solid var(--detail-border);
   box-shadow: var(--app-shadow-soft);
 }
 
-.detail-reader-hero {
+.detail-reader-hero,
+.detail-loading-hero {
   isolation: isolate;
   position: relative;
   overflow: hidden;
@@ -121,7 +123,8 @@
   background: linear-gradient(135deg, var(--detail-card), var(--app-card));
 }
 
-.detail-reader-hero::before {
+.detail-reader-hero::before,
+.detail-loading-hero::before {
   content: "";
   pointer-events: none;
   position: absolute;
@@ -135,7 +138,8 @@
   transform: scale(1.08);
 }
 
-.detail-reader-hero::after {
+.detail-reader-hero::after,
+.detail-loading-hero::after {
   content: "";
   pointer-events: none;
   position: absolute;
@@ -146,7 +150,8 @@
     linear-gradient(180deg, rgb(255 255 255 / 0.16), transparent 38%);
 }
 
-.detail-reading-page[data-cover-theme="true"] .detail-reader-hero {
+.detail-reading-page[data-cover-theme="true"] .detail-reader-hero,
+.detail-reading-page[data-cover-theme="true"] .detail-loading-hero {
   border-color: transparent;
   background:
     linear-gradient(135deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.045) 58%, rgb(0 0 0 / 0.12)),
@@ -156,11 +161,13 @@
   -webkit-backdrop-filter: none;
 }
 
-.detail-reading-page[data-cover-theme="true"] .detail-reader-hero::before {
+.detail-reading-page[data-cover-theme="true"] .detail-reader-hero::before,
+.detail-reading-page[data-cover-theme="true"] .detail-loading-hero::before {
   opacity: .10;
 }
 
-.detail-reading-page[data-cover-theme="true"] .detail-reader-hero::after {
+.detail-reading-page[data-cover-theme="true"] .detail-reader-hero::after,
+.detail-reading-page[data-cover-theme="true"] .detail-loading-hero::after {
   background:
     linear-gradient(90deg, rgb(0 0 0 / 0.18), transparent 48%),
     linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(0 0 0 / 0.16) 78%);
@@ -185,6 +192,60 @@
   box-shadow:
     0 28px 76px rgb(var(--detail-accent-rgb) / 0.24),
     0 18px 46px rgb(0 0 0 / 0.15);
+}
+
+.detail-loading-page .detail-shell {
+  align-items: center;
+}
+
+.detail-loading-cover {
+  width: min(15rem, 100%);
+  justify-self: center;
+}
+
+.detail-loading-cover .cover-art {
+  box-shadow:
+    0 32px 90px rgb(var(--detail-accent-rgb) / 0.32),
+    0 18px 44px rgb(0 0 0 / 0.18);
+}
+
+.detail-loading-copy {
+  min-width: 0;
+}
+
+.detail-loading-orbit {
+  position: relative;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-bottom: 1rem;
+}
+
+.detail-loading-orbit span {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgb(var(--detail-accent-rgb) / 0.20);
+  border-top-color: rgb(var(--detail-accent-rgb) / 0.88);
+  border-radius: 999px;
+  animation: detail-loading-spin 1.15s linear infinite;
+}
+
+.detail-loading-orbit span:nth-child(2) {
+  inset: .48rem;
+  animation-direction: reverse;
+  animation-duration: 1.55s;
+  border-top-color: rgb(255 255 255 / 0.70);
+}
+
+.detail-loading-orbit span:nth-child(3) {
+  inset: 1.04rem;
+  animation-duration: 1.95s;
+  border-top-color: rgb(var(--detail-accent-rgb) / 0.70);
+}
+
+@keyframes detail-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .detail-reading-page[data-cover-theme="true"] .metric-tile,
@@ -586,12 +647,92 @@
   background: rgb(0 122 255 / 0.10);
 }
 
-.related-comic-row,
 .account-note-panel,
 .library-link-panel {
   border: 1px solid var(--app-border);
   border-radius: var(--radius-card);
   background: var(--app-surface-muted);
+}
+
+.related-comics-panel {
+  overflow: hidden;
+}
+
+.related-comics-heading {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.related-comics-heading-icon {
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border: 1px solid rgb(var(--detail-accent-rgb) / 0.22);
+  border-radius: 999px;
+  background: rgb(var(--detail-accent-rgb) / 0.14);
+  color: rgb(var(--detail-accent-rgb));
+}
+
+.detail-reading-page[data-cover-theme="true"] .related-comics-heading-icon {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.12);
+  color: white;
+}
+
+.related-comic-row {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  gap: .9rem;
+  align-items: center;
+  border: 1px solid var(--detail-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--detail-row) 92%, white), var(--detail-row));
+  padding: .75rem;
+  color: inherit;
+}
+
+.detail-reading-page[data-cover-theme="true"] .related-comic-row {
+  border-color: rgb(255 255 255 / 0.15);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.075)),
+    rgb(16 16 20 / 0.42);
+}
+
+.related-comic-cover {
+  aspect-ratio: 7 / 10;
+  width: 4.6rem;
+  overflow: hidden;
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.13);
+}
+
+.related-comic-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  font-size: .95rem;
+  font-weight: 850;
+  line-height: 1.32;
+}
+
+.related-comic-meta {
+  min-width: 0;
+}
+
+.related-comic-latest {
+  margin-top: .45rem;
+  overflow: hidden;
+  color: var(--detail-muted);
+  font-size: .76rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .download-selection-toolbar {

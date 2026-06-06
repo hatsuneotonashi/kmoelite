@@ -4,6 +4,28 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-07 详情加载、封面取色、源图判断和 Reader 状态栏验证
+
+- 变更范围：Detail 加载页/相关漫画 UI、列表到详情的封面预览传递、CoverImage 空图恢复、详情封面主色取样、`volinfo` 源图可用性判断、Continue Reading 自适应布局、Reader iOS 状态栏设置、Settings 入口、native `set_ios_status_bar_hidden` 命令、iOS plist/project 设置、视觉基线、README/README.en/CHANGELOG/AGENTS/docs/status。
+- 行为摘要：从漫画列表或相关漫画进入详情时，加载页会带返回按钮、动画和可用的来源封面/标题；详情背景主色来自真实封面主色桶而不是单个高饱和像素；远程封面空图会走 native 封面恢复；源图体积为 0 但有生成/分辨率元数据的章节不再误判为“无源图”；Reader 默认在 iPhone/iPad 隐藏状态栏，并可在 Settings 或 Reader 高级面板显示；Continue Reading 最多展示 6 个最近条目并避免长页码撑坏布局。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/coverTheme.test.ts src/tests/coverImage.test.tsx src/tests/parseVolInfo.test.ts src/tests/readerEntryState.test.ts src/tests/homePage.test.tsx src/tests/detailReaderEntry.test.tsx src/tests/readerPage.test.tsx src/tests/settingsNativeConfig.test.tsx src/tests/nativeCommands.test.ts`：passed，9 files / 96 tests。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，51 files / 279 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，81 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，27 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。新增 Settings 状态栏设置导致的 large-desktop/tablet 视觉基线已按稳定 UI 更新后复跑通过。
+- `pnpm --dir apps/kmoe-app tauri:build:mac-app:debug`：passed，生成 macOS debug `.app` bundle。
+- macOS debug app smoke：passed，`Kmoe Client.app` 可启动到 `kmoe-app` 进程并正常退出。
+- iPad 实机部署尝试：blocked。已连接 iPad 可被 Xcode 识别，但 `tauri ios run iPad` / 直接 `xcodebuild` 均因本机 Xcode 账号或 provisioning profile 缺失失败：需要在 Xcode Accounts 中配置账号并为 bundle id `moe.kzo.client` 准备 iOS App Development profile。
+- iPhone 模拟器尝试：blocked。Tauri CLI 传模拟器名后仍走 `iphoneos` 签名构建；直接 `xcodebuild -sdk iphonesimulator` 又因 Tauri `xcode-script` 缺少 CLI 上下文服务失败，不能作为有效 iPhone native runtime 验证。
+- 未运行项：本轮尚未完成真实站点 smoke、真实下载验证、macOS 签名/公证/干净机器安装、Windows 真机、iPhone/iPad 物理签名设备完整验证。
+- 待发布风险：iOS 状态栏隐藏使用 native iOS command boundary，桌面/浏览器自动化只能验证命令注册和调用，不能替代实机视觉确认；需要修复 Xcode signing/provisioning 后重新部署 iPad/iPhone 验证。
+
 ## 2026-06-07 中文输入与本地阅读数据删除修复验证
 
 - 变更范围：IME-safe 输入组件、首页/搜索/资料库/书架/设置文本输入、统一本地阅读数据删除 helper、Detail/Shelf/Library/Reader/Settings 删除入口、native `delete_local_reading_data` 命令、SQLite 删除函数、Reader 控制样式、visual baselines、README/CHANGELOG/AGENTS/Reader/Shelf/Architecture 文档。

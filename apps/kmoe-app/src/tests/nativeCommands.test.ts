@@ -30,6 +30,7 @@ import {
   saveNativeChapterCache,
   saveNativeMigrationSnapshot,
   saveNativeReadingProgress,
+  setNativeIosStatusBarHidden,
   startNativeDownloadQueue,
   upsertNativeShelf,
   upsertNativeShelfItem
@@ -442,6 +443,21 @@ describe('native command bridge', () => {
         includeSourceFiles: true
       }
     })
+  })
+
+  it('routes iOS status bar visibility through the native reader boundary', async () => {
+    enableTauriRuntime()
+    invokeMock.mockResolvedValueOnce(true)
+
+    const result = await setNativeIosStatusBarHidden(true)
+
+    expect(result).toEqual({
+      ok: true,
+      available: true,
+      value: true,
+      message: 'Reader 状态栏显示已更新。'
+    })
+    expect(invokeMock).toHaveBeenCalledWith('set_ios_status_bar_hidden', { hidden: true })
   })
 
   it('routes native reader archive manifests through the guarded native command', async () => {

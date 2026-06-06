@@ -6,7 +6,12 @@ import { CoverImage } from './CoverImage'
 export function ComicCard({ comic }: { comic: ComicListItem }) {
   return (
     <article className="comic-card liquid-card interactive-lift group relative p-3.5">
-      <Link to={`/comic/${comic.id}`} aria-label={`查看详情：${comic.title}`} className="block">
+      <Link
+        to={`/comic/${comic.id}`}
+        state={{ comicPreview: { title: comic.title, coverUrl: comic.coverUrl } }}
+        aria-label={`查看详情：${comic.title}`}
+        className="block"
+      >
         <div className="cover-art aspect-[7/10] w-full overflow-hidden subtle-fill">
           <CoverImage src={comic.coverUrl} title={comic.title} subtitle={comic.author} />
         </div>

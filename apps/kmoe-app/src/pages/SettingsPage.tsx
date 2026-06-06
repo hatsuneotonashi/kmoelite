@@ -1,4 +1,4 @@
-import { Database, FolderSync, Palette, RefreshCcw, Sparkles, Trash2 } from 'lucide-react'
+import { Database, Eye, EyeOff, FolderSync, Palette, RefreshCcw, Sparkles, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '../components/Button'
 import { TextField } from '../components/Field'
@@ -150,6 +150,35 @@ export function SettingsPage() {
               <span className="mt-1 block text-sm leading-6 text-[var(--app-muted)]">{option.description}</span>
             </button>
           ))}
+        </div>
+
+        <div className="settings-choice-grid grid gap-3 md:grid-cols-2">
+          <button
+            type="button"
+            className="settings-choice-card text-left"
+            data-active={!settings.showReaderStatusBar ? 'true' : undefined}
+            aria-pressed={!settings.showReaderStatusBar}
+            onClick={() => settings.setShowReaderStatusBar(false)}
+          >
+            <span className="settings-choice-card-head">
+              <span className="inline-flex items-center gap-2 font-semibold"><EyeOff className="h-4 w-4" /> 隐藏状态栏</span>
+              <span className="settings-choice-card-check" aria-hidden="true">✓</span>
+            </span>
+            <span className="mt-1 block text-sm leading-6 text-[var(--app-muted)]">Reader 默认进入更接近全屏的显示，减少顶部系统栏占用漫画空间。</span>
+          </button>
+          <button
+            type="button"
+            className="settings-choice-card text-left"
+            data-active={settings.showReaderStatusBar ? 'true' : undefined}
+            aria-pressed={settings.showReaderStatusBar}
+            onClick={() => settings.setShowReaderStatusBar(true)}
+          >
+            <span className="settings-choice-card-head">
+              <span className="inline-flex items-center gap-2 font-semibold"><Eye className="h-4 w-4" /> 显示状态栏</span>
+              <span className="settings-choice-card-check" aria-hidden="true">✓</span>
+            </span>
+            <span className="mt-1 block text-sm leading-6 text-[var(--app-muted)]">保留 iPhone/iPad 顶部时间、电量和网络信息，适合长时间阅读时查看设备状态。</span>
+          </button>
         </div>
       </section>
 

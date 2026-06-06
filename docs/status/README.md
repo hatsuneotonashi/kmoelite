@@ -6,7 +6,7 @@
 
 ## Alpha / 开发预览
 
-截至 2026-05-31，kmoelite 仍处于 Alpha / 开发预览阶段。它不是稳定版本，也不是正式发行版。部分平台尚未完成完整测试。
+截至 2026-06-07，kmoelite 仍处于 Alpha / 开发预览阶段。它不是稳定版本，也不是正式发行版。部分平台尚未完成完整测试。
 
 ## 当前产品定位
 
@@ -21,15 +21,17 @@
 
 ## 最近记录的本地验证
 
-历史整理阶段记录过以下本地 gate 结果：
+最近一次本地 source gate 记录了以下结果：
 
 - TypeScript typecheck：passed。
-- Vitest：45 files / 245 tests passed。
-- Rust lib tests：76 passed。
+- Vitest：51 files / 279 tests passed。
+- Rust lib tests：81 passed。
 - `pnpm check:platforms`：`pass=32 warn=0 external=2 fail=0`。
 - Playwright E2E：114 passed / 50 skipped。
+- macOS debug `.app` bundle：build passed，并完成一次启动/退出 smoke。
+- iPad/iPhone native runtime：本机 Xcode signing/provisioning 未配置完整，实机部署和模拟器 native run 未完成。
 
-这些记录是本地阶段性结果；公开上传前应重新运行当前树的检查，并以最新输出为准。
+这些记录是本地阶段性结果；公开上传前或发布二进制前应重新运行当前树的检查，并以最新输出为准。
 
 ## 平台状态摘要
 

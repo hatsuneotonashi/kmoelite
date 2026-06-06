@@ -11,14 +11,16 @@ export function useKmoeApi() {
         preferredFormat: settings.preferredFormat,
         downloadDirectory: settings.downloadDirectory,
         colorizeDetailPage: settings.colorizeDetailPage,
-        readerPageTurnAnimation: settings.readerPageTurnAnimation
+        readerPageTurnAnimation: settings.readerPageTurnAnimation,
+        showReaderStatusBar: settings.showReaderStatusBar
       }),
     [
       settings.concurrency,
       settings.preferredFormat,
       settings.downloadDirectory,
       settings.colorizeDetailPage,
-      settings.readerPageTurnAnimation
+      settings.readerPageTurnAnimation,
+      settings.showReaderStatusBar
     ]
   )
 }

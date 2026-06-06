@@ -116,6 +116,18 @@ describe('Settings native config sync', () => {
     expect(screen.getByRole('button', { name: /顺滑滑页/ })).not.toHaveAttribute('data-active')
   })
 
+  it('lets the user choose whether Reader hides the iOS status bar', async () => {
+    render(<SettingsPage />)
+
+    expect(screen.getByRole('button', { name: /隐藏状态栏/ })).toHaveAttribute('aria-pressed', 'true')
+    expect(useSettingsStore.getState().showReaderStatusBar).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: /显示状态栏/ }))
+
+    expect(useSettingsStore.getState().showReaderStatusBar).toBe(true)
+    expect(screen.getByRole('button', { name: /显示状态栏/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('shows local reader cache stats, updates policy, and does not fake device deletion in browser preview', async () => {
     useCacheStore.getState().upsertChapter(sampleChapter('reading-old', 'reading_cache', 2048, { lastAccessedAt: '2026-05-24T08:00:00.000Z' }))
     useCacheStore.getState().upsertChapter(sampleChapter('downloaded', 'permanent_download', 4096))

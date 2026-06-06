@@ -38,6 +38,32 @@ describe('CoverImage', () => {
     })
   })
 
+  it('recovers remote placeholder covers that load as empty images', async () => {
+    nativeFetchCoverImageMock.mockResolvedValueOnce({
+      ok: true,
+      available: true,
+      value: 'data:image/jpeg;base64,BB==',
+      message: '封面图片已读取。'
+    })
+
+    render(
+      <CoverImage
+        src="https://kmimg.mxomo.com/cover/empty.jpg!cover_l?sign=sample"
+        title="圣洁少女的秘密情事"
+      />
+    )
+
+    const image = screen.getByAltText('圣洁少女的秘密情事')
+    Object.defineProperty(image, 'naturalWidth', { configurable: true, value: 1 })
+    Object.defineProperty(image, 'naturalHeight', { configurable: true, value: 1 })
+    fireEvent.load(image)
+
+    await waitFor(() => {
+      expect(nativeFetchCoverImageMock).toHaveBeenCalledWith('https://kmimg.mxomo.com/cover/empty.jpg!cover_l?sign=sample')
+      expect(screen.getByAltText('圣洁少女的秘密情事')).toHaveAttribute('src', 'data:image/jpeg;base64,BB==')
+    })
+  })
+
   it('does not call the native bridge for local fixture covers', () => {
     render(<CoverImage src="/covers/sample.jpg" title="本地封面" />)
 

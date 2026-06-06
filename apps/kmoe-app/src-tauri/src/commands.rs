@@ -308,6 +308,11 @@ pub fn delete_local_reading_data(
 }
 
 #[tauri::command]
+pub fn set_ios_status_bar_hidden(hidden: bool) -> Result<bool, String> {
+    set_ios_status_bar_hidden_for_platform(hidden)
+}
+
+#[tauri::command]
 pub fn list_reader_archive_pages(path: String) -> Result<ReaderArchiveManifest, String> {
     let conn = db::open_default_connection().map_err(|error| error.to_string())?;
     list_reader_archive_pages_with_conn(&conn, &path)
@@ -1322,6 +1327,17 @@ fn share_file_with_system_sheet(_target: &Path) -> Result<(), String> {
 }
 
 #[cfg(target_os = "ios")]
+fn set_ios_status_bar_hidden_for_platform(hidden: bool) -> Result<bool, String> {
+    ios_share::set_status_bar_hidden(hidden)?;
+    Ok(true)
+}
+
+#[cfg(not(target_os = "ios"))]
+fn set_ios_status_bar_hidden_for_platform(_hidden: bool) -> Result<bool, String> {
+    Ok(false)
+}
+
+#[cfg(target_os = "ios")]
 mod ios_share {
     use std::ffi::{c_char, c_void, CString};
     use std::path::Path;
@@ -1349,6 +1365,36 @@ mod ios_share {
         result: Option<Result<(), String>>,
     }
 
+    struct StatusBarContext {
+        hidden: bool,
+        result: Option<Result<(), String>>,
+    }
+
+    pub fn set_status_bar_hidden(hidden: bool) -> Result<(), String> {
+        let mut context = Box::new(StatusBarContext {
+            hidden,
+            result: None,
+        });
+        let context_ptr = context.as_mut() as *mut StatusBarContext as *mut c_void;
+
+        unsafe {
+            if pthread_main_np() != 0 {
+                set_status_bar_hidden_work(context_ptr);
+            } else {
+                dispatch_sync_f(
+                    &raw mut _dispatch_main_q as Id,
+                    context_ptr,
+                    set_status_bar_hidden_work,
+                );
+            }
+        }
+
+        context
+            .result
+            .take()
+            .unwrap_or_else(|| Err("无法切换 iOS 状态栏。".to_string()))
+    }
+
     pub fn present_file_share_sheet(target: &Path) -> Result<(), String> {
         let path = CString::new(target.to_string_lossy().as_bytes())
             .map_err(|_| "文件路径包含无效字符，无法导出。".to_string())?;
@@ -1373,9 +1419,23 @@ mod ios_share {
             .unwrap_or_else(|| Err("无法打开 iOS 分享表。".to_string()))
     }
 
+    extern "C" fn set_status_bar_hidden_work(context: *mut c_void) {
+        let context = unsafe { &mut *(context as *mut StatusBarContext) };
+        context.result = Some(unsafe { set_status_bar_hidden_inner(context.hidden) });
+    }
+
     extern "C" fn present_share_sheet(context: *mut c_void) {
         let context = unsafe { &mut *(context as *mut ShareContext) };
         context.result = Some(unsafe { present_share_sheet_inner(&context.path) });
+    }
+
+    unsafe fn set_status_bar_hidden_inner(hidden: bool) -> Result<(), String> {
+        let app = msg_id(class("UIApplication")?, "sharedApplication");
+        if app.is_null() {
+            return Err("无法访问 iOS 应用状态栏。".to_string());
+        }
+        msg_void_bool(app, "setStatusBarHidden:", hidden);
+        Ok(())
     }
 
     unsafe fn present_share_sheet_inner(path: &CString) -> Result<(), String> {
@@ -1503,6 +1563,12 @@ mod ios_share {
 
     unsafe fn msg_void_usize(receiver: Id, selector_name: &str, value: usize) {
         let send: unsafe extern "C" fn(Id, Sel, usize) =
+            std::mem::transmute(objc_msgSend as *const ());
+        send(receiver, selector(selector_name), value);
+    }
+
+    unsafe fn msg_void_bool(receiver: Id, selector_name: &str, value: bool) {
+        let send: unsafe extern "C" fn(Id, Sel, bool) =
             std::mem::transmute(objc_msgSend as *const ());
         send(receiver, selector(selector_name), value);
     }

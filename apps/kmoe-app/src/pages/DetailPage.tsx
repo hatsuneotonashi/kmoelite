@@ -9,8 +9,8 @@ import {
   type PointerEvent as ReactPointerEvent
 } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { Link, useNavigate, useNavigationType, useParams } from 'react-router-dom'
-import { ArrowLeft, BookMarked, BookmarkPlus, BookOpen, CheckSquare, Download, MoreHorizontal, Play, Square, Trash2, X } from 'lucide-react'
+import { Link, useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom'
+import { ArrowLeft, BookMarked, BookmarkPlus, BookOpen, CheckSquare, Download, MoreHorizontal, Play, Sparkles, Square, Trash2, X } from 'lucide-react'
 import { Badge } from '../components/Badge'
 import { Button } from '../components/Button'
 import { EmptyState } from '../components/EmptyState'
@@ -57,12 +57,18 @@ interface SelectionBoxState {
   currentY: number
 }
 
+interface DetailRoutePreview {
+  title?: string
+  coverUrl?: string
+}
+
 const DOWNLOAD_MODE_FORMATS: DownloadModeFormat[] = ['auto', 'source_zip', 'epub', 'mobi']
 
 export function DetailPage() {
   const { comicId = '53339' } = useParams()
   const navigate = useNavigate()
   const navigationType = useNavigationType()
+  const location = useLocation()
   const api = useKmoeApi()
   const settings = useSettingsStore()
   const platformTarget = useMemo(() => detectPlatformTarget(), [])
@@ -99,6 +105,7 @@ export function DetailPage() {
     queryKey: ['comic-detail', comicId],
     queryFn: () => api.getComicDetail(comicId)
   })
+  const routePreview = useMemo(() => readDetailRoutePreview(location.state), [location.state])
   const session = useQuery({
     queryKey: ['detail-session'],
     queryFn: () => api.getSession(),
@@ -121,13 +128,15 @@ export function DetailPage() {
     [downloadModeFormat, selectedOptions]
   )
   const colorizeDetailPage = settings.colorizeDetailPage
-  const coverTheme = useCoverTheme(detail.data?.coverUrl, detail.data?.title ?? comicId, colorizeDetailPage)
+  const themeCoverUrl = detail.data?.coverUrl ?? routePreview.coverUrl
+  const themeTitle = detail.data?.title ?? routePreview.title ?? comicId
+  const coverTheme = useCoverTheme(themeCoverUrl, themeTitle, colorizeDetailPage)
   const detailThemeStyle = useMemo(() => ({
     '--detail-accent': `rgb(${coverTheme.r} ${coverTheme.g} ${coverTheme.b})`,
     '--detail-accent-rgb': `${coverTheme.r} ${coverTheme.g} ${coverTheme.b}`,
     '--detail-accent-soft': `rgb(${coverTheme.r} ${coverTheme.g} ${coverTheme.b} / 0.12)`,
-    '--detail-cover-image': colorizeDetailPage ? cssCoverImageValue(detail.data?.coverUrl) : 'none'
-  } as CSSProperties), [colorizeDetailPage, coverTheme, detail.data?.coverUrl])
+    '--detail-cover-image': colorizeDetailPage ? cssCoverImageValue(themeCoverUrl) : 'none'
+  } as CSSProperties), [colorizeDetailPage, coverTheme, themeCoverUrl])
 
   useEffect(() => {
     if (typeof document === 'undefined') return undefined
@@ -141,7 +150,7 @@ export function DetailPage() {
     const previousThemeColor = themeColorMeta?.getAttribute('content')
     root.dataset.detailCoverTheme = 'true'
     root.style.setProperty('--active-cover-accent-rgb', `${coverTheme.r} ${coverTheme.g} ${coverTheme.b}`)
-    root.style.setProperty('--active-cover-image', cssCoverImageValue(detail.data?.coverUrl))
+    root.style.setProperty('--active-cover-image', cssCoverImageValue(themeCoverUrl))
     themeColorMeta?.setAttribute('content', coverThemeColor(coverTheme))
 
     return () => {
@@ -152,7 +161,7 @@ export function DetailPage() {
         themeColorMeta?.remove()
       }
     }
-  }, [colorizeDetailPage, coverTheme, detail.data?.coverUrl])
+  }, [colorizeDetailPage, coverTheme, themeCoverUrl])
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
   const hasActiveDetailDownload = useMemo(
     () => downloadStore.tasks.some((task) =>
@@ -269,9 +278,43 @@ export function DetailPage() {
     navigate('/')
   }, [navigate, navigationType])
 
-  if (detail.isLoading) return <DetailSkeleton />
-  if (detail.isError) return <EmptyState title="详情加载失败">{readableAppMessage(detail.error, '暂时无法加载漫画详情，请检查网络后重试。')}</EmptyState>
-  if (!detail.data) return <EmptyState title="未找到漫画" />
+  if (detail.isLoading) {
+    return (
+      <DetailLoadingPage
+        title={routePreview.title ?? '正在加载漫画详情'}
+        coverUrl={routePreview.coverUrl}
+        colorize={colorizeDetailPage}
+        style={detailThemeStyle}
+        onBack={handleBack}
+      />
+    )
+  }
+  if (detail.isError) {
+    return (
+      <div className="content-grid">
+        <div className="detail-page-toolbar">
+          <Button variant="ghost" className="detail-back-button" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+            返回
+          </Button>
+        </div>
+        <EmptyState title="详情加载失败">{readableAppMessage(detail.error, '暂时无法加载漫画详情，请检查网络后重试。')}</EmptyState>
+      </div>
+    )
+  }
+  if (!detail.data) {
+    return (
+      <div className="content-grid">
+        <div className="detail-page-toolbar">
+          <Button variant="ghost" className="detail-back-button" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+            返回
+          </Button>
+        </div>
+        <EmptyState title="未找到漫画" />
+      </div>
+    )
+  }
 
   const comic = detail.data
   const readerEntries = comic.downloadOptions.map((option) => ({ option, state: readerOptionState(option) }))
@@ -1130,20 +1173,31 @@ export function DetailPage() {
       ) : null}
 
       {(comic.relatedComics ?? []).length ? (
-        <section className="glass-panel grid gap-3 rounded-[var(--radius-panel)] p-4 md:p-5">
-          <h2 className="text-xl font-bold">相关漫画</h2>
-          <div className="grid gap-2 md:grid-cols-2">
+        <section className="related-comics-panel glass-panel grid gap-3 rounded-[var(--radius-panel)] p-4 md:p-5">
+          <div className="related-comics-heading">
+            <span className="related-comics-heading-icon" aria-hidden="true">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <h2 className="text-xl font-bold">相关漫画</h2>
+          </div>
+          <div className="related-comics-grid grid gap-3 md:grid-cols-2">
             {comic.relatedComics?.slice(0, 4).map((item) => (
-              <Link key={item.id} to={`/comic/${item.id}`} className="related-comic-row interactive-lift flex items-center gap-3 p-2 text-sm">
-                <div className="h-12 w-9 shrink-0 overflow-hidden rounded-xl subtle-fill">
+              <Link
+                key={item.id}
+                to={`/comic/${item.id}`}
+                state={{ comicPreview: { title: item.title, coverUrl: item.coverUrl } }}
+                className="related-comic-row interactive-lift"
+              >
+                <div className="related-comic-cover subtle-fill">
                   <CoverImage src={item.coverUrl} title={item.title} subtitle={item.author} />
                 </div>
-                <div className="min-w-0">
-                  <div className="break-words font-medium">{item.title}</div>
-                  <div className="mt-1 flex flex-wrap gap-1 text-xs text-[var(--app-muted)]">
+                <div className="related-comic-copy min-w-0">
+                  <div className="related-comic-title">{item.title}</div>
+                  <div className="related-comic-meta mt-1 flex flex-wrap gap-1 text-xs text-[var(--app-muted)]">
                     {item.score ? <span>评分 {item.score}</span> : null}
                     {item.tags.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}
                   </div>
+                  {item.latestVolume ? <div className="related-comic-latest">{item.latestVolume}</div> : null}
                 </div>
               </Link>
             ))}
@@ -1156,6 +1210,71 @@ export function DetailPage() {
       </div>
     </div>
   )
+}
+
+function DetailLoadingPage({
+  title,
+  coverUrl,
+  colorize,
+  style,
+  onBack
+}: {
+  title: string
+  coverUrl?: string
+  colorize: boolean
+  style: CSSProperties
+  onBack: () => void
+}) {
+  return (
+    <div
+      className="detail-reading-page detail-loading-page content-grid"
+      data-cover-theme={colorize ? 'true' : undefined}
+      style={style}
+    >
+      <div className="detail-page-toolbar">
+        <Button variant="ghost" className="detail-back-button" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4" />
+          返回
+        </Button>
+      </div>
+      <section className="detail-loading-hero detail-shell rounded-[var(--radius-panel)] p-4 md:p-6">
+        <div className="detail-loading-cover">
+          {coverUrl ? (
+            <div className="cover-art aspect-[7/10] overflow-hidden subtle-fill">
+              <CoverImage src={coverUrl} title={title} priority />
+            </div>
+          ) : (
+            <div className="skeleton aspect-[7/10] rounded-[var(--radius-cover)]" />
+          )}
+        </div>
+        <div className="detail-loading-copy">
+          <div className="detail-loading-orbit" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--detail-muted)]">Loading detail</p>
+          <h1 className="mt-2 break-words text-2xl font-black md:text-4xl">{title}</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--detail-muted)]">
+            正在读取漫画详情、目录和本地阅读状态，请稍候。
+          </p>
+        </div>
+      </section>
+      <DetailSkeleton />
+    </div>
+  )
+}
+
+function readDetailRoutePreview(state: unknown): DetailRoutePreview {
+  if (!state || typeof state !== 'object' || !('comicPreview' in state)) return {}
+  const preview = (state as { comicPreview?: unknown }).comicPreview
+  if (!preview || typeof preview !== 'object') return {}
+  const title = (preview as { title?: unknown }).title
+  const coverUrl = (preview as { coverUrl?: unknown }).coverUrl
+  return {
+    title: typeof title === 'string' && title.trim() ? title : undefined,
+    coverUrl: typeof coverUrl === 'string' && coverUrl.trim() ? coverUrl : undefined
+  }
 }
 
 function displayPlannedPath(

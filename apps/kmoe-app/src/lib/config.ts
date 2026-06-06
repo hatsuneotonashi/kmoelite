@@ -5,7 +5,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   preferredFormat: 'mobi',
   downloadDirectory: '~/Downloads/Kmoe',
   colorizeDetailPage: true,
-  readerPageTurnAnimation: 'slide'
+  readerPageTurnAnimation: 'slide',
+  showReaderStatusBar: false
 }
 
 export const KMOE_BASE_URL = 'https://kzo.moe'
