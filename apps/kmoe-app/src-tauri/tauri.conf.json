@@ -22,7 +22,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob: asset: http://asset.localhost; connect-src 'self' ipc: http://ipc.localhost https://kzo.moe https://*.kzo.moe https://kxx.moe https://*.kxx.moe https://kzz.moe https://*.kzz.moe https://koz.moe https://*.koz.moe; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob: asset: http://asset.localhost; connect-src 'self' ipc: http://ipc.localhost https://kxo.moe https://*.kxo.moe https://kxx.moe https://*.kxx.moe https://kzz.moe https://*.kzz.moe https://koz.moe https://*.koz.moe; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'"
     }
   },
   "bundle": {

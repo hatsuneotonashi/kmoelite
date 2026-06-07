@@ -12,7 +12,7 @@ describe('parseLinkInfo', () => {
     expect(items[0]).toMatchObject({
       id: '14140',
       title: '地下忍者',
-      url: 'https://kzo.moe/c/14140.htm',
+      url: 'https://kxo.moe/c/14140.htm',
       coverUrl: 'https://img.example/cover.jpg!cover_l',
       score: '8.8'
     })
@@ -26,12 +26,12 @@ describe('parseLinkInfo', () => {
     expect(items[0]).toMatchObject({
       id: '20698e',
       title: 'Witch Hat Atelier',
-      url: 'https://kzo.moe/c/20698e.htm'
+      url: 'https://kxo.moe/c/20698e.htm'
     })
     expect(items[1]).toMatchObject({
       id: '25833',
       title: 'とんがり帽子のアトリエ',
-      url: 'https://kzo.moe/c/25833.htm'
+      url: 'https://kxo.moe/c/25833.htm'
     })
   })
 
@@ -43,7 +43,7 @@ describe('parseLinkInfo', () => {
     expect(items[0]).toMatchObject({
       id: '14140',
       title: '地下忍者',
-      url: 'https://kzo.moe/c/14140.htm'
+      url: 'https://kxo.moe/c/14140.htm'
     })
   })
 

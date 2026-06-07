@@ -3,7 +3,7 @@ export function extractComicIdFromUrl(url: string): string {
   return match?.[1] ?? url
 }
 
-export function absoluteKmoeUrl(url: string, base = 'https://kzo.moe'): string {
+export function absoluteKmoeUrl(url: string, base = 'https://kxo.moe'): string {
   if (!url) return url
   if (/^https?:\/\//i.test(url)) return url
   return `${base}${url.startsWith('/') ? '' : '/'}${url}`

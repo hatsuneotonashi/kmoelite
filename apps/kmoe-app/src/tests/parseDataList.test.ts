@@ -11,7 +11,7 @@ describe('parseDataList', () => {
         {
           status: '連載',
           lang: '繁體',
-          url_book: 'https://kzo.moe/c/53339.htm',
+          url_book: 'https://kxo.moe/c/53339.htm',
           url_cover: 'https://example.test/cover.jpg',
           newvol: '話 089-095',
           name: '尖帽子的魔法工房',
@@ -44,8 +44,8 @@ describe('parseDataList', () => {
 
     expect(page.items[0]).toMatchObject({
       id: '14140',
-      url: 'https://kzo.moe/c/14140.htm',
-      coverUrl: 'https://kzo.moe/cover/14140.jpg'
+      url: 'https://kxo.moe/c/14140.htm',
+      coverUrl: 'https://kxo.moe/cover/14140.jpg'
     })
   })
 

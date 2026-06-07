@@ -4,6 +4,29 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-08 默认 KMOE 入口切换到 kxo.moe 验证
+
+- 变更范围：默认 KMOE 网站入口、TypeScript 配置、Rust web adapter、Tauri CSP、安全 host 校验、解析器 fixtures、E2E fixtures、live smoke 脚本、AGENTS/README/README.en/CHANGELOG/docs/status/docs/web-adapter 文档。
+- 行为摘要：主入口从 `https://kzo.moe` 切换为 `https://kxo.moe`；生产 app、native website commands、封面/链接解析、CSP 和测试 fixtures 使用同一入口事实源。Bundle id 仍保持当前应用标识，不作为网站来源判断。
+- 改动前无凭证连通性检查：`https://kxo.moe/`、`/login.php`、`/data_list.php?p=1`、示例详情页均返回 200；无效账号登录探测与旧入口返回相同错误语义。本检查未使用真实账号、Cookie、Session 或下载授权 URL。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/parseComicDetailHtml.test.ts src/tests/parseDataList.test.ts src/tests/parseDesktopList.test.ts src/tests/parseLinkInfo.test.ts src/tests/tauriSecurityConfig.test.ts src/tests/nativeCommands.test.ts`：passed，6 files / 45 tests。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，51 files / 279 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，81 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，27 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- iPad 实机部署：`tauri ios run iPad` 完成 build/sign，但 Tauri 最后 export plist 读取失败；已使用 `devicectl` 安装并启动同一 signed debug app。临时 Xcode 签名/工程改动已恢复，未纳入待提交源码。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target`、`test-results`、`playwright-report` 或本地下载目录进入 tracked tree。
+- 敏感文本扫描：未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL；唯一命中为 release 检查脚本自身的安全扫描正则。
+- 未运行项：本轮未运行真实账号登录、真实下载验证、macOS 签名/公证、Windows 真机、Android/TV 验证。
+- 待发布风险：站点入口已切换并通过无凭证连通性检查；完整业务链路仍需后续用显式 live profile 跑真实登录、详情、阅读和下载 smoke。
+
 ## 2026-06-07 详情加载、封面取色、源图判断和 Reader 状态栏验证
 
 - 变更范围：Detail 加载页/相关漫画 UI、列表到详情的封面预览传递、CoverImage 空图恢复、详情封面主色取样、`volinfo` 源图可用性判断、Continue Reading 自适应布局、Reader iOS 状态栏设置、Settings 入口、native `set_ios_status_bar_hidden` 命令、iOS plist/project 设置、视觉基线、README/README.en/CHANGELOG/AGENTS/docs/status。

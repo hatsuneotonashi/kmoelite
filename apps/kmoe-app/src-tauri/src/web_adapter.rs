@@ -83,8 +83,8 @@ impl KmoeHttpClient {
         }
         self.wait_for_request_slot().await;
         self.client
-            .get("https://kzo.moe/login.php")
-            .header("referer", "https://kzo.moe/")
+            .get("https://kxo.moe/login.php")
+            .header("referer", "https://kxo.moe/")
             .send()
             .await?
             .bytes()
@@ -92,8 +92,8 @@ impl KmoeHttpClient {
         self.wait_for_request_slot().await;
         let text = self
             .client
-            .post("https://kzo.moe/login_do.php")
-            .header("referer", "https://kzo.moe/login.php")
+            .post("https://kxo.moe/login_do.php")
+            .header("referer", "https://kxo.moe/login.php")
             .form(&form)
             .send()
             .await?
@@ -122,7 +122,7 @@ impl KmoeHttpClient {
         let response = self
             .client
             .get(parsed.clone())
-            .header("referer", "https://kzo.moe/")
+            .header("referer", "https://kxo.moe/")
             .header(
                 ACCEPT,
                 "image/avif,image/webp,image/apng,image/png,image/jpeg,image/*;q=0.8,*/*;q=0.5",
@@ -162,7 +162,7 @@ impl KmoeHttpClient {
         assert_safe_id(comic_id)?;
         self.wait_for_request_slot().await;
         self.client
-            .get(format!("https://kzo.moe/c/{comic_id}.htm"))
+            .get(format!("https://kxo.moe/c/{comic_id}.htm"))
             .send()
             .await
             .map_err(|error| error.to_string())?
@@ -177,7 +177,7 @@ impl KmoeHttpClient {
         }
         self.wait_for_request_slot().await;
         self.client
-            .get(format!("https://kzo.moe{path}"))
+            .get(format!("https://kxo.moe{path}"))
             .send()
             .await
             .map_err(|error| error.to_string())?
@@ -189,8 +189,8 @@ impl KmoeHttpClient {
     pub async fn fetch_user_profile_html(&self) -> Result<String, String> {
         self.wait_for_request_slot().await;
         self.client
-            .get("https://kzo.moe/my.php")
-            .header("referer", "https://kzo.moe/")
+            .get("https://kxo.moe/my.php")
+            .header("referer", "https://kxo.moe/")
             .send()
             .await
             .map_err(|error| error.to_string())?
@@ -204,8 +204,8 @@ impl KmoeHttpClient {
         self.wait_for_request_slot().await;
         let text = self
             .client
-            .get("https://kzo.moe/logout.php")
-            .header("referer", "https://kzo.moe/")
+            .get("https://kxo.moe/logout.php")
+            .header("referer", "https://kxo.moe/")
             .send()
             .await?
             .text()
@@ -231,8 +231,8 @@ impl KmoeHttpClient {
         self.wait_for_request_slot().await;
         let response = self
             .client
-            .get(format!("https://kzo.moe{path}"))
-            .header("referer", format!("https://kzo.moe/c/{book_id}.htm"))
+            .get(format!("https://kxo.moe{path}"))
+            .header("referer", format!("https://kxo.moe/c/{book_id}.htm"))
             .send()
             .await
             .map_err(|_| ERROR_AUTHORIZE_FAILED.to_string())?;
@@ -323,7 +323,7 @@ impl KmoeHttpClient {
 }
 
 fn build_catalog_url(query: CatalogQueryInput) -> Url {
-    let mut url = Url::parse("https://kzo.moe/data_list.php").expect("static url is valid");
+    let mut url = Url::parse("https://kxo.moe/data_list.php").expect("static url is valid");
     {
         let mut pairs = url.query_pairs_mut();
         let keyword = query
@@ -391,7 +391,7 @@ fn build_catalog_url(query: CatalogQueryInput) -> Url {
 }
 
 fn kmoe_root_url() -> Url {
-    Url::parse("https://kzo.moe/").expect("static Kmoe root URL is valid")
+    Url::parse("https://kxo.moe/").expect("static Kmoe root URL is valid")
 }
 
 fn site_login_success(text: &str) -> bool {
@@ -604,7 +604,7 @@ fn normalize_download_url(text: &str) -> Option<String> {
     } else if trimmed.starts_with("//") {
         Some(format!("https:{trimmed}"))
     } else if trimmed.starts_with("/download") || trimmed.starts_with("/down") {
-        Some(format!("https://kzo.moe{trimmed}"))
+        Some(format!("https://kxo.moe{trimmed}"))
     } else {
         None
     }
@@ -647,8 +647,8 @@ fn validate_kmoe_download_host(host: &str) -> Result<(), String> {
     let normalized = host.trim_end_matches('.').to_ascii_lowercase();
     let allowed = matches!(
         normalized.as_str(),
-        "kzo.moe" | "kmoe.moe" | "kmoe.net" | "kmoe8.com"
-    ) || normalized.ends_with(".kzo.moe")
+        "kxo.moe" | "kmoe.moe" | "kmoe.net" | "kmoe8.com"
+    ) || normalized.ends_with(".kxo.moe")
         || normalized.ends_with(".kmoe.moe")
         || normalized.ends_with(".kmoe.net")
         || normalized.ends_with(".kmoe8.com");
@@ -673,8 +673,8 @@ fn assert_safe_cover_image_url(url: &str) -> Result<Url, String> {
         .trim_end_matches('.')
         .to_ascii_lowercase();
     let allowed = host == "kmimg.mxomo.com"
-        || host == "kzo.moe"
-        || host.ends_with(".kzo.moe")
+        || host == "kxo.moe"
+        || host.ends_with(".kxo.moe")
         || host == "kxx.moe"
         || host.ends_with(".kxx.moe")
         || host == "kzz.moe"
@@ -988,31 +988,31 @@ mod tests {
 
     #[test]
     fn authorized_download_url_rejects_package_credentials_and_private_hosts() {
-        assert!(assert_safe_authorized_url("https://kzo.moe/down/file.mobi").is_ok());
-        assert!(assert_safe_authorized_url("https://download.kzo.moe/file.epub").is_ok());
+        assert!(assert_safe_authorized_url("https://kxo.moe/down/file.mobi").is_ok());
+        assert!(assert_safe_authorized_url("https://download.kxo.moe/file.epub").is_ok());
         assert!(assert_safe_authorized_url("https://cdn.kmoe.moe/file.mobi").is_ok());
         assert!(assert_safe_authorized_url("https://dl.kmoe8.com/file.mobi").is_ok());
         assert!(assert_safe_authorized_url("http://cdn.example.com/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://user:pass@cdn.example.com/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://cdn.example.com/file.mobi").is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe.evil.example/file.mobi").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe.evil.example/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://127.0.0.1/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://10.0.0.2/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://169.254.10.20/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://[::1]/file.mobi").is_err());
         assert!(assert_safe_authorized_url("https://download.local/file.mobi").is_err());
-        let forbidden_authorize_path = format!("{}{}", "https://kzo.moe/", "getdownurl.php?b=1");
+        let forbidden_authorize_path = format!("{}{}", "https://kxo.moe/", "getdownurl.php?b=1");
         assert!(assert_safe_authorized_url(&forbidden_authorize_path).is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe/file.mobi?vip=9").is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe/file.mobi?VIP=9").is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe/file.mobi?batch=1").is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe/file.mobi?Batch=1").is_err());
-        assert!(assert_safe_authorized_url("https://kzo.moe/file.mobi?%62atch=1").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe/file.mobi?vip=9").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe/file.mobi?VIP=9").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe/file.mobi?batch=1").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe/file.mobi?Batch=1").is_err());
+        assert!(assert_safe_authorized_url("https://kxo.moe/file.mobi?%62atch=1").is_err());
     }
 
     #[test]
     fn unsafe_authorized_download_url_errors_do_not_echo_the_url_or_host() {
-        let error = assert_safe_authorized_url("https://kzo.moe.evil.example/file.mobi")
+        let error = assert_safe_authorized_url("https://kxo.moe.evil.example/file.mobi")
             .expect_err("untrusted host is rejected");
 
         assert_eq!(error, ERROR_DOWNLOAD_URL_UNSAFE);
@@ -1026,7 +1026,7 @@ mod tests {
             "https://kmimg.mxomo.com/cover/sigl/a.jpg!cover_l?sign=sample"
         )
         .is_ok());
-        assert!(assert_safe_cover_image_url("https://kzo.moe/cover/a.jpg").is_ok());
+        assert!(assert_safe_cover_image_url("https://kxo.moe/cover/a.jpg").is_ok());
         assert!(assert_safe_cover_image_url("http://kmimg.mxomo.com/cover/a.jpg").is_err());
         assert!(
             assert_safe_cover_image_url("https://user:pass@kmimg.mxomo.com/cover/a.jpg").is_err()
@@ -1056,15 +1056,15 @@ mod tests {
     #[test]
     fn final_redirect_url_rejects_login_and_error_destinations() {
         assert!(assert_safe_final_download_url(
-            &Url::parse("https://download.kzo.moe/down/file.epub").unwrap()
+            &Url::parse("https://download.kxo.moe/down/file.epub").unwrap()
         )
         .is_ok());
         assert!(
-            assert_safe_final_download_url(&Url::parse("https://kzo.moe/login.php").unwrap())
+            assert_safe_final_download_url(&Url::parse("https://kxo.moe/login.php").unwrap())
                 .is_err()
         );
         assert!(assert_safe_final_download_url(
-            &Url::parse("https://kzo.moe/error/download").unwrap()
+            &Url::parse("https://kxo.moe/error/download").unwrap()
         )
         .is_err());
     }

@@ -42,7 +42,8 @@ describe('Tauri security configuration', () => {
 
     expect(connectSrc).toContain('ipc:')
     expect(connectSrc).toContain('http://ipc.localhost')
-    expect(connectSrc).toContain('https://kzo.moe')
+    expect(connectSrc).toContain('https://kxo.moe')
+    expect(connectSrc).not.toContain('https://kzo.moe')
     expect(connectSrc).not.toContain('https:')
     expect(connectSrc).not.toContain('http:')
   })

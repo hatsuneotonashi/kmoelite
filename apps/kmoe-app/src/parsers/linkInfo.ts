@@ -16,7 +16,7 @@ function parseLinkInfoLine(payload: string): ComicListItem[] {
   const id = fields.find((field) => /^[A-Za-z0-9]+$/.test(field) && /\d/.test(field)) ?? extractComicIdFromUrl(urlField ?? '')
   if (!id) return []
 
-  const url = urlField ? absoluteKmoeUrl(urlField) : `https://kzo.moe/c/${id}.htm`
+  const url = urlField ? absoluteKmoeUrl(urlField) : `https://kxo.moe/c/${id}.htm`
   const coverUrl = fields.find((field) => /^https?:\/\//.test(field) && /\.(jpg|jpeg|png|webp|gif)(!|$|\?)/i.test(field))
   const title =
     fields.find((field) => field !== id && field !== urlField && field !== coverUrl && !/^https?:\/\//.test(field) && !/^\d+(\.\d+)?$/.test(field)) ??
@@ -42,7 +42,7 @@ function parseLinkInfoPairs(fields: string[]): ComicListItem[] {
     items.push({
       id,
       title,
-      url: `https://kzo.moe/c/${id}.htm`,
+      url: `https://kxo.moe/c/${id}.htm`,
       tags: []
     })
   }

@@ -8,6 +8,8 @@ It focuses on users who do not want to keep manga files downloaded locally. Its 
 
 This project is not affiliated with, endorsed by, or representative of KMOE. Users are responsible for following the target site's terms of service, copyright law, and account-safety requirements. The project must not be used to bypass access controls, membership limits, quotas, anti-abuse mechanisms, or copyright restrictions.
 
+The default website entry point is currently `https://kxo.moe`. If that origin changes, frontend config, the Rust Web Adapter, Tauri CSP, test fixtures, and live smoke defaults must be updated together.
+
 Chinese documentation is canonical: [README.md](README.md).
 
 ## Preview
@@ -40,11 +42,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-08: switched the default KMOE website entry point to `kxo.moe` across frontend config, native adapter URLs, CSP, test fixtures, and live smoke defaults.
 - 2026-06-07: polished detail loading, related-title cards, cover-derived theming, the Reader status-bar setting, and Continue Reading layout; fixed some chapters being misclassified as unavailable for source-image reading.
 - 2026-06-07: fixed Chinese IME composition in text inputs and added unified local reading data deletion for Reader cache plus local EPUB/source ZIP reading files.
 - 2026-06-07: fixed stale frontend Reader-cache snapshots after clearing Reader cache from Settings.
 - 2026-06-07: fixed repeated library-read failures on iPhone/iPad when upgrading an older on-device SQLite schema.
-- 2026-06-01: the default Reader cache policy now keeps a rolling previous/current/next chapter window.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

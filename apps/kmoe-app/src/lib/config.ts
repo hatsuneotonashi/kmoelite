@@ -9,7 +9,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showReaderStatusBar: false
 }
 
-export const KMOE_BASE_URL = 'https://kzo.moe'
+export const KMOE_BASE_URL = 'https://kxo.moe'
 export const QUEUE_CONCURRENCY = 1
 export const MAX_CONCURRENCY = 1
 

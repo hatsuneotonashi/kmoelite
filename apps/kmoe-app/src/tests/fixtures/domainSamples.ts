@@ -23,7 +23,7 @@ export const sampleCatalog: ComicListItem[] = [
   {
     id: '53339',
     title: '尖帽子的魔法工房',
-    url: 'https://kzo.moe/c/53339.htm',
+    url: 'https://kxo.moe/c/53339.htm',
     coverUrl: covers.witch,
     author: '白浜鴎',
     status: '連載',
@@ -37,7 +37,7 @@ export const sampleCatalog: ComicListItem[] = [
   {
     id: '14140',
     title: '地下忍者',
-    url: 'https://kzo.moe/c/14140.htm',
+    url: 'https://kxo.moe/c/14140.htm',
     coverUrl: covers.ninja,
     author: '花澤健吾',
     status: '連載',
@@ -51,7 +51,7 @@ export const sampleCatalog: ComicListItem[] = [
   {
     id: '10180',
     title: 'GRAND BLUE 碧藍之海',
-    url: 'https://kzo.moe/c/10180.htm',
+    url: 'https://kxo.moe/c/10180.htm',
     coverUrl: covers.grandBlue,
     author: '井上堅二, 吉岡公威',
     status: '連載',
@@ -88,7 +88,7 @@ function option(comicId: string, volId: string, title: string, kind: VolumeDownl
 export const sampleDetails: ComicDetail[] = [
   {
     id: '53339',
-    url: 'https://kzo.moe/c/53339.htm',
+    url: 'https://kxo.moe/c/53339.htm',
     title: '尖帽子的魔法工房',
     aliases: ['Atelier Of Witch Hat', '魔法帽的工作室', 'とんがり帽子のアトリエ'],
     coverUrl: covers.witch,
@@ -111,7 +111,7 @@ export const sampleDetails: ComicDetail[] = [
   },
   {
     id: '14140',
-    url: 'https://kzo.moe/c/14140.htm',
+    url: 'https://kxo.moe/c/14140.htm',
     title: '地下忍者',
     aliases: ['Under Ninja'],
     coverUrl: covers.ninja,
@@ -134,7 +134,7 @@ export const sampleDetails: ComicDetail[] = [
   },
   {
     id: '10180',
-    url: 'https://kzo.moe/c/10180.htm',
+    url: 'https://kxo.moe/c/10180.htm',
     title: 'GRAND BLUE 碧藍之海',
     aliases: ['Grand Blue Dreaming', '碧蓝之海'],
     coverUrl: covers.grandBlue,

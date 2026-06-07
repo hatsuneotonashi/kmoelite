@@ -6,7 +6,7 @@ describe('parseDesktopListHtml', () => {
     const html = `
       <script>
         disp_divinfo('unused','/c/53339.htm','/cover/53339.jpg','','','日本','繁體','魔幻','9.4','尖帽子\\'s 魔法,工房','白浜\\u9dd7','連載','2026-05-01');
-        disp_divinfo("unused","https://kzo.moe/c/14140.htm","https://img.example/14140.jpg","","","日本","繁體","青年","8.8","地下忍者","花澤健吾","連載","昨天");
+        disp_divinfo("unused","https://kxo.moe/c/14140.htm","https://img.example/14140.jpg","","","日本","繁體","青年","8.8","地下忍者","花澤健吾","連載","昨天");
       </script>
     `
 
@@ -15,8 +15,8 @@ describe('parseDesktopListHtml', () => {
     expect(items).toHaveLength(2)
     expect(items[0]).toMatchObject({
       id: '53339',
-      url: 'https://kzo.moe/c/53339.htm',
-      coverUrl: 'https://kzo.moe/cover/53339.jpg',
+      url: 'https://kxo.moe/c/53339.htm',
+      coverUrl: 'https://kxo.moe/cover/53339.jpg',
       title: "尖帽子's 魔法,工房",
       author: '白浜鷗',
       region: '日本',

@@ -2,7 +2,7 @@
 
 import { setTimeout as delay } from 'node:timers/promises'
 
-const baseUrl = new URL(process.env.KMOE_SMOKE_BASE_URL || 'https://kzo.moe')
+const baseUrl = new URL(process.env.KMOE_SMOKE_BASE_URL || 'https://kxo.moe')
 const email = process.env.KMOE_SMOKE_EMAIL || ''
 const password = process.env.KMOE_SMOKE_PASSWORD || ''
 const detailId = process.env.KMOE_SMOKE_DETAIL_ID || '53339'
@@ -189,7 +189,7 @@ function assertContains(text, pattern, label) {
 
 function assertSafeBase(url) {
   if (url.protocol !== 'https:') throw new Error('smoke base URL must use HTTPS')
-  if (url.hostname !== 'kzo.moe' && url.hostname !== 'kmoe.moe') {
+  if (url.hostname !== 'kxo.moe' && url.hostname !== 'kmoe.moe') {
     throw new Error('smoke base URL must stay on the known Kmoe host')
   }
 }

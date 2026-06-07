@@ -16,6 +16,7 @@
 
 ### Changed
 
+- 默认 KMOE 网站入口切换为 `https://kxo.moe`，并同步前端配置、Rust Web Adapter、Tauri CSP、测试 fixture、E2E routes 和 live smoke 默认源站。
 - 详情页封面主题取色改为以真实封面主色桶为准，避免少量高饱和像素把页面洗成不相关的固定色。
 - 首页 Continue Reading 区域改为最多展示 6 个最近阅读条目，并使用自适应网格避免长页码撑坏布局。
 - 相关漫画卡片改为更清晰的封面、标题和元信息布局，并把封面预览传递到详情加载页。

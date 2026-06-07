@@ -4,11 +4,11 @@ import { extractBookDataPath, parseComicDetailHtml, parseDescription } from '../
 const fixture = `
 <html><head>
 <meta name="og:image" content="https://img.example/cover.jpg" />
-<title>尖帽子的魔法工房 : 白浜鴎 [Kindle漫畫|epub漫畫] [kzo.moe]</title>
+<title>尖帽子的魔法工房 : 白浜鴎 [Kindle漫畫|epub漫畫] [kxo.moe]</title>
 </head><body>
 <font class="text_bglight_big">尖帽子的魔法工房</font>
 <font class="text_bglight">(Atelier Of Witch Hat)　魔法帽的工作室, とんがり帽子のアトリエ</font>
-作者：<font><a href="https://kzo.moe/list.php?s=%E7%99%BD">白浜鴎</a></font>
+作者：<font><a href="https://kxo.moe/list.php?s=%E7%99%BD">白浜鴎</a></font>
 狀態：連載 　地區：日本 　語言：繁體
 訂閱：740　收藏：2237　讀過：55　熱度：22176
 分類：<font color="#000000">魔幻<font class="filesize"> (10)</font></font>
@@ -18,7 +18,7 @@ const fixture = `
 
 describe('parseComicDetailHtml', () => {
   it('parses public detail metadata', () => {
-    const detail = parseComicDetailHtml(fixture, 'https://kzo.moe/c/53339.htm')
+    const detail = parseComicDetailHtml(fixture, 'https://kxo.moe/c/53339.htm')
     expect(detail).toMatchObject({
       id: '53339',
       title: '尖帽子的魔法工房',
@@ -37,13 +37,13 @@ describe('parseComicDetailHtml', () => {
     const html = `
       <html><body>
         <font class="text_bglight_big">尖帽子的魔法工房</font>
-        作者：<font><a href="https://kzo.moe/list.php?s=%E7%99%BD">白浜鴎</a></font>
+        作者：<font><a href="https://kxo.moe/list.php?s=%E7%99%BD">白浜鴎</a></font>
         狀態：連載 　地區：日本 　語言：繁體
         訂閱：740　收藏：2237　讀過：55　熱度：22197
         分類：<font color="#000000">魔幻<font class="filesize"> (10)</font></font>
         <div class="book_desc">
           <div id="desc_text">
-            <div id="div_desc_content">請訪問 https://kzo.moe/ 瀏覽</div>
+            <div id="div_desc_content">請訪問 https://kxo.moe/ 瀏覽</div>
           </div>
         </div>
         <script>
@@ -52,7 +52,7 @@ describe('parseComicDetailHtml', () => {
       </body></html>
     `
 
-    const detail = parseComicDetailHtml(html, 'https://kzo.moe/c/53339.htm')
+    const detail = parseComicDetailHtml(html, 'https://kxo.moe/c/53339.htm')
 
     expect(detail.description).toBe('生活在小村莊的少女·可可從小開始就一直憧憬成為一名魔法使。\n這是一部，降臨於少女身上的，絕望與希望交織的魔法物語。')
     expect(detail.description).not.toContain('分類')
@@ -83,7 +83,7 @@ describe('parseComicDetailHtml', () => {
     const detail = parseComicDetailHtml(html)
 
     expect(detail.id).toBe('14140')
-    expect(detail.url).toBe('https://kzo.moe/c/14140.htm')
+    expect(detail.url).toBe('https://kxo.moe/c/14140.htm')
     expect(extractBookDataPath(html)).toBe('/book_data.php?h=hash_14140-abc&lang=tc')
   })
 
@@ -142,14 +142,14 @@ describe('parseComicDetailHtml', () => {
             </td>
           </tr>
         </table>
-        <div id="div_desc_content">請訪問 https://kzo.moe/ 瀏覽</div>
+        <div id="div_desc_content">請訪問 https://kxo.moe/ 瀏覽</div>
         <script>
           document.getElementById("div_desc_content").innerHTML = "以上大學為契機，北原伊織開始在沿海城鎮居住。<br /><br />【卷23至話94】";
         </script>
       </body></html>
     `
 
-    const detail = parseComicDetailHtml(html, 'https://kzo.moe/c/10180.htm')
+    const detail = parseComicDetailHtml(html, 'https://kxo.moe/c/10180.htm')
 
     expect(detail.aliases).toEqual(['Grand Blue', 'ぐらんぶる'])
     expect(detail.authors).toEqual(['井上堅二', '吉岡公威'])

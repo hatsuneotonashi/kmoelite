@@ -101,7 +101,7 @@ const transparentPng = Buffer.from(
 )
 
 export async function installKmoeFixtureRoutes(page: Page): Promise<void> {
-  await page.route('https://kzo.moe/data_list.php**', async (route) => {
+  await page.route('https://kxo.moe/data_list.php**', async (route) => {
     const url = new URL(route.request().url())
     const search = url.searchParams.get('s')?.trim().toLowerCase()
     const data = search
@@ -119,23 +119,23 @@ export async function installKmoeFixtureRoutes(page: Page): Promise<void> {
     })
   })
 
-  await page.route('https://kzo.moe/c/*.htm', async (route) => {
+  await page.route('https://kxo.moe/c/*.htm', async (route) => {
     await route.fulfill({ status: 200, headers: corsHeaders, body: detailHtml })
   })
 
-  await page.route('https://kzo.moe/book_data.php**', async (route) => {
+  await page.route('https://kxo.moe/book_data.php**', async (route) => {
     await route.fulfill({ status: 200, headers: corsHeaders, body: bookData })
   })
 
-  await page.route('https://kzo.moe/my.php**', async (route) => {
+  await page.route('https://kxo.moe/my.php**', async (route) => {
     await route.fulfill({ status: 200, headers: corsHeaders, body: profileHtml })
   })
 
-  await page.route('https://kzo.moe/login_do.php**', async (route) => {
+  await page.route('https://kxo.moe/login_do.php**', async (route) => {
     await route.fulfill({ status: 200, headers: corsHeaders, body: '<script>location.href="/my.php"</script>' })
   })
 
-  await page.route('https://kzo.moe/covers/**', async (route) => {
+  await page.route('https://kxo.moe/covers/**', async (route) => {
     await route.fulfill({
       status: 200,
       headers: { ...corsHeaders, 'content-type': 'image/png' },
