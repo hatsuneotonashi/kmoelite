@@ -23,12 +23,14 @@ const KMOE_SESSION_COOKIE_SETTING_KEY: &str = "kmoe_session_cookie_header";
 const MAX_PERSISTED_COOKIE_HEADER_BYTES: usize = 8192;
 const ERROR_INVALID_DOWNLOAD_TASK: &str = "下载任务信息无效，请重新选择内容后再试。";
 const ERROR_UNSUPPORTED_DOWNLOAD_FORMAT: &str = "不支持的下载格式。";
+const ERROR_LOGIN_REQUEST_FAILED: &str = "登录请求失败，请检查网络后重试。";
+const ERROR_LOGIN_SESSION_NOT_AUTHENTICATED: &str = "登录未能建立有效会话，请检查账号密码后重试。";
 const ERROR_AUTHORIZE_FAILED: &str = "未能取得可用的下载地址，请确认登录状态和下载权限。";
 const ERROR_DOWNLOAD_REJECTED: &str = "站点拒绝了本次下载，请确认登录状态、权限和剩余额度。";
 const ERROR_DOWNLOAD_NETWORK: &str = "下载连接中断，请稍后重试。";
 const ERROR_DOWNLOAD_NOT_FILE: &str = "下载响应不是文件内容，请确认登录状态和下载权限。";
 const ERROR_DOWNLOAD_FORMAT_MISMATCH: &str = "下载内容与所选格式不匹配，文件未保存。";
-const ERROR_DOWNLOAD_WRITE: &str = "无法写入下载文件，请检查保存位置权限。";
+const ERROR_DOWNLOAD_WRITE: &str = "无法写入下载文件，请检查设备剩余空间或 App 保存区。";
 const ERROR_DOWNLOAD_READ: &str = "无法读取下载内容，请重试。";
 const ERROR_DOWNLOAD_INCOMPLETE: &str = "下载传输不完整，请重试。";
 const ERROR_DOWNLOAD_TOO_LARGE: &str = "下载文件过大，当前版本无法保存。";
@@ -75,7 +77,7 @@ impl KmoeHttpClient {
         })
     }
 
-    pub async fn login(&self, input: LoginInput) -> Result<String, reqwest::Error> {
+    pub async fn login(&self, input: LoginInput) -> Result<String, String> {
         let remember = input.remember.unwrap_or(false);
         let mut form = vec![("email", input.email), ("passwd", input.password)];
         if remember {
@@ -86,9 +88,11 @@ impl KmoeHttpClient {
             .get("https://kxo.moe/login.php")
             .header("referer", "https://kxo.moe/")
             .send()
-            .await?
+            .await
+            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?
             .bytes()
-            .await?;
+            .await
+            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?;
         self.wait_for_request_slot().await;
         let text = self
             .client
@@ -96,10 +100,18 @@ impl KmoeHttpClient {
             .header("referer", "https://kxo.moe/login.php")
             .form(&form)
             .send()
-            .await?
+            .await
+            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?
             .text()
-            .await?;
+            .await
+            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?;
         if site_login_success(&text) {
+            if !self.session_is_authenticated().await? {
+                if remember {
+                    clear_persisted_session_cookie_header();
+                }
+                return Err(ERROR_LOGIN_SESSION_NOT_AUTHENTICATED.to_string());
+            }
             if remember {
                 persist_session_cookie_header(self.cookie_jar.as_ref());
             } else {
@@ -197,6 +209,11 @@ impl KmoeHttpClient {
             .text()
             .await
             .map_err(|error| error.to_string())
+    }
+
+    pub async fn session_is_authenticated(&self) -> Result<bool, String> {
+        let html = self.fetch_user_profile_html().await?;
+        Ok(profile_html_indicates_authenticated_session(&html))
     }
 
     pub async fn logout(&self) -> Result<String, reqwest::Error> {
@@ -404,6 +421,49 @@ fn site_login_success(text: &str) -> bool {
         && !text.contains("e400")
         && !text.contains("e401")
         && !text.to_ascii_lowercase().contains("forbidden")
+}
+
+fn profile_html_indicates_authenticated_session(html: &str) -> bool {
+    let text = html
+        .replace('\n', " ")
+        .replace('\r', " ")
+        .replace('\t', " ")
+        .to_lowercase();
+    if profile_html_indicates_login_page(&text) {
+        return false;
+    }
+    [
+        "登錄郵箱",
+        "登录邮箱",
+        "kmoe id",
+        "目前可用額度",
+        "目前可用额度",
+        "本月已用免費額度",
+        "本月已用免费额度",
+        "今日已用",
+        "vip 額度",
+        "vip 额度",
+        "修改昵稱",
+        "修改昵称",
+    ]
+    .iter()
+    .any(|marker| text.contains(&marker.to_lowercase()))
+}
+
+fn profile_html_indicates_login_page(text: &str) -> bool {
+    [
+        "請先登錄",
+        "请先登录",
+        "馬上登錄",
+        "马上登录",
+        "郵箱帳號",
+        "邮箱帐号",
+        "帳號密碼",
+        "账号密码",
+        "login_do.php",
+    ]
+    .iter()
+    .any(|marker| text.contains(&marker.to_lowercase()))
 }
 
 fn persist_session_cookie_header(jar: &Jar) {
@@ -984,6 +1044,19 @@ mod tests {
             r#"parent.display_codeinfo( "e400", 0 );"#
         ));
         assert!(!site_login_success("Forbidden"));
+    }
+
+    #[test]
+    fn profile_html_authentication_detection_rejects_login_pages() {
+        assert!(profile_html_indicates_authenticated_session(
+            r#"<html><body><div>登錄郵箱 : reader@example.invalid ( KMOE ID : 123456 )</div><div>剩餘 : 1920.0 M</div></body></html>"#
+        ));
+        assert!(!profile_html_indicates_authenticated_session(
+            r#"<html><body>請先登錄 郵箱帳號 帳號密碼 馬上登錄</body></html>"#
+        ));
+        assert!(!profile_html_indicates_authenticated_session(
+            r#"<html><body>帳戶資料暫時不可用</body></html>"#
+        ));
     }
 
     #[test]

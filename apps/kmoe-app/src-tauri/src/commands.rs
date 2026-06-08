@@ -49,7 +49,7 @@ pub fn get_download_dir() -> Result<String, String> {
 
 fn read_download_dir_setting() -> Result<String, String> {
     if is_ios_runtime() {
-        return Ok(mobile_files_download_dir());
+        return Ok(mobile_download_dir());
     }
 
     let conn = db::open_default_connection().map_err(|error| error.to_string())?;
@@ -107,6 +107,15 @@ pub async fn start_download_queue(
             .to_string_lossy()
             .to_string(),
     );
+    match client.session_is_authenticated().await {
+        Ok(true) => {}
+        Ok(false) => {
+            return Err("登录状态已失效，请重新登录后再启动下载队列。".to_string());
+        }
+        Err(error) => {
+            return Err(format!("暂时无法确认登录状态：{error}"));
+        }
+    }
 
     queue::process_download_queue(&client, download_dir).await?;
     Ok(())
@@ -1205,7 +1214,7 @@ fn ensure_open_target_allowed(conn: &rusqlite::Connection, target: &Path) -> Res
 
 fn get_download_dir_from_conn(conn: &rusqlite::Connection) -> Result<String, String> {
     if is_ios_runtime() {
-        return Ok(mobile_files_download_dir());
+        return Ok(mobile_download_dir());
     }
     db::get_setting(conn, "download_dir")
         .map_err(|error| error.to_string())
@@ -1288,16 +1297,16 @@ fn is_ios_runtime() -> bool {
 
 fn normalize_download_dir_for_platform(input: Option<String>) -> Result<String, String> {
     if is_ios_runtime() {
-        return Ok(mobile_files_download_dir());
+        return Ok(mobile_download_dir());
     }
     fs_utils::normalize_download_dir(input)
 }
 
 fn ensure_download_dir_for_platform(input: Option<String>) -> Result<PathBuf, String> {
     if is_ios_runtime() {
-        let path = PathBuf::from(mobile_files_download_dir());
+        let path = PathBuf::from(mobile_download_dir());
         std::fs::create_dir_all(&path)
-            .map_err(|error| format!("failed to create mobile Documents directory: {error}"))?;
+            .map_err(|error| format!("failed to create mobile app download directory: {error}"))?;
         return Ok(path);
     }
 
@@ -1307,10 +1316,13 @@ fn ensure_download_dir_for_platform(input: Option<String>) -> Result<PathBuf, St
     }
 }
 
-fn mobile_files_download_dir() -> String {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    Path::new(&home)
-        .join("Documents")
+fn mobile_download_dir() -> String {
+    mobile_download_dir_from_app_data_dir(&fs_utils::app_data_dir())
+}
+
+fn mobile_download_dir_from_app_data_dir(app_data_dir: &Path) -> String {
+    app_data_dir
+        .join("Downloads")
         .join("Kmoe")
         .to_string_lossy()
         .to_string()

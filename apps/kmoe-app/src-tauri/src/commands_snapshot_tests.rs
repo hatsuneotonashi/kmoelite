@@ -34,6 +34,18 @@ fn app_config_serializes_download_directory_for_frontend_settings() {
 }
 
 #[test]
+fn mobile_download_dir_uses_app_private_downloads_root() {
+    let app_data = Path::new("/app/container/Library/Application Support/moe.kzo.client");
+    let path = mobile_download_dir_from_app_data_dir(app_data);
+
+    assert_eq!(
+        path,
+        "/app/container/Library/Application Support/moe.kzo.client/Downloads/Kmoe"
+    );
+    assert!(!path.contains("/Documents/"));
+}
+
+#[test]
 fn preflight_reports_real_download_readiness_without_authorizing() {
     let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
     db::init_schema(&conn).expect("schema initializes");

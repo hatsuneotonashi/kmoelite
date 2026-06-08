@@ -1281,7 +1281,7 @@ function displayPlannedPath(
   plan: ReturnType<typeof planDownloadPath>,
   platformTarget: ReturnType<typeof detectPlatformTarget>
 ): string {
-  const prefix = platformTarget === 'ios' || platformTarget === 'ipados' ? '文件 / Kmoe' : '保存位置'
+  const prefix = platformTarget === 'ios' || platformTarget === 'ipados' ? 'App 内 / Kmoe' : '保存位置'
   return `${prefix} / ${plan.relativeDirectory} / ${plan.filename}`
 }
 

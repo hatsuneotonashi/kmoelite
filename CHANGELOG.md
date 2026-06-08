@@ -16,6 +16,7 @@
 
 ### Changed
 
+- iPhone/iPad explicit downloads now write to an app-private download root first; users can export or share completed files through the system sheet instead of relying on a Files-visible `Documents` path during download.
 - 默认 KMOE 网站入口切换为 `https://kxo.moe`，并同步前端配置、Rust Web Adapter、Tauri CSP、测试 fixture、E2E routes 和 live smoke 默认源站。
 - 详情页封面主题取色改为以真实封面主色桶为准，避免少量高饱和像素把页面洗成不相关的固定色。
 - 首页 Continue Reading 区域改为最多展示 6 个最近阅读条目，并使用自适应网格避免长页码撑坏布局。
@@ -28,6 +29,7 @@
 
 ### Fixed
 
+- 修复 iPhone/iPad 下载失败时可能写入不可靠 Documents 路径的问题，并区分站点授权/额度错误与本地写入错误，避免把源站拒绝误显示成保存位置权限。
 - 修复远程封面返回极小占位图时被当成成功加载，导致详情主题和封面显示异常的问题。
 - 修复部分站点 `volinfo` 行源图体积字段为 0、但已有源图元数据时被误判为“无源图”的问题。
 - 修复中文 IME 输入时，搜索、筛选和路径输入会把拼音中间态重复写入业务状态的问题。

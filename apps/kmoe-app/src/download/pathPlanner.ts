@@ -54,7 +54,7 @@ export function defaultDownloadDirectory(platform: PlatformTarget): string {
       return '%USERPROFILE%\\Downloads\\Kmoe'
     case 'ipados':
     case 'ios':
-      return 'App Sandbox/Kmoe'
+      return 'App Internal/Kmoe'
     case 'linux':
       return '~/Downloads/Kmoe'
     case 'macos':

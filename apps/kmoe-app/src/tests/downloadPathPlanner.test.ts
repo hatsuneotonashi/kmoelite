@@ -49,7 +49,7 @@ describe('download path planner', () => {
 
   it('uses platform defaults and detects known browser UA strings', () => {
     expect(defaultDownloadDirectory('windows')).toContain('Downloads')
-    expect(defaultDownloadDirectory('ios')).toContain('Sandbox')
+    expect(defaultDownloadDirectory('ios')).toContain('App Internal')
     expect(detectPlatformTarget('Mozilla/5.0 (Windows NT 10.0; Win64; x64)')).toBe('windows')
     expect(detectPlatformTarget('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)')).toBe('ios')
     expect(detectPlatformTarget('Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)')).toBe('macos')

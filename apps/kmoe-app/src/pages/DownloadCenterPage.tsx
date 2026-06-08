@@ -585,7 +585,7 @@ function QueueMetric({ title, value, hint }: { title: string; value: string; hin
 }
 
 function displayDownloadPath(plan: ReturnType<typeof createDownloadPipelinePlan>, mobileFileExport: boolean): string {
-  const prefix = mobileFileExport ? '文件 / Kmoe' : '资料库'
+  const prefix = mobileFileExport ? 'App 内 / Kmoe' : '资料库'
   return `${prefix} / ${plan.path.relativeDirectory} / ${plan.path.filename}`
 }
 

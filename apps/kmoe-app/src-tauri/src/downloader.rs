@@ -9,8 +9,8 @@ const DOWNLOAD_AUTHORIZATION_LINES: [u8; 2] = [0, 1];
 const MIN_REAL_PROGRESS_UPDATE_INTERVAL: Duration = Duration::from_millis(350);
 const MIN_REAL_PROGRESS_UPDATE_BYTES: i64 = 512 * 1024;
 const ERROR_DOWNLOAD_FAILED: &str = "下载失败，请稍后重试。";
-const ERROR_CREATE_DOWNLOAD_DIR: &str = "无法创建下载目录，请检查保存位置权限。";
-const ERROR_FINALIZE_DOWNLOAD: &str = "无法保存下载文件，请检查保存位置权限。";
+const ERROR_CREATE_DOWNLOAD_DIR: &str = "无法创建下载目录，请检查设备剩余空间或 App 保存区。";
+const ERROR_FINALIZE_DOWNLOAD: &str = "无法保存下载文件，请检查设备剩余空间或 App 保存区。";
 const ERROR_EMPTY_DOWNLOAD: &str = "下载文件为空，请重新尝试。";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

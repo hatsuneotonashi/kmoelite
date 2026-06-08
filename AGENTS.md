@@ -113,6 +113,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Reading cache, permanent downloaded files, metadata cache, shelf items, reading progress, reading history, and download tasks must remain separate data models.
 - Reading cache should be treated as temporary storage for online reading and high-quality page display. The default cache policy is a rolling previous/current/next chapter window: when the active chapter advances, caches outside that window become cleanup candidates, while the next chapter may be prefetched from a trusted local archive.
 - Permanent downloaded files and Library records must require explicit user intent. They should not become the default path for ordinary reading.
+- On iPhone/iPad, explicit downloaded files must be written first to the app-private download root under app data, then exported or shared through the system sheet when the user asks to save/open them outside the app. Do not rely on `HOME/Documents` or assume a Files-visible directory is writable during native downloads.
 - A multi-select download action creates local queue items; each task still authorizes and downloads one item at a time.
 - Real download progress persistence must be rate-limited before writing SQLite; the network receive loop must not persist every chunk.
 - Production behavior should use the real website adapter and native persistence. Mock data may exist only as isolated test fixtures, not as a user-facing runtime mode.

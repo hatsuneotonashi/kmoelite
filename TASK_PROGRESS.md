@@ -4,6 +4,32 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-08 iPhone/iPad 下载保存与登录会话修复验证
+
+- 变更范围：iPhone/iPad 下载保存根目录、下载中心/详情页移动端保存位置文案、下载错误分类、native 登录会话确认、下载队列启动前会话检查、Rust/TypeScript 回归测试、README/README.en/CHANGELOG/AGENTS/docs/status/docs/platforms/docs/architecture 文档。
+- 行为摘要：iPhone/iPad 显式下载先写入 App 私有保存区下的 `Downloads/Kmoe`，不再依赖 `HOME/Documents` 或假定 Files 可见目录可写；用户需要导出时再通过系统分享/导出路径离开 App。下载错误提示会区分站点登录/授权/额度问题与本地写入问题，避免把站点拒绝下载误报成“没有访问权限”。native 登录成功后会访问账号页确认会话有效，下载队列启动前也会确认登录会话仍有效。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/formatMessages.test.ts src/tests/downloadPathPlanner.test.ts src/tests/nativeCommands.test.ts`：passed，3 files / 34 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，83 tests。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，52 files / 281 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed；首次检查发现一处格式差异，已执行 `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml` 后复跑通过。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，83 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，27 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。移动端下载任务卡因“App 内 / Kmoe”文案变化更新了对应 visual baseline 后复跑通过。
+- iOS simulator 列表：passed，`xcrun simctl list devices available` 可列出 iOS 26.5 iPhone/iPad simulators。
+- iOS simulator Tauri run：blocked。`tauri ios run "iPad Pro 11-inch (M5)"` 启动 simulator，但 Tauri CLI 仍走 `iphoneos` 构建并被 Xcode signing/provisioning 阻塞。
+- iPad 实机识别：passed，`xcrun devicectl list devices` 可识别已配对可用的 iPad Pro 11-inch (M5)。
+- iPad 实机部署：blocked。`tauri ios run iPad` 能识别设备并开始构建，但当前 Xcode 没有 Accounts，也没有 `moe.kzo.client` 的 iOS App Development provisioning profile；临时加入的本机 `DEVELOPMENT_TEAM` 配置已恢复，未纳入待提交源码。
+- 发布风险扫描：tracked risky path scan 未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target`、`test-results`、`playwright-report`、本地下载目录或临时构建文件进入 tracked tree。
+- 敏感文本扫描：未发现真实账号、密码、Cookie、Token、Session、Authorization header、本机私有路径或下载授权 URL；命中均为 release 检查脚本自身的安全扫描正则或源码中的安全字段/函数名。
+- 未运行项：本轮未运行真实账号登录、真实下载验证、macOS 签名/公证、Windows 真机、Android/TV 验证。iPad 实机下载 smoke 需要在 Xcode 账号和 provisioning profile 配好后补跑。
+- 待发布风险：本次修复已通过源码 gate 和浏览器 E2E；iPad 实机安装与 Tauri iOS simulator run 仍受本机 Xcode signing/provisioning 阻塞。发布前应补跑 iPad 登录、单项下载、导出/打开和 Reader 准备链路。
+
 ## 2026-06-08 默认 KMOE 入口切换到 kxo.moe 验证
 
 - 变更范围：默认 KMOE 网站入口、TypeScript 配置、Rust web adapter、Tauri CSP、安全 host 校验、解析器 fixtures、E2E fixtures、live smoke 脚本、AGENTS/README/README.en/CHANGELOG/docs/status/docs/web-adapter 文档。

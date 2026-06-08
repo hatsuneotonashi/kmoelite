@@ -60,6 +60,7 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 - 不直接信任站点提供的文件名。
 - Reader cache 是临时阅读缓存，默认应服务高清阅读和快速翻页，而不是长期收藏。
 - 写入永久文件必须有明确用户意图。
+- iPhone/iPad 显式下载先写入 App 私有保存区；导出、打开或查看位置时通过系统分享表交给“文件”App 或其他目标。
 - 先写 `.part`，再 final rename。
 - 拒绝 path traversal。
 - 打开、显示位置、分享、解压前都要验证路径。
