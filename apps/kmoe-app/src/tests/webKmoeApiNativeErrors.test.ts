@@ -99,6 +99,25 @@ describe('WebKmoeApi native error handling', () => {
     })
   })
 
+  it('trims login email and translates the current site e400 response', async () => {
+    nativeMocks.nativeKmoeLogin.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: 'parent.display_codeinfo( "e400", 0 ); parent.do_call_action( "" );',
+      message: 'login response'
+    })
+
+    await expect(api().login({ email: ' user@example.invalid ', password: 'secret', remember: true })).resolves.toEqual({
+      ok: false,
+      message: '登录失败：站点没有接受这组邮箱和密码，请确认输入后重试。'
+    })
+    expect(nativeMocks.nativeKmoeLogin).toHaveBeenCalledWith({
+      email: 'user@example.invalid',
+      password: 'secret',
+      remember: true
+    })
+  })
+
   it('does not fall back to browser fetch when a Tauri native detail command fails', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

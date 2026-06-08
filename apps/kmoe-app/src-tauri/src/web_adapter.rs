@@ -79,7 +79,10 @@ impl KmoeHttpClient {
 
     pub async fn login(&self, input: LoginInput) -> Result<String, String> {
         let remember = input.remember.unwrap_or(false);
-        let mut form = vec![("email", input.email), ("passwd", input.password)];
+        let mut form = vec![
+            ("email", input.email.trim().to_string()),
+            ("passwd", input.password),
+        ];
         if remember {
             form.push(("keepalive", "on".to_string()));
         }

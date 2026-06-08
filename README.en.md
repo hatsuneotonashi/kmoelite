@@ -42,11 +42,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-08: fixed iPad/iPhone login input behavior and the site `e400` message; the email is trimmed while the password is submitted exactly as typed.
 - 2026-06-08: fixed the iPhone/iPad explicit-download storage path and download error messaging; mobile downloads are saved in the app-private area first, then exported through the system share sheet.
 - 2026-06-08: switched the default KMOE website entry point to `kxo.moe` across frontend config, native adapter URLs, CSP, test fixtures, and live smoke defaults.
 - 2026-06-07: polished detail loading, related-title cards, cover-derived theming, the Reader status-bar setting, and Continue Reading layout; fixed some chapters being misclassified as unavailable for source-image reading.
 - 2026-06-07: fixed Chinese IME composition in text inputs and added unified local reading data deletion for Reader cache plus local EPUB/source ZIP reading files.
-- 2026-06-07: fixed stale frontend Reader-cache snapshots after clearing Reader cache from Settings.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

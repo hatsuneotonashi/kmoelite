@@ -12,7 +12,8 @@ import { isNativeUnavailable, nativeFetchBookData, nativeFetchComicDetailHtml, n
 
 export class WebKmoeApi implements KmoeApi {
   async login(input: LoginInput): Promise<LoginResult> {
-    const native = await nativeKmoeLogin(input)
+    const normalizedInput = { ...input, email: input.email.trim() }
+    const native = await nativeKmoeLogin(normalizedInput)
     if (native.ok && native.value !== undefined) {
       const ok = isLoginOk(native.value)
       return {
@@ -23,9 +24,9 @@ export class WebKmoeApi implements KmoeApi {
     if (!isNativeUnavailable(native)) return { ok: false, message: native.message }
 
     const body = new URLSearchParams()
-    body.set('email', input.email)
-    body.set('passwd', input.password)
-    if (input.remember) body.set('keepalive', 'on')
+    body.set('email', normalizedInput.email)
+    body.set('passwd', normalizedInput.password)
+    if (normalizedInput.remember) body.set('keepalive', 'on')
 
     const response = await fetch(`${KMOE_BASE_URL}/login_do.php`, {
       method: 'POST',
@@ -140,7 +141,7 @@ function mapCatalogQuery(input: CatalogQuery): Record<string, string | number | 
 
 function decodeSiteMessage(text: string): string {
   if (/display_codeinfo\(\s*["']m100["']|parent\.display_codeinfo\(\s*["']m100["']/.test(text)) return '登录成功。'
-  if (text.includes('e400')) return '登录失败：站点返回 e400。'
+  if (text.includes('e400')) return '登录失败：站点没有接受这组邮箱和密码，请确认输入后重试。'
   if (/Forbidden/i.test(text)) return '站点拒绝访问或登录状态无效。'
   return text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || '请求失败，请稍后重试。'
 }

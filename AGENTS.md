@@ -86,6 +86,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - `.env.local` may be used on a developer machine for convenience, but it must stay untracked and must not be copied into docs, fixtures, examples, release manifests, screenshots, or progress logs.
 - Do not store actual account emails or passwords in this file. `AGENTS.md` may document the approved handling pattern only.
 - Scripts and app code that need live credentials should read explicit runtime variables such as `KMOE_SMOKE_EMAIL`, `KMOE_SMOKE_PASSWORD`, `KMOE_VERIFY_EMAIL`, and `KMOE_VERIFY_PASSWORD`. Do not hardcode fallback credentials.
+- Login form fields must mirror the live website constraints where known. Disable mobile auto-capitalization, auto-correction, and spelling assistance for account/password inputs; trim only the account/email value and preserve the password exactly as typed.
 - When the user explicitly enables remembered login, the native app may persist only the Kmoe website session cookie header in app-private runtime settings so the reqwest session can be restored after restart. It must be cleared on logout or on a successful non-remembered login, and must never be exported, logged, documented, committed, or included in migration snapshots.
 - If credentials are accidentally printed, saved, or staged, stop the release/commit path, remove the artifact, rotate the credential if needed, and record only a redacted incident note in `TASK_PROGRESS.md`.
 

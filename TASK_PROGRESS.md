@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-08 iPad 登录 e400 输入与提示修复验证
+
+- 变更范围：LoginPage 输入属性和本地校验、WebKmoeApi 登录邮箱规范化和 `e400` 文案、Rust native login 邮箱规范化、登录回归测试、README/README.en/CHANGELOG/AGENTS 文档。
+- 行为摘要：站点当前登录表单仍使用 `email` / `passwd` / `keepalive`，无凭证探测确认假账号返回 `parent.display_codeinfo( "e400", 0 )`。App 现在会关闭邮箱/密码输入的移动端自动大写、自动更正和拼写辅助；邮箱提交前去除首尾空格，密码按用户输入原样提交；空邮箱/空密码会在本地拦截；站点 `e400` 会显示为“站点没有接受这组邮箱和密码”而不是技术码。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/loginPage.test.tsx src/tests/webKmoeApiNativeErrors.test.ts src/tests/formatMessages.test.ts`：passed，3 files / 12 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml native_login_success_detection_matches_site_markers --lib`：passed，1 test。
+- `git diff --check`：passed。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，53 files / 284 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed；首次检查发现一处格式差异，已执行 `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml` 后复跑通过。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，83 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，27 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 无凭证站点探测：`https://kxo.moe/login.php` 返回 200，表单包含 `email`、`passwd` 和 `keepalive`；使用假账号 POST `/login_do.php` 返回 200 且包含 `e400` 标记。本探测未使用真实账号、密码、Cookie、Session 或授权 URL。
+- 未运行项：本轮尚未用真实账号做 live 登录，因为当前仓库没有 `.env.local` runtime credential 文件，且真实凭证不能写入命令、文档或日志。需要用户在 iPad 上重新输入并验证，或通过 runtime env 临时提供给 live smoke。
+
 ## 2026-06-08 iPhone/iPad 下载保存与登录会话修复验证
 
 - 变更范围：iPhone/iPad 下载保存根目录、下载中心/详情页移动端保存位置文案、下载错误分类、native 登录会话确认、下载队列启动前会话检查、Rust/TypeScript 回归测试、README/README.en/CHANGELOG/AGENTS/docs/status/docs/platforms/docs/architecture 文档。

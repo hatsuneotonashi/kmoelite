@@ -15,8 +15,9 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(false)
+  const [formError, setFormError] = useState('')
   const mutation = useMutation({
-    mutationFn: () => api.login({ email, password, remember }),
+    mutationFn: () => api.login({ email: email.trim(), password, remember }),
     onSuccess: async (result) => {
       setPassword('')
       if (result.ok) {
@@ -32,6 +33,16 @@ export function LoginPage() {
 
   function submit(event: FormEvent) {
     event.preventDefault()
+    const normalizedEmail = email.trim()
+    if (!normalizedEmail || !password) {
+      setFormError('请输入邮箱和密码。')
+      return
+    }
+    if (normalizedEmail.length > 50 || password.length > 50) {
+      setFormError('邮箱和密码长度不能超过 50 个字符。')
+      return
+    }
+    setFormError('')
     mutation.mutate()
   }
 
@@ -55,8 +66,35 @@ export function LoginPage() {
         </div>
       </div>
       <LiquidGlassPanel as="form" onSubmit={submit} className="grid gap-4 p-5 md:p-6">
-        <TextField label="邮箱" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} />
-        <TextField label="密码" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} />
+        <TextField
+          label="邮箱"
+          type="email"
+          inputMode="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={50}
+          value={email}
+          onChange={(event) => {
+            setFormError('')
+            setEmail(event.target.value)
+          }}
+        />
+        <TextField
+          label="密码"
+          type="password"
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={50}
+          value={password}
+          onChange={(event) => {
+            setFormError('')
+            setPassword(event.target.value)
+          }}
+        />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} />
           记住登录状态（只保存会话，不保存密码）
@@ -68,6 +106,7 @@ export function LoginPage() {
         {mutation.data ? (
           <div className={mutation.data.ok ? 'feedback-success' : 'feedback-danger'}>{feedbackMessage}</div>
         ) : null}
+        {formError ? <div className="feedback-danger">{formError}</div> : null}
         {mutation.isError ? <div className="feedback-danger">{readableAppMessage(mutation.error, '登录失败，请检查账号和密码后重试。')}</div> : null}
       </LiquidGlassPanel>
     </div>
