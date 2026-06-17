@@ -4,6 +4,17 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android FileProvider 私有目录边界
+
+- 变更范围：Android `file_paths.xml`、Android 壳 source-level 测试、CHANGELOG/TASK_PROGRESS。
+- 行为摘要：Android FileProvider 共享根从宽泛的 external storage 改为 app-owned `files-path` 和 `cache-path`。这与 Android/iOS 显式下载先写入 App 私有保存区的架构一致，也为后续 Android 系统分享导出桥接保留正确边界；本轮没有假装 Android share/export 已完成。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts`：passed，1 file / 3 tests。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，Android XML resources and debug APK/AAB packaging passed；构建产物未进入 git 状态。
+- 未运行项：Android emulator runtime share smoke、完整 gate 尚未在本条记录完成；本轮没有实现 Android native share/export bridge。
+- 待发布风险：Android 文件导出/分享仍需要真实 native bridge 和 emulator/device smoke；本轮只收紧可分享路径边界。
+
 ## 2026-06-17 Android comic deep link 入口
 
 - 变更范围：Android Manifest、Android `MainActivity.kt`、Android 壳 source-level 测试、CHANGELOG/TASK_PROGRESS。

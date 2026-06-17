@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 const mainActivitySource = readFileSync('src-tauri/gen/android/app/src/main/java/moe/kzo/client/MainActivity.kt', 'utf8')
 const androidManifestSource = readFileSync('src-tauri/gen/android/app/src/main/AndroidManifest.xml', 'utf8')
+const androidFilePathsSource = readFileSync('src-tauri/gen/android/app/src/main/res/xml/file_paths.xml', 'utf8')
 
 describe('Android TV input bridge', () => {
   it('bridges remote DPAD keys into the Tauri WebView without replacing native Back handling', () => {
@@ -30,5 +31,13 @@ describe('Android app links', () => {
     expect(mainActivitySource).toContain("window.history.pushState({}, '', route)")
     expect(mainActivitySource).toContain("window.dispatchEvent(new Event('popstate'))")
     expect(mainActivitySource).toContain('Regex("[A-Za-z0-9_-]{1,80}")')
+  })
+})
+
+describe('Android file export boundary', () => {
+  it('limits FileProvider sharing roots to app-owned files and cache directories', () => {
+    expect(androidFilePathsSource).toContain('<files-path name="app_files" path="." />')
+    expect(androidFilePathsSource).toContain('<cache-path name="app_cache" path="." />')
+    expect(androidFilePathsSource).not.toContain('<external-path')
   })
 })
