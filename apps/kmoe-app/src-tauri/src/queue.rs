@@ -30,7 +30,7 @@ async fn process_queue_at(
     download_dir: Option<String>,
 ) -> Result<usize, String> {
     let Some(_guard) = QueueRunGuard::try_acquire(db_path.as_deref()) else {
-        return Ok(0);
+        return Err("下载队列已在运行，请等待当前任务完成或刷新队列状态。".to_string());
     };
     let mut processed = 0;
     {
@@ -263,6 +263,21 @@ mod tests {
         assert_eq!(db::list_downloaded_files(&conn).unwrap().len(), 0);
         assert!(!download_root.exists());
         let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[tokio::test]
+    async fn concurrent_queue_run_reports_already_running() {
+        let db_path =
+            std::env::temp_dir().join(format!("kmoe-queue-running-{}.sqlite3", timestamp()));
+        let _guard = QueueRunGuard::try_acquire(Some(&db_path)).expect("queue lock acquired");
+        let client = KmoeHttpClient::new().expect("http client initializes");
+
+        let error = process_download_queue_at(Some(db_path.clone()), &client, None)
+            .await
+            .expect_err("running queue is rejected");
+
+        assert!(error.contains("下载队列已在运行"));
+        let _ = std::fs::remove_file(db_path);
     }
 
     fn sample_task(id: &str, vol_id: &str, volume_title: &str, created_at: &str) -> DownloadTask {

@@ -4,6 +4,18 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 下载队列并发启动假成功修复
+
+- 变更范围：`apps/kmoe-app/src-tauri/src/queue.rs`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Rust 下载队列已有运行实例时，现在返回明确错误“下载队列已在运行”，不再以 `Ok(0)` 形式把未处理任何任务的并发启动误报为成功。
+- 验证：
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，90 tests。
+  - `git diff --check`：passed。
+  - 本轮改动文件敏感扫描：passed，无账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径命中。
+- 未运行项：未运行完整 Vitest/build/Rust cargo check/platform/E2E gate；本轮只改 Rust 下载队列并发启动边界和对应测试。未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复收紧 native 下载队列启动语义；各平台真实下载、导出/分享、签名发布和真机验证仍按平台文档继续验证。
+
 ## 2026-06-18 下载队列空任务边界拦截
 
 - 变更范围：`apps/kmoe-app/src/platform/nativeCommands.ts`、`apps/kmoe-app/src-tauri/src/commands.rs`、对应 Vitest/Rust tests、README、CHANGELOG、TASK_PROGRESS。
