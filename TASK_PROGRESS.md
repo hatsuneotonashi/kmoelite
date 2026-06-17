@@ -4,6 +4,37 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 iPhone/iPad simulator packaged app 白屏修复
+
+- 变更范围：移动打包入口 HTML、Tauri 安全配置测试、AGENTS/README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release 文档。
+- 问题：iPhone 17 和 iPad Air 13-inch simulator 可安装并启动 app 进程，但 packaged debug app 首屏为纯白。
+- 根因：`index.html` 手写根 `<base href="/">`；在 iOS bundle/file-style 加载路径下，模块脚本可能被解析到根目录资源路径，导致前端 JS 没有执行。
+- 修复：删除根 `<base href="/">`，保留 Vite `base: './'` 生成的相对资源路径；新增测试防止该标签回归。
+- 发现的工具链行为：
+  - 裸 `xcodebuild` 调用失败，因为 Tauri iOS prebuild script 缺少 Tauri mobile RPC 上下文。
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug` 默认走 `iphoneos`，因本机未配置 development team signing 失败。
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed。
+- iOS simulator smoke：
+  - iPhone 17 simulator：app install passed，launch passed，首屏渲染 passed，确认不再白屏。
+  - iPad Air 13-inch simulator：app install passed，launch passed，平板 rail/sidebar 布局和首页内容渲染 passed。
+  - 临时截图只用于本地视觉确认，未写入仓库。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/tauriSecurityConfig.test.ts`：passed，1 file / 5 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 294 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未在 iPhone/iPad simulator 执行真实登录、详情、Reader、下载、缓存清理；未运行 signed physical-device install、文件导出/分享或前后台行为验证。
+- 待发布风险：iPhone/iPad simulator packaged app 已能安装、启动并渲染首屏；这不等同于签名真机或完整 Reader/download 验收完成。
+
 ## 2026-06-17 Android TV emulator 真实 EPUB Reader 与清理验证
 
 - 变更范围：验证日志和平台状态文档；产品代码未变更。

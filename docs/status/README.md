@@ -38,14 +38,15 @@
 - Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract；真实登录、详情页、EPUB 单项下载、Reader cache 准备、双页翻页和显式本地阅读数据删除 passed。
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back；真实登录、详情、EPUB 下载、Reader cache、`DPAD_CENTER` 显示 chrome、`DPAD_LEFT` 双页翻页和本地阅读数据删除 passed。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
-- iPad/iPhone native runtime：本机 Xcode signing/provisioning 未配置完整，实机部署和模拟器 native run 未完成。
+- iPad/iPhone simulator native runtime：`tauri ios build --debug --target aarch64-sim --no-sign` passed；iPhone 17 和 iPad Air 13-inch simulators 可安装、启动并渲染 packaged debug app 首屏。
+- iPad/iPhone signed physical-device runtime：本机 Xcode signing/provisioning 未配置完整，实机完整验证未完成。
 
 这些记录是本地阶段性结果；公开上传前或发布二进制前应重新运行当前树的检查，并以最新输出为准。
 
 ## 平台状态摘要
 
-- iPhone：开发预览可用；适合个人测试和日常试用，签名真机完整验证仍需继续补齐。
-- iPad：开发预览可用；平板布局和 Reader 体验已作为当前重点，签名真机完整验证仍需继续补齐。
+- iPhone：开发预览可用；iPhone simulator 已通过 packaged debug app 安装、启动和首屏渲染 smoke；签名真机、登录、Reader 和下载完整验证仍需继续补齐。
+- iPad：开发预览可用；iPad simulator 已通过 packaged debug app 安装、启动和平板布局渲染 smoke；签名真机、登录、Reader 和下载完整验证仍需继续补齐。
 - Android 手机：实验预览源码路径存在；Android debug APK/AAB 构建通过，Pixel 8 API 36 模拟器可启动手机布局，并通过真实登录、详情、EPUB 下载、Reader、翻页和本地阅读数据删除 smoke；真机、文件导出/分享和签名发布仍未完整验证。
 - Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，Pixel Tablet API 36 模拟器可启动并通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据删除 smoke；真机、文件导出/分享和签名发布仍未完整验证。
 - Android TV：实验预览入口存在；Leanback launcher、TV runtime 识别、宽屏 shell、方向键焦点、native DPAD/OK 输入桥和真实 EPUB 下载到 Reader、遥控器翻页、本地阅读数据删除已在 Android TV API 36 模拟器验证；签名发布、实体 TV、文件导出/分享和分发验证仍未完成。
@@ -57,7 +58,7 @@
 
 - macOS 签名、公证、stapling、干净机器安装/打开验证未完成。
 - Windows 真机安装、卸载、open file、reveal folder、签名验证未完成。
-- iPhone/iPad signed physical-device install、文件导出/分享、前后台行为验证未完成。
+- iPhone/iPad signed physical-device install、登录/Reader/下载、文件导出/分享、前后台行为验证未完成；当前 simulator 验证只覆盖安装、启动和首屏渲染。
 - Android phone/tablet 真机、文件导出/分享、签名发布和分发验证未完成。
 - Android TV 实体设备、签名发布、文件导出/分享和分发验证未完成；当前 TV 真实站点、EPUB 下载、Reader 和缓存清理只在 Android TV emulator 验证。
 - Apple TV 输入、布局、缓存策略和可运行 tvOS shell 未完成；当前 readiness 检查只证明部分工具链存在，不代表 Apple TV App 已可启动。

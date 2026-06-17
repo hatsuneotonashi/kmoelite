@@ -7,14 +7,16 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 - 开发预览可用，适合个人测试和日常试用。
 - 目标是触控优先、安全区适配、单手操作、低存储占用。
 - Reader 应优先使用临时 cache，避免长期保存大体积漫画文件。
-- simulator 路径存在；签名真机完整验证仍需继续补齐。
+- iPhone 17 simulator 已通过 packaged debug app 安装、启动和首屏渲染 smoke。
+- 签名真机、登录、Reader、下载、文件导出/分享和前后台行为验证仍需继续补齐。
 
 ## iPad
 
 - 开发预览可用，适合个人测试和日常试用。
 - iPad UI 应使用 rail/sidebar 和分栏布局，不能拉伸手机 UI。
 - 目标是横竖屏都适合高清漫画阅读，同时控制缓存占用。
-- simulator 路径存在；签名真机完整验证仍需继续补齐。
+- iPad Air 13-inch simulator 已通过 packaged debug app 安装、启动和平板布局渲染 smoke。
+- 签名真机、登录、Reader、下载、文件导出/分享和前后台行为验证仍需继续补齐。
 
 ## Android 手机
 

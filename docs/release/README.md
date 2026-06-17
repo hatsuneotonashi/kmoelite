@@ -147,7 +147,7 @@ iPhone/iPad：
 - Apple Developer account。
 - bundle identifiers。
 - provisioning profiles。
-- simulator validation。
+- simulator packaged debug app install/launch/render smoke 已在 iPhone 17 和 iPad Air 13-inch 模拟器通过。
 - signed physical-device validation。
 - App Store policy review，尤其是 download/cache 行为。
 

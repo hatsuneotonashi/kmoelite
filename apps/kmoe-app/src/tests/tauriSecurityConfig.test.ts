@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { readFileSync } from 'node:fs'
 import mainCapability from '../../src-tauri/capabilities/main.json'
 import tauriConfig from '../../src-tauri/tauri.conf.json'
 
@@ -46,6 +47,12 @@ describe('Tauri security configuration', () => {
     expect(connectSrc).not.toContain('https://kzo.moe')
     expect(connectSrc).not.toContain('https:')
     expect(connectSrc).not.toContain('http:')
+  })
+
+  it('keeps packaged asset URLs relative for mobile bundle loading', () => {
+    const html = readFileSync('index.html', 'utf8')
+
+    expect(html).not.toContain('<base href="/"')
   })
 })
 
