@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径，但还没有完成真机、下载、Reader 和签名发布验证。Android TV 已有最薄实验入口、模拟器启动/方向键焦点 smoke、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke，但不等同于完整 TV 支持。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone/tablet 模拟器启动已验证，Android tablet 另通过一次真实 app 登录 smoke，但还没有完成真机、下载、Reader、缓存清理和签名发布验证。Android TV 已有最薄实验入口、模拟器启动/方向键焦点 smoke、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke，但不等同于完整 TV 支持。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -28,7 +28,8 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 
 - 实验预览源码路径存在。
 - 布局模型已有 Android tablet contract，原则与 iPad 一致：分栏、多列、横屏高清阅读和可控缓存。
-- Android 平板模拟器/真机、下载、Reader、缓存清理和签名发布仍未完整验证。
+- Pixel Tablet API 36 模拟器可安装并启动 tablet contract，并完成一次真实 app 登录 smoke。
+- Android 平板真机、下载、Reader、缓存清理和签名发布仍未完整验证。
 
 ## Windows
 

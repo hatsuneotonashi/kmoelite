@@ -33,6 +33,7 @@
 - macOS debug `.app` bundle：build passed，并完成一次启动/退出 smoke。
 - Android debug APK/AAB：build passed。
 - Android phone emulator：Pixel 8 API 36 install/launch smoke passed，确认 phone contract 和底部导航。
+- Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract，并完成一次真实 app 登录 smoke。
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back 和合成本地 Reader cache OK/Back smoke。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
 - iPad/iPhone native runtime：本机 Xcode signing/provisioning 未配置完整，实机部署和模拟器 native run 未完成。
@@ -44,7 +45,7 @@
 - iPhone：开发预览可用；适合个人测试和日常试用，签名真机完整验证仍需继续补齐。
 - iPad：开发预览可用；平板布局和 Reader 体验已作为当前重点，签名真机完整验证仍需继续补齐。
 - Android 手机：实验预览源码路径存在；Android debug APK/AAB 构建通过，Pixel 8 API 36 模拟器可启动手机布局；真机、下载、Reader 和签名发布仍未完整验证。
-- Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，但平板模拟器/真机、下载、Reader 和签名发布仍未完整验证。
+- Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，Pixel Tablet API 36 模拟器可启动并通过一次真实 app 登录 smoke；真机、下载、Reader、缓存清理和签名发布仍未完整验证。
 - Android TV：实验预览入口存在；Leanback launcher、TV runtime 识别、宽屏 shell、方向键焦点、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke 已在 Android TV API 36 模拟器验证；Reader 下载、缓存清理、签名发布和实体 TV 验证仍未完成。
 - Windows：源码和打包脚本存在，真实 Windows 安装/卸载/open/reveal 验证未完成。
 - macOS：开发预览可用；当前主要本地开发和日常试用平台，公开二进制仍需签名、公证、stapling 和干净机器验证。
@@ -55,7 +56,7 @@
 - macOS 签名、公证、stapling、干净机器安装/打开验证未完成。
 - Windows 真机安装、卸载、open file、reveal folder、签名验证未完成。
 - iPhone/iPad signed physical-device install、文件导出/分享、前后台行为验证未完成。
-- Android phone/tablet 真机、平板模拟器、下载/Reader 全链路、签名发布和分发验证未完成。
+- Android phone/tablet 真机、下载/Reader 全链路、缓存清理、签名发布和分发验证未完成。
 - Android TV Reader 下载、缓存清理、实体设备、签名发布和分发验证未完成；当前 TV Reader smoke 只覆盖合成本地 Reader cache 的 OK/Back 行为，不覆盖真实站点、下载或缓存清理链路。
 - Apple TV 输入、布局、缓存策略和平台可行性未完成。
 - 本轮默认不运行真实站点 smoke 和真实下载验证。

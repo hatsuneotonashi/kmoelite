@@ -36,6 +36,7 @@
 
 ### Fixed
 
+- 修复 native 登录成功后账号页会被误判为未建立有效会话的问题；登录表单现在始终请求站点会话 cookie，同时“记住登录状态”只控制本地会话持久化。
 - 修复 iPhone/iPad 登录表单可能被系统自动大写、自动更正或密码管理辅助影响的问题；邮箱提交前去除首尾空格，密码按原样提交，并把站点 `e400` 显示为明确的账号/密码未被接受提示。
 - 修复 Android phone WebView 被识别为 Linux 桌面运行时，导致手机首屏显示桌面 sidebar 的问题。
 - 修复 Android TV 上系统 Back 可能直接退出 Activity、以及 Android WebView 不稳定派发遥控器 OK/方向键导致 Reader 无法可靠显示 chrome 或关闭面板的问题。

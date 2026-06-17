@@ -26,7 +26,7 @@ export class WebKmoeApi implements KmoeApi {
     const body = new URLSearchParams()
     body.set('email', normalizedInput.email)
     body.set('passwd', normalizedInput.password)
-    if (normalizedInput.remember) body.set('keepalive', 'on')
+    body.set('keepalive', 'on')
 
     const response = await fetch(`${KMOE_BASE_URL}/login_do.php`, {
       method: 'POST',

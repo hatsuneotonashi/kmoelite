@@ -1,9 +1,10 @@
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine as _};
 use futures_util::StreamExt;
 use reqwest::cookie::{CookieStore, Jar};
-use reqwest::header::{HeaderMap, ACCEPT, CONTENT_TYPE};
-use reqwest::{Client, Url};
+use reqwest::header::{HeaderMap, ACCEPT, CONTENT_TYPE, COOKIE, SET_COOKIE};
+use reqwest::{Client, RequestBuilder, Response, Url};
 use serde_json::Value;
+use std::collections::BTreeMap;
 use std::net::IpAddr;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
@@ -51,6 +52,7 @@ pub struct DownloadTransfer {
 pub struct KmoeHttpClient {
     client: Client,
     cookie_jar: Arc<Jar>,
+    session_cookies: Arc<Mutex<SessionCookieStore>>,
     request_gate: Arc<RequestGate>,
 }
 
@@ -63,7 +65,8 @@ impl KmoeHttpClient {
         min_request_interval: Duration,
     ) -> Result<Self, reqwest::Error> {
         let jar = Arc::new(Jar::default());
-        restore_persisted_session_cookie_header(jar.as_ref());
+        let session_cookies = Arc::new(Mutex::new(SessionCookieStore::default()));
+        restore_persisted_session_cookie_header(jar.as_ref(), session_cookies.as_ref());
         let client = Client::builder()
             .cookie_provider(jar.clone())
             .connect_timeout(KMOE_CONNECT_TIMEOUT)
@@ -73,36 +76,33 @@ impl KmoeHttpClient {
         Ok(Self {
             client,
             cookie_jar: jar,
+            session_cookies,
             request_gate: Arc::new(RequestGate::new(min_request_interval)),
         })
     }
 
     pub async fn login(&self, input: LoginInput) -> Result<String, String> {
         let remember = input.remember.unwrap_or(false);
-        let mut form = vec![
-            ("email", input.email.trim().to_string()),
-            ("passwd", input.password),
-        ];
-        if remember {
-            form.push(("keepalive", "on".to_string()));
-        }
+        let form = build_login_form(input);
         self.wait_for_request_slot().await;
-        self.client
-            .get("https://kxo.moe/login.php")
-            .header("referer", "https://kxo.moe/")
-            .send()
-            .await
-            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?
-            .bytes()
-            .await
-            .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?;
+        self.send_kmoe(
+            self.client
+                .get("https://kxo.moe/login.php")
+                .header("referer", "https://kxo.moe/"),
+        )
+        .await
+        .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?
+        .bytes()
+        .await
+        .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?;
         self.wait_for_request_slot().await;
         let text = self
-            .client
-            .post("https://kxo.moe/login_do.php")
-            .header("referer", "https://kxo.moe/login.php")
-            .form(&form)
-            .send()
+            .send_kmoe(
+                self.client
+                    .post("https://kxo.moe/login_do.php")
+                    .header("referer", "https://kxo.moe/login.php")
+                    .form(&form),
+            )
             .await
             .map_err(|_| ERROR_LOGIN_REQUEST_FAILED.to_string())?
             .text()
@@ -116,7 +116,7 @@ impl KmoeHttpClient {
                 return Err(ERROR_LOGIN_SESSION_NOT_AUTHENTICATED.to_string());
             }
             if remember {
-                persist_session_cookie_header(self.cookie_jar.as_ref());
+                self.persist_session_cookie_header();
             } else {
                 clear_persisted_session_cookie_header();
             }
@@ -129,7 +129,7 @@ impl KmoeHttpClient {
     pub async fn fetch_catalog(&self, query: CatalogQueryInput) -> Result<String, reqwest::Error> {
         let url = build_catalog_url(query);
         self.wait_for_request_slot().await;
-        self.client.get(url).send().await?.text().await
+        self.send_kmoe(self.client.get(url)).await?.text().await
     }
 
     pub async fn fetch_cover_image_data_url(&self, url: &str) -> Result<String, String> {
@@ -176,9 +176,7 @@ impl KmoeHttpClient {
     pub async fn fetch_detail_html(&self, comic_id: &str) -> Result<String, String> {
         assert_safe_id(comic_id)?;
         self.wait_for_request_slot().await;
-        self.client
-            .get(format!("https://kxo.moe/c/{comic_id}.htm"))
-            .send()
+        self.send_kmoe(self.client.get(format!("https://kxo.moe/c/{comic_id}.htm")))
             .await
             .map_err(|error| error.to_string())?
             .text()
@@ -191,9 +189,7 @@ impl KmoeHttpClient {
             return Err("invalid book_data path".to_string());
         }
         self.wait_for_request_slot().await;
-        self.client
-            .get(format!("https://kxo.moe{path}"))
-            .send()
+        self.send_kmoe(self.client.get(format!("https://kxo.moe{path}")))
             .await
             .map_err(|error| error.to_string())?
             .text()
@@ -203,15 +199,16 @@ impl KmoeHttpClient {
 
     pub async fn fetch_user_profile_html(&self) -> Result<String, String> {
         self.wait_for_request_slot().await;
-        self.client
-            .get("https://kxo.moe/my.php")
-            .header("referer", "https://kxo.moe/")
-            .send()
-            .await
-            .map_err(|error| error.to_string())?
-            .text()
-            .await
-            .map_err(|error| error.to_string())
+        self.send_kmoe(
+            self.client
+                .get("https://kxo.moe/my.php")
+                .header("referer", "https://kxo.moe/"),
+        )
+        .await
+        .map_err(|error| error.to_string())?
+        .text()
+        .await
+        .map_err(|error| error.to_string())
     }
 
     pub async fn session_is_authenticated(&self) -> Result<bool, String> {
@@ -221,12 +218,14 @@ impl KmoeHttpClient {
 
     pub async fn logout(&self) -> Result<String, reqwest::Error> {
         clear_persisted_session_cookie_header();
+        self.clear_session_cookies();
         self.wait_for_request_slot().await;
         let text = self
-            .client
-            .get("https://kxo.moe/logout.php")
-            .header("referer", "https://kxo.moe/")
-            .send()
+            .send_kmoe(
+                self.client
+                    .get("https://kxo.moe/logout.php")
+                    .header("referer", "https://kxo.moe/"),
+            )
             .await?
             .text()
             .await?;
@@ -250,10 +249,11 @@ impl KmoeHttpClient {
             .map_err(|_| ERROR_INVALID_DOWNLOAD_TASK.to_string())?;
         self.wait_for_request_slot().await;
         let response = self
-            .client
-            .get(format!("https://kxo.moe{path}"))
-            .header("referer", format!("https://kxo.moe/c/{book_id}.htm"))
-            .send()
+            .send_kmoe(
+                self.client
+                    .get(format!("https://kxo.moe{path}"))
+                    .header("referer", format!("https://kxo.moe/c/{book_id}.htm")),
+            )
             .await
             .map_err(|_| ERROR_AUTHORIZE_FAILED.to_string())?;
         if !response.status().is_success() {
@@ -332,6 +332,57 @@ impl KmoeHttpClient {
             downloaded_bytes,
             content_length,
         })
+    }
+
+    async fn send_kmoe(&self, builder: RequestBuilder) -> Result<Response, reqwest::Error> {
+        let response = self.apply_session_cookie_header(builder).send().await?;
+        self.store_response_cookies(response.headers());
+        Ok(response)
+    }
+
+    fn apply_session_cookie_header(&self, builder: RequestBuilder) -> RequestBuilder {
+        if let Some(cookie_header) = self.session_cookie_header() {
+            builder.header(COOKIE, cookie_header)
+        } else {
+            builder
+        }
+    }
+
+    fn store_response_cookies(&self, headers: &HeaderMap) {
+        let mut store = self
+            .session_cookies
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        for value in headers.get_all(SET_COOKIE).iter() {
+            if let Ok(header) = value.to_str() {
+                store.store_set_cookie_header(header);
+            }
+        }
+    }
+
+    fn session_cookie_header(&self) -> Option<String> {
+        self.session_cookies
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .header()
+            .or_else(|| session_cookie_header_from_jar(self.cookie_jar.as_ref()))
+    }
+
+    fn persist_session_cookie_header(&self) {
+        if let Ok(conn) = db::open_default_connection() {
+            let _ = persist_session_cookie_header_with_conn(
+                &conn,
+                self.cookie_jar.as_ref(),
+                self.session_cookies.as_ref(),
+            );
+        }
+    }
+
+    fn clear_session_cookies(&self) {
+        self.session_cookies
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clear();
     }
 
     async fn wait_for_request_slot(&self) {
@@ -426,16 +477,21 @@ fn site_login_success(text: &str) -> bool {
         && !text.to_ascii_lowercase().contains("forbidden")
 }
 
+fn build_login_form(input: LoginInput) -> Vec<(&'static str, String)> {
+    vec![
+        ("email", input.email.trim().to_string()),
+        ("passwd", input.password),
+        ("keepalive", "on".to_string()),
+    ]
+}
+
 fn profile_html_indicates_authenticated_session(html: &str) -> bool {
     let text = html
         .replace('\n', " ")
         .replace('\r', " ")
         .replace('\t', " ")
         .to_lowercase();
-    if profile_html_indicates_login_page(&text) {
-        return false;
-    }
-    [
+    let authenticated = [
         "登錄郵箱",
         "登录邮箱",
         "kmoe id",
@@ -450,36 +506,22 @@ fn profile_html_indicates_authenticated_session(html: &str) -> bool {
         "修改昵称",
     ]
     .iter()
-    .any(|marker| text.contains(&marker.to_lowercase()))
-}
-
-fn profile_html_indicates_login_page(text: &str) -> bool {
-    [
-        "請先登錄",
-        "请先登录",
-        "馬上登錄",
-        "马上登录",
-        "郵箱帳號",
-        "邮箱帐号",
-        "帳號密碼",
-        "账号密码",
-        "login_do.php",
-    ]
-    .iter()
-    .any(|marker| text.contains(&marker.to_lowercase()))
-}
-
-fn persist_session_cookie_header(jar: &Jar) {
-    if let Ok(conn) = db::open_default_connection() {
-        let _ = persist_session_cookie_header_with_conn(&conn, jar);
-    }
+    .any(|marker| text.contains(&marker.to_lowercase()));
+    authenticated
 }
 
 fn persist_session_cookie_header_with_conn(
     conn: &rusqlite::Connection,
     jar: &Jar,
+    session_cookies: &Mutex<SessionCookieStore>,
 ) -> rusqlite::Result<()> {
-    if let Some(cookie_header) = session_cookie_header_from_jar(jar) {
+    let manual_cookie_header = session_cookies
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .header();
+    if let Some(cookie_header) =
+        manual_cookie_header.or_else(|| session_cookie_header_from_jar(jar))
+    {
         db::set_setting(
             conn,
             KMOE_SESSION_COOKIE_SETTING_KEY,
@@ -491,20 +533,25 @@ fn persist_session_cookie_header_with_conn(
     }
 }
 
-fn restore_persisted_session_cookie_header(jar: &Jar) {
+fn restore_persisted_session_cookie_header(jar: &Jar, session_cookies: &Mutex<SessionCookieStore>) {
     if let Ok(conn) = db::open_default_connection() {
-        let _ = restore_persisted_session_cookie_header_with_conn(&conn, jar);
+        let _ = restore_persisted_session_cookie_header_with_conn(&conn, jar, session_cookies);
     }
 }
 
 fn restore_persisted_session_cookie_header_with_conn(
     conn: &rusqlite::Connection,
     jar: &Jar,
+    session_cookies: &Mutex<SessionCookieStore>,
 ) -> rusqlite::Result<()> {
     let Some(cookie_header) = db::get_setting(conn, KMOE_SESSION_COOKIE_SETTING_KEY)? else {
         return Ok(());
     };
     restore_session_cookie_header_into_jar(jar, &cookie_header);
+    session_cookies
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .restore_cookie_header(&cookie_header);
     Ok(())
 }
 
@@ -586,6 +633,61 @@ fn session_timestamp() -> String {
         .map(|duration| duration.as_secs())
         .unwrap_or_default();
     seconds.to_string()
+}
+
+#[derive(Default)]
+struct SessionCookieStore {
+    pairs: BTreeMap<String, String>,
+}
+
+impl SessionCookieStore {
+    fn store_set_cookie_header(&mut self, header: &str) {
+        let pair = header.split(';').next().map(str::trim).unwrap_or_default();
+        let Some((name, value)) = pair.split_once('=') else {
+            return;
+        };
+        let name = name.trim();
+        let value = value.trim();
+        if name.is_empty() || name.chars().any(char::is_control) {
+            return;
+        }
+        if value.is_empty() {
+            self.pairs.remove(name);
+            return;
+        }
+        if is_safe_cookie_pair(pair) {
+            self.pairs.insert(name.to_string(), value.to_string());
+        }
+    }
+
+    fn restore_cookie_header(&mut self, cookie_header: &str) {
+        self.clear();
+        if let Some(cookie_header) = sanitize_session_cookie_header(cookie_header) {
+            for pair in cookie_header.split(';').map(str::trim) {
+                if let Some((name, value)) = pair.split_once('=') {
+                    self.pairs
+                        .insert(name.trim().to_string(), value.trim().to_string());
+                }
+            }
+        }
+    }
+
+    fn header(&self) -> Option<String> {
+        if self.pairs.is_empty() {
+            return None;
+        }
+        Some(
+            self.pairs
+                .iter()
+                .map(|(name, value)| format!("{name}={value}"))
+                .collect::<Vec<_>>()
+                .join("; "),
+        )
+    }
+
+    fn clear(&mut self) {
+        self.pairs.clear();
+    }
 }
 
 struct RequestGate {
@@ -1002,8 +1104,9 @@ mod tests {
         let jar = Jar::default();
         jar.add_cookie_str("kmoe_session=abc123; Path=/; HttpOnly", &kmoe_root_url());
         jar.add_cookie_str("keepalive=yes; Path=/; HttpOnly", &kmoe_root_url());
+        let session_cookies = Mutex::new(SessionCookieStore::default());
 
-        persist_session_cookie_header_with_conn(&conn, &jar)
+        persist_session_cookie_header_with_conn(&conn, &jar, &session_cookies)
             .expect("session cookie header persists");
         let stored = db::get_setting(&conn, KMOE_SESSION_COOKIE_SETTING_KEY)
             .expect("setting reads")
@@ -1012,12 +1115,24 @@ mod tests {
         assert!(stored.contains("keepalive=yes"));
 
         let restored = Jar::default();
-        restore_persisted_session_cookie_header_with_conn(&conn, &restored)
-            .expect("session cookie header restores");
+        let restored_session_cookies = Mutex::new(SessionCookieStore::default());
+        restore_persisted_session_cookie_header_with_conn(
+            &conn,
+            &restored,
+            &restored_session_cookies,
+        )
+        .expect("session cookie header restores");
         let restored_header =
             session_cookie_header_from_jar(&restored).expect("restored cookie header exists");
         assert!(restored_header.contains("kmoe_session=abc123"));
         assert!(restored_header.contains("keepalive=yes"));
+        let restored_manual_header = restored_session_cookies
+            .lock()
+            .expect("session cookie store locks")
+            .header()
+            .expect("manual cookie header restores");
+        assert!(restored_manual_header.contains("kmoe_session=abc123"));
+        assert!(restored_manual_header.contains("keepalive=yes"));
 
         clear_persisted_session_cookie_header_with_conn(&conn).expect("session clears");
         assert!(db::get_setting(&conn, KMOE_SESSION_COOKIE_SETTING_KEY)
@@ -1036,6 +1151,21 @@ mod tests {
     }
 
     #[test]
+    fn manual_session_cookie_store_keeps_only_cookie_pairs() {
+        let mut store = SessionCookieStore::default();
+        store.store_set_cookie_header("VLIBSID=abc123; path=/; domain=kxo.moe; HttpOnly");
+        store.store_set_cookie_header("Path=/; HttpOnly");
+        store.store_set_cookie_header("VOLSESS=def456; path=/");
+
+        let header = store.header().expect("cookie header exists");
+        assert!(header.contains("VLIBSID=abc123"));
+        assert!(header.contains("VOLSESS=def456"));
+        assert!(!header.contains("Path="));
+        assert!(!header.contains("domain="));
+        assert!(!header.contains("HttpOnly"));
+    }
+
+    #[test]
     fn native_login_success_detection_matches_site_markers() {
         assert!(site_login_success(
             r#"parent.display_codeinfo( "m100", 0 );"#
@@ -1050,9 +1180,25 @@ mod tests {
     }
 
     #[test]
+    fn native_login_form_always_requests_site_session_cookie() {
+        let form = build_login_form(LoginInput {
+            email: " reader@example.invalid ".to_string(),
+            password: " secret ".to_string(),
+            remember: Some(false),
+        });
+
+        assert!(form.contains(&("email", "reader@example.invalid".to_string())));
+        assert!(form.contains(&("passwd", " secret ".to_string())));
+        assert!(form.contains(&("keepalive", "on".to_string())));
+    }
+
+    #[test]
     fn profile_html_authentication_detection_rejects_login_pages() {
         assert!(profile_html_indicates_authenticated_session(
             r#"<html><body><div>登錄郵箱 : reader@example.invalid ( KMOE ID : 123456 )</div><div>剩餘 : 1920.0 M</div></body></html>"#
+        ));
+        assert!(profile_html_indicates_authenticated_session(
+            r#"<html><body><form action="/login_do.php"></form><div>KMOE ID : 123456</div><div>登錄郵箱 : reader@example.invalid</div><a href="/logout.php">退出</a></body></html>"#
         ));
         assert!(!profile_html_indicates_authenticated_session(
             r#"<html><body>請先登錄 郵箱帳號 帳號密碼 馬上登錄</body></html>"#

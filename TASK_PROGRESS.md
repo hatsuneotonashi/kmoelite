@@ -4,6 +4,39 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android 平板 native 登录会话修复验证
+
+- 变更范围：Rust native KMOE Web Adapter 登录表单、native 会话 cookie 传递、账号页 authenticated profile 判定、浏览器 fallback 登录表单、登录回归测试、README/CHANGELOG/docs/status/docs/platforms/AGENTS 文档。
+- 行为摘要：KMOE 登录 POST 现在始终请求站点会话 cookie；“记住登录状态”只控制 native app 是否在本地持久化网站会话，不再决定是否向站点请求 keepalive。native adapter 额外维护一份安全的 KMOE 会话 cookie header，用于 Android/iOS 等 native runtime 中的登录、账号页、目录、详情、book data 和下载授权请求。账号页判定改为强认证标记优先，避免已登录账号页里残留 `login_do.php` 字符串时被误判为未建立有效会话。
+- 真实站点 smoke：
+  - `KMOE_SMOKE_INCLUDE_BOOK_DATA=0 KMOE_SMOKE_TIMEOUT_MS=25000 pnpm verify:real-site-smoke`：passed，检查 login_page、login_post、profile、catalog、detail；book_data 显式跳过；输出已脱敏，未打印账号、密码、Cookie、Session 或授权 URL。
+  - `pnpm verify:real-site-smoke`：passed，检查 login_page、login_post、profile、catalog、detail、book_data；`bookDataStatus=200`，`bookDataMarkers=true`；输出已脱敏，未打印账号、密码、Cookie、Session 或授权 URL。
+- Android 平板模拟器 smoke：
+  - `avdmanager create avd -n Kmoelite_Tablet_API_36 -k "system-images;android-36;google_apis_playstore;arm64-v8a" -d pixel_tablet --force`：passed。
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 报告上游 deprecation warning，未导致失败。
+  - Pixel Tablet API 36 emulator：APK install/launch passed。
+  - WebView CDP 验证：页面为 `http://tauri.localhost/`，`runtime=androidTablet`、`layout=tablet`、`device=tablet`、`input=touch`。
+  - 干净安装后真实 app 登录 smoke：passed，登录后进入 `/account`，账号页显示已登录状态；验证过程未打印凭证或会话。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/webKmoeApiNativeErrors.test.ts`：passed，1 file / 9 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib manual_session_cookie_store_keeps_only_cookie_pairs`：passed，1 test。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib remembered_session_cookie_header_round_trips_through_native_settings`：passed，1 test。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib native_login_form_always_requests_site_session_cookie`：passed，1 test。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib profile_html_authentication_detection_rejects_login_pages`：passed，1 test。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 291 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未运行真实下载验证、Android 平板下载/Reader/cache 清理、Android 真机、iPhone/iPad 真机部署、Windows 真机或 signed release。
+- 待发布风险：Android 平板已证明 debug APK 启动和真实 app 登录链路，不等同于 Android 平板下载、Reader、缓存清理、真机或公开签名发布完成。
+
 ## 2026-06-17 Android TV native remote input bridge 与 Reader emulator smoke
 
 - 变更范围：Tauri App Back listener helper、非手机 App shell native Back 订阅、Reader native Back 订阅、Reader 隐藏 chrome 焦点隔离、Android MainActivity remote DPAD/OK WebView 输入桥、Android TV 输入桥测试、Reader/AppLayout 回归测试、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。

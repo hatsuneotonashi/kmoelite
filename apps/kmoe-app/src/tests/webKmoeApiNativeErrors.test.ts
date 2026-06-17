@@ -118,6 +118,27 @@ describe('WebKmoeApi native error handling', () => {
     })
   })
 
+  it('always sends keepalive in browser login while leaving remember as local persistence intent', async () => {
+    nativeMocks.nativeKmoeLogin.mockResolvedValue({
+      ok: false,
+      available: false,
+      message: 'native unavailable'
+    })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      text: () => Promise.resolve('parent.display_codeinfo( "m100", 0 );')
+    }))
+
+    await expect(api().login({ email: ' user@example.invalid ', password: 'secret', remember: false })).resolves.toEqual({
+      ok: true,
+      message: '登录成功。'
+    })
+
+    const body = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][1].body as URLSearchParams
+    expect(body.get('email')).toBe('user@example.invalid')
+    expect(body.get('passwd')).toBe('secret')
+    expect(body.get('keepalive')).toBe('on')
+  })
+
   it('does not fall back to browser fetch when a Tauri native detail command fails', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
