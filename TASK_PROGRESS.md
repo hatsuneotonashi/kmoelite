@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iPhone/iPad 文件共享 metadata 生成源修复
+
+- 变更范围：`apps/kmoe-app/src-tauri/gen/apple/project.yml`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：iOS 当前 plist 已有 `LSSupportsOpeningDocumentsInPlace` 和 `UIFileSharingEnabled`，但 XcodeGen 源 `project.yml` 未记录这两个键；本轮把它们写回生成源，避免重生成 iOS 工程后丢失 App 私有下载文件导出/文件共享相关 metadata。
+- 验证：
+  - `rg -n "CFBundleDisplayName|LSSupportsOpeningDocumentsInPlace|UIFileSharingEnabled" apps/kmoe-app/src-tauri/gen/apple/project.yml apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`：passed。
+  - `plutil -extract LSSupportsOpeningDocumentsInPlace raw apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`：passed，输出 `true`。
+  - `plutil -extract UIFileSharingEnabled raw apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`：passed，输出 `true`。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只改 iOS metadata 生成源和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行 iPhone/iPad 真机安装和实际文件导出。
+- 待发布风险：该修复只保证 iOS metadata 生成源不漂移；真实 iPhone/iPad 文件导出、分享目标选择、前后台下载和 Reader smoke 仍需真机或 simulator 继续验证。
+
 ## 2026-06-18 iPhone/iPad 安装显示名显式化
 
 - 变更范围：`apps/kmoe-app/src-tauri/gen/apple/project.yml`、`apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`、CHANGELOG、TASK_PROGRESS。

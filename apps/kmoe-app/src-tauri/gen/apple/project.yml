@@ -41,8 +41,10 @@ targets:
       properties:
         LSRequiresIPhoneOS: true
         CFBundleDisplayName: kmoelite
+        LSSupportsOpeningDocumentsInPlace: true
         NSLocalNetworkUsageDescription: kmoelite needs local network access only when a developer build loads the app from a development server on this Mac.
         UILaunchStoryboardName: LaunchScreen
+        UIFileSharingEnabled: true
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

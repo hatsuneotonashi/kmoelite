@@ -48,6 +48,7 @@
 
 ### Fixed
 
+- iPhone/iPad file-sharing metadata is now preserved in the XcodeGen `project.yml`, so regenerating the iOS project keeps app-private downloads exportable through iOS document sharing.
 - iPhone/iPad app metadata now sets an explicit `CFBundleDisplayName` of `kmoelite`, so the installed app name no longer depends on inferred bundle defaults.
 - GitHub Source CI no longer asks `actions/setup-node` to restore a pnpm cache before Corepack enables pnpm, making fresh GitHub Actions source checks less brittle.
 - Reader cache repair can now fall back to another available Reader-capable archive for the same volume, such as rebuilding a stale source ZIP cache from an EPUB Library file.
