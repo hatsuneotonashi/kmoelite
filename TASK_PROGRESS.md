@@ -13,11 +13,18 @@
   - `pnpm --dir apps/kmoe-app typecheck`：passed。
   - `git diff --check`：passed。
   - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 300 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production build and iOS asset sync passed；构建产物未进入 git 状态。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
   - `pnpm check:platforms`：passed，`pass=52 warn=0 external=2 fail=0`。
   - `node scripts/check-ios-assets.mjs`：passed，27 files。
   - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，Kotlin/Gradle/XML resources/debug APK/AAB packaging passed；构建产物未进入 git 状态。
-- 未运行项：Android emulator runtime share smoke 未完成；本轮尝试启动 `Pixel_8_API_36` 时第一次因当前 shell 缺少 `ANDROID_HOME` 误展开为 `/emulator/emulator`，第二次使用 Android SDK emulator 后进程退出且未连接 adb，日志无有效输出。未单独运行 `pnpm --dir apps/kmoe-app build`，但 Android debug build 的 `beforeBuildCommand` 已执行 production build；未运行 Rust gate，因为本轮未改 Rust；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
-- 待发布风险：Android 系统分享桥已编译并有前端 fallback 测试，但仍需要 emulator/device 上用真实 downloaded-file 记录触发系统分享表，才能把 Android 文件导出/分享从 release blocker 中移除。
+  - `Pixel_8_API_36` emulator cold boot：passed，使用 Android SDK `emulator` 完整路径、`-read-only`、software renderer 后 boot completed；ADB `sys.boot_completed=1`。
+  - Android debug APK install/launch：passed，`moe.kzo.client/.MainActivity` 启动后进程保持存活，首页真实 catalog 和封面渲染成功。
+  - Android WebView bridge injection smoke：passed，DevTools Runtime 中 `typeof window.KmoeliteAndroidFile === "object"` 且 `typeof window.KmoeliteAndroidFile.shareFile === "function"`。
+- 未运行项：Android 系统分享 chooser 尚未用真实 downloaded-file 记录完整触发；本轮尝试向 emulator app-private `files` 目录注入临时文件时，Play Store production emulator 不允许 `adb root`，`run-as` 写入也不可用，因此没有伪造完成分享表验证。未运行 Playwright E2E，因为本轮没有改路由、布局、Reader、accessibility 或浏览器可见工作流；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
+- 待发布风险：Android 系统分享桥已编译、前端 fallback 测试通过，并在 Android WebView runtime 中确认 bridge 注入；仍需要 emulator/device 上用真实 downloaded-file 记录触发系统分享表，才能把 Android 文件导出/分享从 release blocker 中移除。
 
 ## 2026-06-17 Android FileProvider 私有目录边界
 

@@ -73,6 +73,7 @@
 
 ### Validation
 
+- Android Pixel 8 emulator has passed debug APK install/launch and WebView share-bridge injection smoke; real downloaded-file share chooser validation remains incomplete.
 - Android phone/tablet/TV emulator packaged smoke passed for app launch and primary home/detail rendering after the mobile detail visual fix.
 - iPad simulator has passed packaged launch, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator has passed packaged launch and session-restore smoke. Signed physical-device validation remains incomplete.
 - Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke; real TV hardware and signed distribution remain incomplete.
