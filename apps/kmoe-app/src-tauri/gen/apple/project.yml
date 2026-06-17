@@ -10,7 +10,7 @@ configs:
 settingGroups:
   app:
     base:
-      PRODUCT_NAME: Kmoe Client
+      PRODUCT_NAME: kmoelite
       PRODUCT_BUNDLE_IDENTIFIER: moe.kzo.client
 targetTemplates:
   app:
@@ -40,7 +40,7 @@ targets:
       path: kmoe-app_iOS/Info.plist
       properties:
         LSRequiresIPhoneOS: true
-        NSLocalNetworkUsageDescription: Kmoe Client needs local network access during iPhone and iPad development to load the app from the development server on this Mac.
+        NSLocalNetworkUsageDescription: kmoelite needs local network access only when a developer build loads the app from a development server on this Mac.
         UILaunchStoryboardName: LaunchScreen
         UIRequiredDeviceCapabilities: [arm64, metal]
         UISupportedInterfaceOrientations:

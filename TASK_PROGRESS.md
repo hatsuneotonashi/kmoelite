@@ -4,6 +4,31 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 kmoelite 可见应用名统一与 iPhone packaged smoke
+
+- 变更范围：web title、桌面 sidebar 品牌、Tauri product/window metadata、Android app display strings、iOS Xcode product metadata、macOS DMG packaging script、iOS asset sync cleanup script、Rust test fixture path、AGENTS/README/CHANGELOG/TASK_PROGRESS、Playwright visual baselines。
+- 行为摘要：可见产品名统一为 `kmoelite`。保留 bundle id、SQLite 文件名、localStorage key 等兼容标识，避免无迁移设计时影响现有本地数据。iOS 构建脚本会清理旧 `Kmoe Client.app` 和新 `kmoelite.app` stale bundle，再生成当前产品名 bundle。
+- iPhone simulator packaged smoke：
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed，生成 `kmoelite.app`。
+  - iPhone 17 simulator install/launch：passed，bundle id `moe.kzo.client`。
+  - `Info.plist` inspection：passed，`CFBundleName = kmoelite`，`CFBundleExecutable = kmoelite`，`CFBundleIdentifier = moe.kzo.client`。
+  - 临时截图只用于本地确认首屏渲染和底部导航，未写入仓库。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 294 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=0 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e --update-snapshots`：passed，114 passed / 50 skipped；更新 12 张大桌面/平板视觉基线，差异仅来自左侧品牌文字。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+  - 敏感文本扫描：passed，唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本；未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：本轮未运行 signed physical iPhone/iPad install、macOS signed/notarized app、Windows 真机、Android 实体设备/TV、Apple TV runnable app、真实站点登录/下载回归。
+- 待发布风险：本轮只证明可见命名和 iPhone simulator packaged 启动链路；签名发行、实体设备安装、Windows 真机和 Apple TV 产品壳仍按平台状态文档保留为未完成项。
+
 ## 2026-06-17 Apple TV tvOS runtime 安装与模拟器启动
 
 - 变更范围：Apple TV readiness 脚本、Android AVD manager readiness 检查、README/README.en/CHANGELOG/AGENTS/docs/status/docs/platforms/docs/development/docs/release 文档。

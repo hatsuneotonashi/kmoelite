@@ -134,7 +134,7 @@ export function AppLayout() {
               <BookOpen className="h-5 w-5" />
             </div>
             {desktopLayout ? <div className="min-w-0">
-              <div className="truncate text-sm font-bold">Kmoe Client</div>
+              <div className="truncate text-sm font-bold">kmoelite</div>
               <div className="truncate text-[11px] font-medium text-[var(--app-muted)]">书架 · 阅读 · 下载</div>
             </div> : null}
           </button>

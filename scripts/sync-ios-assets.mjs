@@ -7,7 +7,7 @@ const appDir = path.join(rootDir, 'apps', 'kmoe-app')
 const distDir = path.join(appDir, 'dist')
 const iosAssetsDir = path.join(appDir, 'src-tauri', 'gen', 'apple', 'assets')
 const iosBuildDir = path.join(appDir, 'src-tauri', 'gen', 'apple', 'build')
-const productName = 'Kmoe Client.app'
+const productNames = ['kmoelite.app', 'Kmoe Client.app']
 
 async function existsWithFiles(dir) {
   try {
@@ -46,10 +46,15 @@ async function syncAssetsAtomically() {
 }
 
 async function removeStaleIosAppBundles() {
-  await Promise.all([
-    rm(path.join(iosBuildDir, 'arm64-sim', productName), { recursive: true, force: true }),
-    rm(path.join(iosBuildDir, 'kmoe-app_iOS.xcarchive', 'Products', 'Applications', productName), { recursive: true, force: true })
-  ])
+  await Promise.all(
+    productNames.flatMap((productName) => [
+      rm(path.join(iosBuildDir, 'arm64-sim', productName), { recursive: true, force: true }),
+      rm(path.join(iosBuildDir, 'kmoe-app_iOS.xcarchive', 'Products', 'Applications', productName), {
+        recursive: true,
+        force: true
+      })
+    ])
+  )
 }
 
 function isRetryableFilesystemRace(error) {

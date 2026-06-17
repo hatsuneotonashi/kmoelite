@@ -2,7 +2,7 @@
 name = "kmoe-app"
 version = "0.1.0"
 description = "Kmoe cross-platform client"
-authors = ["Kmoe Client Contributors"]
+authors = ["kmoelite Contributors"]
 edition = "2021"
 
 [lib]

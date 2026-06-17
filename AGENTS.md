@@ -67,6 +67,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Production runtime is live-first and does not expose a user-facing mock/demo mode. Test fixtures live only under Vitest and Playwright test folders.
 - Public documentation must use the unofficial-client framing and GPL-3.0 licensing consistently.
 - Public documentation must describe the project as Alpha / developer preview until platform validation proves a stable release.
+- The visible product name is `kmoelite` across the web title, app shell, mobile/desktop bundle metadata, packaging scripts, and public docs. Do not rename the app back to `Kmoe Client`. Legacy storage identifiers, bundle identifiers, SQLite filenames, and localStorage keys may keep `kmoe-client`/`moe.kzo.client` compatibility names unless a deliberate migration is designed and tested.
 - The default product direction is online reading with temporary cache. Permanent download and Library flows are advanced/compatibility capabilities, not the primary public promise.
 - Main app surfaces include Home, Shelf, Search, Categories, Login, Comic Detail, Download Center, Library, Account, Settings, and Reader.
 - Reader opens prepared local reading cache at `/reader/cache/:chapterCacheId`.

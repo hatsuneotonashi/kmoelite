@@ -42,7 +42,7 @@ fn ensure_main_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Re
 
     let window =
         tauri::WebviewWindowBuilder::new(app, "main", tauri::WebviewUrl::App("index.html".into()))
-            .title("Kmoe Client")
+            .title("kmoelite")
             .inner_size(1280.0, 820.0)
             .min_inner_size(900.0, 640.0)
             .center()
@@ -116,13 +116,13 @@ pub fn run() {
             Ok(())
         })
         .build(tauri::generate_context!())
-        .expect("error while building Kmoe Client");
+        .expect("error while building kmoelite");
 
     #[cfg(not(mobile))]
     app.run(|app_handle, event| {
         if let tauri::RunEvent::Ready = event {
             if let Err(error) = ensure_main_window(app_handle) {
-                eprintln!("failed to show Kmoe Client main window: {error}");
+                eprintln!("failed to show kmoelite main window: {error}");
             }
         }
 
@@ -134,7 +134,7 @@ pub fn run() {
         {
             if !has_visible_windows {
                 if let Err(error) = ensure_main_window(app_handle) {
-                    eprintln!("failed to reopen Kmoe Client main window: {error}");
+                    eprintln!("failed to reopen kmoelite main window: {error}");
                 }
             }
         }

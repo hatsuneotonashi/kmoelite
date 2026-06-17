@@ -383,7 +383,7 @@ fn shelf_reading_and_cache_rows_accept_core_reader_state() {
             ) VALUES (
               'cache-53339-3089-cbz', '53339', '尖帽子的魔法工房', '3089',
               '話 089-095', 'source_zip', 'reading', 'task-1',
-              '/Users/example/Library/Application Support/Kmoe Client/Cache/53339/3089',
+              '/Users/example/Library/Application Support/moe.kzo.client/Cache/53339/3089',
               4096, 180, 'ready', 'balanced', '104', '103', '104'
             )
             "#,
@@ -397,7 +397,7 @@ fn shelf_reading_and_cache_rows_accept_core_reader_state() {
               width, height, size_bytes, created_at, last_accessed_at
             ) VALUES (
               'page-1', 'cache-53339-3089-cbz', '53339', '3089', 0,
-              '/Users/example/Library/Application Support/Kmoe Client/Cache/53339/3089/0001.jpg',
+              '/Users/example/Library/Application Support/moe.kzo.client/Cache/53339/3089/0001.jpg',
               1400, 2000, 1024, '103', '104'
             )
             "#,

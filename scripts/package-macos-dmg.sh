@@ -14,11 +14,11 @@ else
   pnpm --dir "$APP_DIR" tauri build --debug --bundles app
 fi
 
-APP_BUNDLE="$TARGET_DIR/bundle/macos/Kmoe Client.app"
+APP_BUNDLE="$TARGET_DIR/bundle/macos/kmoelite.app"
 OUT_DIR="$TARGET_DIR/bundle/manual-dmg"
 STAGING_DIR="$OUT_DIR/staging"
 ARCH="$(uname -m)"
-DMG_PATH="$OUT_DIR/Kmoe Client_0.1.0_${ARCH}.dmg"
+DMG_PATH="$OUT_DIR/kmoelite_0.1.0_${ARCH}.dmg"
 
 if [[ ! -d "$APP_BUNDLE" ]]; then
   echo "Missing app bundle: $APP_BUNDLE" >&2
@@ -31,7 +31,7 @@ cp -R "$APP_BUNDLE" "$STAGING_DIR/"
 ln -s /Applications "$STAGING_DIR/Applications"
 
 hdiutil create \
-  -volname "Kmoe Client" \
+  -volname "kmoelite" \
   -srcfolder "$STAGING_DIR" \
   -ov \
   -format UDZO \
