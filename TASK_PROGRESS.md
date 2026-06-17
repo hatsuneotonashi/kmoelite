@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Library MOBI file-only Reader 入口修复
+
+- 变更范围：`apps/kmoe-app/src/reading/readerEntry.ts`、`apps/kmoe-app/src/tests/readerEntryState.test.ts`、README、README.en、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Library 单个 MOBI 文件记录现在始终保持文件-only；即使同一卷已经由 EPUB/source ZIP 准备过 Reader cache，MOBI 资料库项也不会误显示为“继续阅读”或打开内置 Reader。EPUB/source ZIP Library 记录仍可继续使用已有 Reader cache 或准备 Reader cache。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/readerEntryState.test.ts`：passed，1 file / 8 tests。
+  - `pnpm verify:real-site-smoke`：passed；runtime-only credentials，checked login_page、login_post、profile、catalog、detail、book_data on `https://kxo.moe`，forbiddenEndpointsCalled=false。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 315 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，91 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。未运行 iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复只收紧 Library 的 MOBI Reader 入口；真实平台下载、导出/分享、签名发布和真机验证仍按平台文档继续验证。
+
 ## 2026-06-18 显式下载格式选择顺序对齐 EPUB
 
 - 变更范围：`apps/kmoe-app/src/pages/DetailPage.tsx`、`apps/kmoe-app/src/components/ui/FormatSegmentedControl.tsx`、`apps/kmoe-app/src/store/settingsStore.ts`、对应 Vitest、README、README.en、CHANGELOG、TASK_PROGRESS。

@@ -45,11 +45,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-18: MOBI library records stay file-only even when the same volume already has a Reader cache from another archive.
 - 2026-06-18: Explicit download defaults and format pickers now put EPUB first; source ZIP remains the advanced high-quality option, and MOBI remains a manual file format.
 - 2026-06-18: Android packaged apps no longer crash when a running app receives a safe `kmoelite://comic/<id>` deep link; the Pixel 8 emulator keeps the same process alive.
 - 2026-06-18: iOS packaged builds now register and harden `kmoelite://comic/<id>` deep links; pending native routes are delivered to React Router after frontend startup.
 - 2026-06-17: fixed restored site sessions being shown as signed out when the account page is authenticated but profile fields are temporarily unavailable; the iPhone simulator packaged app now shows the account-center entry after session restore.
-- 2026-06-17: iPad simulator passed live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator passed packaged render and session-restore smoke.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

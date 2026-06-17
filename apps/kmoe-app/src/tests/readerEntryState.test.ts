@@ -113,6 +113,10 @@ describe('reader entry state resolver', () => {
       file: downloadedFile({ format: 'mobi', localPath: '/tmp/book.mobi' }),
       chapters: []
     })
+    const mobiWithSameVolumeCache = resolveLibraryReaderEntryState({
+      file: downloadedFile({ format: 'mobi', localPath: '/tmp/book.mobi' }),
+      chapters: [chapter()]
+    })
 
     expect(sourceState.kind).toBe('prepare_from_local_source')
     expect(sourceState.enabled).toBe(true)
@@ -121,6 +125,8 @@ describe('reader entry state resolver', () => {
     expect(epubState.readerFormat).toBe('epub')
     expect(mobiState.kind).toBe('not_supported_format')
     expect(mobiState.enabled).toBe(false)
+    expect(mobiWithSameVolumeCache.kind).toBe('not_supported_format')
+    expect(mobiWithSameVolumeCache.enabled).toBe(false)
   })
 })
 

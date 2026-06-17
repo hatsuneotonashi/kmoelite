@@ -172,6 +172,17 @@ export function resolveLibraryReaderEntryState(input: {
   chapters: ChapterCacheRecord[]
 }): ReaderEntryState {
   const { file, chapters } = input
+  if (file.format !== 'source_zip' && file.format !== 'epub') {
+    return {
+      kind: 'not_supported_format',
+      enabled: false,
+      label: '不能内置阅读',
+      helper: 'MOBI 可作为文件打开；内置阅读器需要 EPUB 或源图 ZIP/CBZ。',
+      sourceFile: file,
+      blockingReasons: []
+    }
+  }
+
   const readyCache = findReadyReadingCacheForVolume(chapters, file.comicId, file.volId)
   if (readyCache) {
     return {
@@ -183,35 +194,25 @@ export function resolveLibraryReaderEntryState(input: {
       blockingReasons: []
     }
   }
-  if (file.format !== 'source_zip') {
-    if (file.format === 'epub') {
-      if (isMetadataOnlyDownloadedFile(file)) {
-        return {
-          kind: 'bind_local_source',
-          enabled: false,
-          label: '需绑定 EPUB',
-          helper: '资料库只有记录，需要先绑定本机 EPUB 文件。',
-          sourceFile: file,
-          readerFormat: 'epub',
-          blockingReasons: []
-        }
-      }
+  if (file.format === 'epub') {
+    if (isMetadataOnlyDownloadedFile(file)) {
       return {
-        kind: 'prepare_from_local_source',
-        enabled: true,
-        label: '准备阅读',
-        helper: '已找到本机 EPUB，可生成阅读缓存。',
+        kind: 'bind_local_source',
+        enabled: false,
+        label: '需绑定 EPUB',
+        helper: '资料库只有记录，需要先绑定本机 EPUB 文件。',
         sourceFile: file,
         readerFormat: 'epub',
         blockingReasons: []
       }
     }
     return {
-      kind: 'not_supported_format',
-      enabled: false,
-      label: '不能内置阅读',
-      helper: 'MOBI 可作为文件打开；内置阅读器需要 EPUB 或源图 ZIP/CBZ。',
+      kind: 'prepare_from_local_source',
+      enabled: true,
+      label: '准备阅读',
+      helper: '已找到本机 EPUB，可生成阅读缓存。',
       sourceFile: file,
+      readerFormat: 'epub',
       blockingReasons: []
     }
   }
