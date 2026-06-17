@@ -34,8 +34,8 @@ Developer-preview usable surfaces:
 - iPad: usable for personal testing and daily preview use; tablet layout and Reader are current priorities.
 - macOS: usable as the main local development and preview platform.
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
-- Android phone: experimental source path exists; a Tauri Android debug APK/AAB builds and launches on a Pixel 8 emulator with the phone layout, but real-device, download, Reader, and signed distribution validation are incomplete.
-- Android tablet: experimental source path exists; a Pixel Tablet emulator launches with the tablet contract and has passed one live app-login smoke; download, Reader, cache cleanup, real-device, and signed distribution validation are incomplete.
+- Android phone: experimental source path exists; a Pixel 8 emulator has passed live login, detail, EPUB download, Reader, page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
+- Android tablet: experimental source path exists; a Pixel Tablet emulator has passed live login, detail, EPUB download, Reader spread page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, direction-key focus, remote Back, native DPAD/OK bridging, and synthetic local Reader-cache OK/Back smoke have been validated, but download/cache/device validation is incomplete.
 
 Future plan:
@@ -44,11 +44,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-17: fixed an intermittent mobile/tablet detail Reader auto-download queue-start failure; Android phone and tablet emulators have passed live EPUB-to-Reader and local reading-data deletion smoke.
 - 2026-06-17: added the Android TV native DPAD/OK bridge and verified Reader OK/Back smoke on a TV emulator with a synthetic local Reader cache.
 - 2026-06-17: fixed native login session validation and verified a live app-login smoke on an Android tablet emulator.
 - 2026-06-17: added the experimental Android TV entry and verified Leanback launcher, TV runtime detection, wide shell, and direction-key focus smoke.
 - 2026-06-17: added the Android Tauri project and debug APK/AAB build path, and fixed Android phones being misclassified as Linux desktop layouts.
-- 2026-06-17: added spatial arrow-key focus movement in the non-phone app shell, building the shared baseline for desktop keyboard, iPad keyboard, and TV remote navigation.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

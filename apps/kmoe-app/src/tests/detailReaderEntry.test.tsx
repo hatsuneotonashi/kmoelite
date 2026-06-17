@@ -255,6 +255,57 @@ describe('Detail reader entry', () => {
     expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
   })
 
+  it('retries reader queue start once when the queued task remains ready', async () => {
+    let startAttempts = 0
+    startNativeDownloadQueueMock.mockImplementation(async () => {
+      startAttempts += 1
+      if (startAttempts === 1) {
+        return {
+          ok: false,
+          available: true,
+          message: '下载队列启动失败，请到下载中心重试。'
+        }
+      }
+      nativeTasks = nativeTasks.map((task) => ({
+        ...task,
+        status: 'completed',
+        progress: 100,
+        downloadedBytes: task.totalBytes ?? 2048,
+        localPath: `/Users/example/Downloads/Kmoe/尖帽子的魔法工房/${task.volumeTitle}.${task.format === 'epub' ? 'epub' : 'zip'}`
+      }))
+      nativeLibrary = nativeTasks
+        .filter((task) => task.status === 'completed')
+        .map((task) => sourceArchive({
+          id: `file-${task.id}`,
+          taskId: task.id,
+          format: task.format,
+          localPath: task.localPath ?? '',
+          sizeBytes: task.totalBytes ?? 2048
+        }))
+      return {
+        ok: true,
+        available: true,
+        message: '下载队列已启动。'
+      }
+    })
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
+
+    await waitFor(() => {
+      expect(startNativeDownloadQueueMock).toHaveBeenCalledTimes(2)
+      expect(prepareReaderCacheMock).toHaveBeenCalledWith(expect.objectContaining({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.epub',
+        comicId: '53339',
+        volumeId: '3089',
+        format: 'epub'
+      }))
+    })
+    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
   it('keeps source ZIP available when it is explicitly selected', async () => {
     renderDetail()
 

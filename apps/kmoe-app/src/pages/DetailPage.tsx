@@ -734,7 +734,16 @@ export function DetailPage() {
       detail: '下载完成后会自动同步资料库并准备阅读缓存。'
     })
 
-    const queueRun = startNativeDownloadQueue(settings.downloadDirectory)
+    const queueRun = startNativeDownloadQueue(settings.downloadDirectory).then(async (firstResult) => {
+      if (firstResult.ok) return firstResult
+      await delay(500)
+      const taskResult = await listNativeDownloadTasks({ recoverInterrupted: false })
+      if (taskResult.ok && taskResult.value !== undefined) {
+        const queuedTarget = findReaderDownloadTask(taskResult.value, option, readerFormat, activeTargetTask.id)
+        if (queuedTarget?.status === 'queued') return startNativeDownloadQueue(settings.downloadDirectory)
+      }
+      return firstResult
+    })
     const result = await waitForReaderArchiveDownload({ option, readerFormat, targetTask: activeTargetTask, queueRun, runId })
     if (!readerFlowIsActive(runId)) return
     if (!result.ok) {

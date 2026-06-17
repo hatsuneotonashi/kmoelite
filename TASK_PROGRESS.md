@@ -4,6 +4,40 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android tablet Reader 自动下载重试与真实 EPUB Reader smoke
+
+- 变更范围：详情页 Reader 自动下载队列启动重试、详情页 Reader 入口测试、README/README.en/CHANGELOG/docs/status/docs/platforms 文档。
+- 行为摘要：详情页为 Reader 创建 EPUB 单项任务后，如果第一次启动 native 下载队列短暂失败，但目标任务仍处于 `queued` 状态，会等待后重试一次启动队列。该逻辑避免移动/平板端偶发留下排队任务、需要用户手动进入下载中心启动。
+- Android tablet emulator：
+  - Pixel Tablet API 36 emulator reached `device` and `sys.boot_completed=1`.
+  - Debug APK installed and launched with package `moe.kzo.client`；WebView URL was packaged `http://tauri.localhost/`, not a Mac dev-server URL.
+  - Runtime viewport was tablet-sized and used the tablet rail/sidebar contract.
+  - 登录：passed，使用 runtime credentials；输出未打印账号、密码、Cookie、Session 或授权 URL。
+  - Detail：passed，`/comic/53339` 真实详情页和目录加载成功。
+  - 详情页目录 `話 089-095` 自动 Reader flow：passed，创建并启动 EPUB 单项任务，下载完成后自动准备 Reader cache，并打开 `/reader/cache/reader-cache%3A53339%3A3089%3Aepub`。
+  - Reader：第 1 页图片加载成功，快捷翻页后进入双页 `第 2-3 / 175 页`，两张图片均加载成功。
+  - Settings 本地阅读数据删除：passed，删除 1 个 Reader cache 和 1 个本地阅读文件记录，统计归零。
+  - 重新打开旧 Reader cache URL 不再显示漫画图片，提示本地没有找到章节缓存，需要重新准备。
+  - 进程清理：emulator 已通过 ADB 关闭，`adb devices -l` 为空。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/detailReaderEntry.test.tsx`：passed，1 file / 11 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 仅报告上游 deprecation warning。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - 敏感文本扫描：passed，修改文件中未发现账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 293 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未运行 Android tablet 真机、Android signed release、Android 文件导出/分享、iPhone/iPad 真机、Windows 真机或 Apple TV。
+- 待发布风险：Android tablet emulator 已验证真实登录、详情、EPUB 下载、Reader、双页翻页和显式本地阅读数据删除；这仍不等同于 Android tablet 真机、签名发行或分发完成。详情页在会话检查尚未完成时仍会提示“正在确认登录状态，请稍后再试”，后续可改成按钮 loading/disabled 的体验优化。
+
 ## 2026-06-17 Android phone emulator 真实下载到 Reader 与清理验证
 
 - 变更范围：验证日志和平台状态文档；产品代码未变更。
