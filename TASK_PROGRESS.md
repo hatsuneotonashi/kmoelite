@@ -4,6 +4,30 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android phone emulator 真实下载到 Reader 与清理验证
+
+- 变更范围：验证日志和平台状态文档；产品代码未变更。
+- Android phone emulator：
+  - Pixel 8 API 36 emulator cold boot reached `device` and `sys.boot_completed=1`.
+  - Debug APK installed successfully from `apps/kmoe-app/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`.
+  - App launched with package `moe.kzo.client`; WebView URL was packaged `http://tauri.localhost/`, not a Mac dev-server URL.
+  - Runtime viewport was phone-sized and used the mobile shell/bottom navigation.
+- 真实站点 smoke：
+  - 登录：passed，使用 runtime credentials；输出未打印账号、密码、Cookie、Session 或授权 URL。
+  - Account：passed，登录后账号页可读取 authenticated account state。
+  - Detail：passed，`/comic/53339` 真实详情页和目录加载成功。
+- 真实 EPUB 单项下载到 Reader：
+  - 详情页“开始阅读”创建并执行 EPUB 单项下载，下载进度进入 `正在下载EPUB`。
+  - 下载完成后自动准备 Reader cache，并打开 `/reader/cache/reader-cache%3A53339%3A3001%3Aepub`。
+  - Reader 第 1 页图片加载成功，快捷翻页后进入第 2 页，图片加载成功。
+- 本地阅读数据删除验证：
+  - Settings 显示本次阅读数据占用约 52 MB，1 章 / 235 页。
+  - “删除全部本地阅读数据” passed，删除 1 个 Reader cache 和 1 个本地阅读文件记录，统计归零。
+  - 重新打开旧 Reader cache URL 不再显示漫画图片，提示本地没有找到章节缓存，需要重新准备。
+- 进程清理：emulator 已通过 ADB 关闭，`adb devices -l` 为空。
+- 未运行项：本轮未运行 Android phone 真机、Android tablet 下载/Reader/cache 清理、Android signed release、iPhone/iPad 真机、Windows 真机或 Apple TV。
+- 待发布风险：Android phone emulator 已验证安装、真实登录、详情、EPUB 下载、Reader、翻页和显式本地阅读数据清理；这仍不等同于 Android phone 真机、Android tablet 或签名发行完成。
+
 ## 2026-06-17 Android debug 构建复核与 Reader E2E EPUB 证据同步
 
 - 变更范围：Playwright Reader 入口 fixture 和 E2E 断言；产品代码未变更。

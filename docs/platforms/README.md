@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone/tablet 模拟器启动已验证，Android tablet 另通过一次真实 app 登录 smoke，但还没有完成真机、下载、Reader、缓存清理和签名发布验证。Android TV 已有最薄实验入口、模拟器启动/方向键焦点 smoke、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke，但不等同于完整 TV 支持。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页和本地阅读数据清理 smoke；Android tablet 通过一次真实 app 登录 smoke，但还没有完成下载、Reader、缓存清理、真机和签名发布验证。Android TV 已有最薄实验入口、模拟器启动/方向键焦点 smoke、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke，但不等同于完整 TV 支持。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -21,8 +21,9 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 - 实验预览源码路径存在。
 - `src-tauri/gen/android` 已生成 Tauri Android 工程，debug APK/AAB 构建通过。
 - Pixel 8 API 36 模拟器可安装并启动，首屏使用 phone contract 和底部导航。
+- Pixel 8 API 36 模拟器已通过真实登录、账号页、详情、EPUB 单项下载、Reader cache 准备、翻页和显式本地阅读数据删除 smoke。
 - 设计原则与 iPhone 一致：触控优先、低存储占用、在线阅读优先。
-- 真机、登录、下载、Reader、缓存清理、文件导出/分享、签名发布仍未完整验证。
+- 真机、文件导出/分享、签名发布仍未完整验证。
 
 ## Android 平板
 
