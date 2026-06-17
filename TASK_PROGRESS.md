@@ -4,6 +4,16 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android deep link fallback 一次性消费
+
+- 变更范围：`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Android packaged app 前端读取 `window.__kmoeliteAndroidPendingRoute` fallback 后会立即清空该全局值；收到 Android native bridge route 事件时也会清空 fallback，避免旧漫画 deep link 在 listener 重新挂载或 bridge 异常兜底时被重复播放。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts`：passed，1 file / 5 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 未运行项：未运行完整 Vitest/build/Rust/platform/E2E gate；本轮只改 Android deep-link 前端 fallback 状态消费和对应 source-level 检查。未重新构建或安装 Android APK。
+- 待发布风险：该改动继续收紧 Android packaged deep-link handoff；Android 真机、真实 downloaded-file 分享、签名发布和实体 TV 验证仍未完成。
+
 ## 2026-06-18 Android deep link stale route 兜底修复
 
 - 变更范围：`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、CHANGELOG、TASK_PROGRESS。

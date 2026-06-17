@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Android deep-link fallback state is now consumed once and cleared after native route events, preventing stale comic routes from being replayed later.
 - Android deep-link startup now avoids reusing a stale global fallback route after the native pending-route bridge has already consumed it.
 - Android packaged apps no longer crash when a safe `kmoelite://comic/<id>` link is delivered while the app is already running.
 - iPhone/iPad/Android Library and Download Center file actions now use export/share wording instead of desktop-only folder-location wording, and mobile EPUB/source archives keep a clear Reader plus export path.

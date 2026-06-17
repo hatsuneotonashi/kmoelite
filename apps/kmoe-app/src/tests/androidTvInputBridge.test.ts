@@ -39,6 +39,8 @@ describe('Android app links', () => {
     expect(mainActivitySource).toContain("window.dispatchEvent(new CustomEvent('kmoelite-android-deep-link-route', { detail: route }))")
     expect(mainActivitySource).toContain('Regex("[A-Za-z0-9_-]{1,80}")')
     expect(appSource).toContain("if (typeof bridge?.takePendingRoute === 'function') return bridge.takePendingRoute() || undefined")
+    expect(appSource).toContain('delete target.__kmoeliteAndroidPendingRoute')
+    expect(appSource).toContain('delete (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute')
   })
 })
 
