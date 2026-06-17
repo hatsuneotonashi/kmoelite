@@ -27,6 +27,7 @@
 
 ### Changed
 
+- Platform readiness now marks the known Apple TV/tvOS WebKit absence as a warning instead of hiding it as an external host-tool gap.
 - Tightened production UI/native copy for Shelf, Download Center, mobile download preflight, file export fallback, and oversized-download errors so the app explains current behavior without future-plan or "not implemented" wording in normal flows.
 - Visible app branding is now consistently `kmoelite` across the HTML title, app shell, Tauri product/window metadata, Android display strings, iOS bundle product metadata, and macOS DMG packaging names, while preserving legacy storage identifiers for compatibility.
 - 详情页“开始阅读”和离线下载“自动”格式改为优先使用 EPUB，源图 ZIP/CBZ 保留为用户显式选择的高画质选项，避免普通阅读路径默认排入更容易被站点授权拒绝的源图 ZIP 任务。

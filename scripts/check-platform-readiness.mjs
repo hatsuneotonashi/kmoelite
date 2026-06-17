@@ -177,7 +177,7 @@ const tvosHasWebKit = tvosSimulatorSdkPath.ok && existsSync(tvosWebKitPath)
 addCheck({
   id: 'appletv.webkit_unavailable',
   platform: 'appletv',
-  status: hostPlatform !== 'darwin' ? 'external' : tvosSimulatorSdkPath.ok && !tvosHasWebKit ? 'external' : 'pass',
+  status: hostPlatform !== 'darwin' ? 'external' : tvosSimulatorSdkPath.ok && !tvosHasWebKit ? 'warn' : 'pass',
   summary: hostPlatform === 'darwin' && tvosSimulatorSdkPath.ok
     ? tvosHasWebKit
       ? 'WebKit.framework is available in the tvOS simulator SDK.'

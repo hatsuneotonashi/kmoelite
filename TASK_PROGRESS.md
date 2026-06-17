@@ -4,6 +4,17 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Apple TV readiness warning classification
+
+- 变更范围：`scripts/check-platform-readiness.mjs`、CHANGELOG、docs/status、TASK_PROGRESS。
+- 行为摘要：Apple TV/tvOS SDK 缺少 WebKit 是已知平台架构 blocker，不是缺本机工具。因此 `appletv.webkit_unavailable` 从 `external` 改为 `warn`，让平台 gate 明确暴露 Apple TV 当前不能复用 Tauri/WKWebView 壳。
+- 验证：
+  - `git diff --check`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+- 未运行项：未运行完整 TypeScript/Vitest/build/Rust/E2E gate；本轮只改平台 readiness 分类和文档。
+- 待发布风险：Apple TV 仍未可用；后续必须先设计 TVMLKit、TVUIKit 或原生 TV UI。
+
 ## 2026-06-18 Apple TV WebKit platform blocker documentation
 
 - 变更范围：`scripts/check-platform-readiness.mjs`、README、AGENTS、CHANGELOG、docs/status、docs/platforms、docs/development、docs/release、docs/reader-shelf。
