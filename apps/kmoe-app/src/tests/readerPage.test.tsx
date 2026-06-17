@@ -6,6 +6,7 @@ import { useDownloadStore } from '../store/downloadStore'
 import { useReadingStore } from '../store/readingStore'
 import { useCacheStore } from '../store/cacheStore'
 import { useSettingsStore } from '../store/settingsStore'
+import type { ChapterCacheRecord } from '../types/cache'
 import {
   clearNativeReadingCache,
   deleteNativeLocalReadingData,
@@ -69,6 +70,7 @@ const readPageMock = vi.mocked(readNativeCachedReaderPage)
 const repairCacheMock = vi.mocked(repairNativeReaderChapterCache)
 const saveProgressMock = vi.mocked(saveNativeReadingProgress)
 const setStatusBarHiddenMock = vi.mocked(setNativeIosStatusBarHidden)
+type SampleChapterRecord = ChapterCacheRecord & { cacheDir: string }
 
 describe('ReaderPage', () => {
   beforeEach(() => {
@@ -1579,7 +1581,73 @@ describe('ReaderPage', () => {
       })
       expect(screen.getByAltText('第 1 页')).toHaveAttribute('src', 'data:image/jpeg;base64,AA==')
     })
-    expect(screen.getByText('已从重新下载的源图 ZIP 自动准备阅读缓存。')).toBeInTheDocument()
+    expect(screen.getByText('已从重新下载的阅读文件（源图 ZIP）自动准备阅读缓存。')).toBeInTheDocument()
+  })
+
+  it('automatically prepares the reader cache from EPUB when the original source ZIP cache is stale', async () => {
+    listChaptersMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [sampleChapter({ pageCount: 0 })]
+    })
+    listPagesMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: []
+    })
+    prepareCacheMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: '已准备 2 页阅读缓存。',
+      value: {
+        chapter: sampleChapter({ format: 'epub', sourceTaskId: '53339-3089-epub' }),
+        pages: [samplePage(0), samplePage(1)],
+        manifest: sampleManifest(2)
+      }
+    })
+    readPageMock.mockImplementation(async (_chapterCacheId, pageIndex) => ({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleImage(pageIndex)
+    }))
+    saveProgressMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleNativeProgress(0)
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/reader/cache/cache-53339-3089']}>
+        <Routes>
+          <Route path="/reader/cache/:chapterCacheId" element={<ReaderPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect((await screen.findAllByText('章节缓存没有可阅读页面，请重新准备阅读缓存。')).length).toBeGreaterThan(0)
+
+    act(() => {
+      useDownloadStore.setState({ library: [sampleDownloadedEpubArchive()] })
+    })
+
+    await waitFor(() => {
+      expect(prepareCacheMock).toHaveBeenCalledWith({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.epub',
+        comicId: '53339',
+        comicTitle: '尖帽子的魔法工房',
+        volumeId: '3089',
+        volumeTitle: '話 089-095',
+        sourceTaskId: '53339-3089-epub',
+        format: 'epub',
+        policy: 'balanced'
+      })
+      expect(screen.getByAltText('第 1 页')).toHaveAttribute('src', 'data:image/jpeg;base64,AA==')
+    })
+    expect(screen.getByText('已从重新下载的阅读文件（EPUB）自动准备阅读缓存。')).toBeInTheDocument()
   })
 
   it('opens a thumbnail table of contents and jumps to a selected page without loading the full chapter', async () => {
@@ -1982,11 +2050,12 @@ function openReaderControls() {
   expect(screen.getByLabelText('阅读控制')).toBeInTheDocument()
 }
 
-function sampleChapter(overrides?: Partial<ReturnType<typeof sampleChapterBase>>) {
-  return { ...sampleChapterBase(), ...overrides }
+function sampleChapter(overrides?: Partial<SampleChapterRecord>): SampleChapterRecord {
+  const base = sampleChapterBase()
+  return { ...base, ...overrides, cacheDir: overrides?.cacheDir ?? base.cacheDir }
 }
 
-function sampleChapterBase() {
+function sampleChapterBase(): SampleChapterRecord {
   return {
     id: 'cache-53339-3089',
     comicId: '53339',
@@ -2071,6 +2140,16 @@ function sampleDownloadedSourceArchiveBase() {
     localPath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
     sizeBytes: 2048,
     downloadedAt: '2026-05-24T05:30:00.000Z'
+  }
+}
+
+function sampleDownloadedEpubArchive() {
+  return {
+    ...sampleDownloadedSourceArchiveBase(),
+    id: 'file-53339-3089-epub',
+    taskId: '53339-3089-epub',
+    format: 'epub' as const,
+    localPath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.epub'
   }
 }
 

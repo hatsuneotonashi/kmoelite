@@ -45,11 +45,12 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-18: Reader cache repair can now fall back to another Reader-capable archive for the same volume, such as rebuilding a stale source ZIP cache from a local EPUB file.
 - 2026-06-18: MOBI library records stay file-only even when the same volume already has a Reader cache from another archive.
 - 2026-06-18: Explicit download defaults and format pickers now put EPUB first; source ZIP remains the advanced high-quality option, and MOBI remains a manual file format.
-- 2026-06-18: Android packaged apps no longer crash when a running app receives a safe `kmoelite://comic/<id>` deep link; the Pixel 8 emulator keeps the same process alive.
-- 2026-06-18: iOS packaged builds now register and harden `kmoelite://comic/<id>` deep links; pending native routes are delivered to React Router after frontend startup.
-- 2026-06-17: fixed restored site sessions being shown as signed out when the account page is authenticated but profile fields are temporarily unavailable; the iPhone simulator packaged app now shows the account-center entry after session restore.
+- 2026-06-18: Metadata-only Library records are no longer treated as removable local reading data when no real local file or Reader cache exists.
+- 2026-06-18: Detail Reader entry no longer blocks online EPUB/source retrieval when the Library only has metadata-only records for that volume.
+- 2026-06-18: Starting the native download queue with no pending tasks now reports a clear error instead of a false success.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

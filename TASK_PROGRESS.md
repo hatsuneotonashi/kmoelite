@@ -4,6 +4,27 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Reader cache 同卷归档兜底修复
+
+- 变更范围：`apps/kmoe-app/src/pages/ReaderPage.tsx`、`apps/kmoe-app/src/tests/readerPage.test.tsx`、`apps/kmoe-app/src-tauri/src/commands.rs`、`apps/kmoe-app/src-tauri/src/commands_snapshot_tests.rs`、README、README.en、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Reader cache 修复不再只接受和旧 cache 同格式的本地归档。同一卷如果旧 source ZIP cache 失效、但 Library 里已有可用 EPUB，native repair 和前端自动准备流程都会使用 EPUB 重建 Reader cache；同理 EPUB cache 仍优先 EPUB 并可回退到 source ZIP。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/readerPage.test.tsx`：passed，1 file / 31 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml repairs_reader_cache_from_epub_when_original_source_zip_is_missing --lib`：passed，1 targeted test。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+  - 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径；tracked 文件未发现 `.env`、cookie/session、SQLite DB、下载文件、`dist`、`target`、`test-results` 等发布风险路径。
+- 未运行项：未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。未运行 iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复验证了 fixture/native 单元路径和浏览器 E2E Reader 入口；真实站点下载到 EPUB/source ZIP 后的跨平台真机修复路径仍需按 live profile 和平台文档继续验证。
+
 ## 2026-06-18 Library MOBI file-only Reader 入口修复
 
 - 变更范围：`apps/kmoe-app/src/reading/readerEntry.ts`、`apps/kmoe-app/src/tests/readerEntryState.test.ts`、README、README.en、CHANGELOG、TASK_PROGRESS。

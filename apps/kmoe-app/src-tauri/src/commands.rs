@@ -926,15 +926,23 @@ fn find_reader_repair_source_archive(
     chapter: &ChapterCache,
 ) -> Result<DownloadedFile, String> {
     let files = db::list_downloaded_files(conn).map_err(|error| error.to_string())?;
-    let candidates = files
+    let mut candidates = files
         .into_iter()
         .filter(|file| {
             file.comic_id == chapter.comic_id
                 && file.vol_id == chapter.volume_id
-                && file.format == chapter.format
                 && is_reader_archive_format(&file.format)
         })
         .collect::<Vec<_>>();
+    candidates.sort_by_key(|file| {
+        if file.format == chapter.format {
+            0
+        } else if file.format == "epub" {
+            1
+        } else {
+            2
+        }
+    });
     let source = chapter
         .source_task_id
         .as_deref()

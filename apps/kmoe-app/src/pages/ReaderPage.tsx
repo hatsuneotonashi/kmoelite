@@ -899,7 +899,7 @@ export function ReaderPage() {
     const prepareRecoveredSource = async () => {
       setRepairingCache(true)
       const format = recoveredSourceArchive.format as ReaderArchiveFormat
-      setSourceQueueMessage(`已找到重新下载的${readerArchiveFormatLabel(format)}，正在自动准备阅读缓存...`)
+      setSourceQueueMessage(`已找到重新下载的阅读文件（${readerArchiveFormatLabel(format)}），正在自动准备阅读缓存...`)
       const result = await prepareNativeReaderChapterCache({
         archivePath: recoveredSourceArchive.localPath,
         comicId: chapter.comicId,
@@ -930,7 +930,7 @@ export function ReaderPage() {
         setPageLoading(false)
         setPageIndex(restoredPageIndex)
         setManualSpreadOverrides({})
-        setSourceQueueMessage(`已从重新下载的${readerArchiveFormatLabel(format)} 自动准备阅读缓存。`)
+        setSourceQueueMessage(`已从重新下载的阅读文件（${readerArchiveFormatLabel(format)}）自动准备阅读缓存。`)
       } else {
         setSourceQueueMessage(isNativeUnavailable(result) ? '请在 Tauri 客户端中准备阅读缓存。' : result.message)
       }
@@ -2025,8 +2025,13 @@ function getReaderChapterNavigation(current: ChapterCacheRecord | null, siblings
 
 function findReaderSourceArchive(chapter: ChapterCacheRecord | null, library: DownloadedFile[]): DownloadedFile | undefined {
   if (!chapter) return undefined
-  const preferred = isReaderArchiveFormat(chapter.format) ? [chapter.format] : undefined
+  const preferred = readerArchiveRepairFormats(chapter.format)
   return findUsableReaderArchiveForVolume(library, chapter.comicId, chapter.volumeId, preferred)
+}
+
+function readerArchiveRepairFormats(format: string): ReaderArchiveFormat[] | undefined {
+  if (!isReaderArchiveFormat(format)) return undefined
+  return format === 'epub' ? ['epub', 'source_zip'] : ['source_zip', 'epub']
 }
 
 function compareReaderChapters(left: ChapterCacheRecord, right: ChapterCacheRecord): number {

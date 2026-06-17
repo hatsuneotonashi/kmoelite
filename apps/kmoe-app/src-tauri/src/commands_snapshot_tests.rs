@@ -940,6 +940,75 @@ fn repairs_reader_cache_from_trusted_downloaded_source_archive() {
 }
 
 #[test]
+fn repairs_reader_cache_from_epub_when_original_source_zip_is_missing() {
+    let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
+    db::init_schema(&conn).expect("schema initializes");
+    let root =
+        std::env::temp_dir().join(format!("kmoe-reader-repair-epub-fallback-{}", timestamp()));
+    let archive_path = root.join("library").join("chapter.epub");
+    let cache_root = root.join("cache");
+    std::fs::create_dir_all(archive_path.parent().unwrap()).expect("library dir creates");
+    write_reader_test_archive(&archive_path, &[("pages/page1.jpg", &[1][..])]);
+
+    db::insert_downloaded_file(
+        &conn,
+        &DownloadedFile {
+            id: "file-53339-3089-epub".to_string(),
+            task_id: Some("task-53339-epub".to_string()),
+            comic_id: "53339".to_string(),
+            comic_title: "尖帽子的魔法工房".to_string(),
+            vol_id: "3089".to_string(),
+            volume_title: "話 089-095".to_string(),
+            format: "epub".to_string(),
+            local_path: archive_path.to_string_lossy().to_string(),
+            size_bytes: None,
+            downloaded_at: "120".to_string(),
+        },
+    )
+    .expect("epub archive record inserts");
+
+    db::save_chapter_cache(
+        &conn,
+        &SaveChapterCacheInput {
+            chapter: ChapterCache {
+                id: "cache-53339-3089-source".to_string(),
+                comic_id: "53339".to_string(),
+                comic_title: "尖帽子的魔法工房".to_string(),
+                volume_id: "3089".to_string(),
+                volume_title: "話 089-095".to_string(),
+                format: "source_zip".to_string(),
+                cache_kind: "reading_cache".to_string(),
+                source_task_id: Some("task-53339-source".to_string()),
+                cache_dir: cache_root.join("stale").to_string_lossy().to_string(),
+                size_bytes: 0,
+                page_count: Some(0),
+                status: "failed".to_string(),
+                policy: Some("balanced".to_string()),
+                last_accessed_at: "100".to_string(),
+                created_at: "100".to_string(),
+                updated_at: "100".to_string(),
+                expires_at: None,
+            },
+            pages: vec![],
+        },
+    )
+    .expect("stale source cache row saves");
+
+    let repaired =
+        repair_reader_chapter_cache_with_root(&conn, "cache-53339-3089-source", &cache_root)
+            .expect("reader cache repairs from available epub archive");
+
+    assert_eq!(repaired.chapter.format, "epub");
+    assert_eq!(
+        repaired.chapter.source_task_id.as_deref(),
+        Some("task-53339-epub")
+    );
+    assert_eq!(repaired.pages.len(), 1);
+
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
 fn reader_cache_repair_rejects_missing_metadata_only_or_non_source_records() {
     let conn = rusqlite::Connection::open_in_memory().expect("memory db opens");
     db::init_schema(&conn).expect("schema initializes");
