@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS simulator smoke 截图检查
+
+- 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：`pnpm smoke:ios-sim` 安装并启动 iPhone/iPad simulator app 后，会等待渲染、截取一张系统临时截图、用 `sips` 确认截图可解码且尺寸有效，然后自动删除截图。这样 smoke 不再只证明进程启动，也能覆盖 packaged app 的基本画面输出。
+- 验证：
+  - `bash -n scripts/smoke-ios-simulator.sh`：passed。
+  - `IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `screenshot=1206x2622`；截图位于系统临时目录并由脚本删除。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=53 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，tracked 文件未发现 `.env`、cookie/session、SQLite DB、下载文件、`dist`、`target`、`test-results` 等发布风险路径。
+- 未运行项：未运行 Playwright E2E；本轮只增强 iOS simulator smoke 脚本和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实登录、详情、Reader、下载、缓存清理和真机安装。
+- 待发布风险：该 smoke 仍只证明 iOS simulator 可安装、启动并产生可解码画面；iPhone/iPad 真实登录、Reader、显式下载、文件导出/分享、缓存清理和 signed physical-device 验证仍需继续补齐。
+
 ## 2026-06-18 iOS simulator smoke readiness 覆盖
 
 - 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。

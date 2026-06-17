@@ -29,6 +29,7 @@
 
 ### Changed
 
+- `pnpm smoke:ios-sim` now captures and validates a temporary simulator screenshot after launch, so the iPhone/iPad smoke catches more than a live process id.
 - Default explicit download format now starts at EPUB for new or invalid settings, and explicit format pickers now show EPUB before source ZIP and MOBI so the ordinary path stays aligned with Reader-capable online reading.
 - Mobile and TV Settings now present the download location as an app-private read-only storage area with export/share guidance, while desktop keeps the editable save-location field.
 - Platform readiness now marks the known Apple TV/tvOS WebKit absence as a warning instead of hiding it as an external host-tool gap.

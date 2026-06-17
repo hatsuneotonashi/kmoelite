@@ -39,7 +39,7 @@
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back；真实登录、详情、EPUB 下载、Reader cache、`DPAD_CENTER` 显示 chrome、`DPAD_LEFT` 双页翻页和本地阅读数据删除 passed。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
 - iPad simulator native runtime：`tauri ios build --debug --target aarch64-sim --no-sign` passed；iPad Air 13-inch simulator 可安装、启动、渲染 packaged debug app，并通过真实 EPUB detail -> download -> Reader -> page turn -> progress smoke。登录 UI 自动化未完成，本轮使用 runtime credentials 完成真实站点登录后把会话写入 app-private simulator SQLite 继续验证；输出未打印账号、密码、Cookie、Session 或授权 URL。
-- iPhone simulator native runtime：iPhone 17 simulator 可安装、启动、渲染 packaged debug app；受控 session restore 后账号入口和真实封面加载 passed；`kmoelite://comic/<id>` URL scheme 已注册，native pending route 交付已通过编译验证，simulator open-url 可到达 iOS 系统确认框。iPhone 详情、Reader、下载、确认后的 deep-link 详情视觉 smoke 和缓存清理 smoke 尚未完成。
+- iPhone simulator native runtime：iPhone 17 simulator 可安装、启动，并通过 packaged debug app 截图解码 smoke；受控 session restore 后账号入口和真实封面加载 passed；`kmoelite://comic/<id>` URL scheme 已注册，native pending route 交付已通过编译验证，simulator open-url 可到达 iOS 系统确认框。iPhone 详情、Reader、下载、确认后的 deep-link 详情视觉 smoke 和缓存清理 smoke 尚未完成。
 - iPad/iPhone signed physical-device runtime：本机 Xcode signing/provisioning 未配置完整，实机完整验证未完成。
 
 这些记录是本地阶段性结果；公开上传前或发布二进制前应重新运行当前树的检查，并以最新输出为准。

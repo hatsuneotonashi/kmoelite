@@ -34,4 +34,16 @@ fi
 
 xcrun simctl install "${device}" "${app}"
 launch_output="$(xcrun simctl launch "${device}" "${BUNDLE_ID}")"
-echo "ios_sim_smoke=passed device=${device} ${launch_output}"
+sleep "${IOS_SIM_RENDER_WAIT_SECONDS:-3}"
+screenshot="${TMPDIR:-/tmp}/kmoelite-ios-sim-${device}-$$.png"
+trap 'rm -f "${screenshot}"' EXIT
+xcrun simctl io "${device}" screenshot "${screenshot}" >/dev/null
+image_info="$(sips -g pixelWidth -g pixelHeight "${screenshot}" 2>/dev/null)"
+width="$(awk '/pixelWidth/ { print $2 }' <<<"${image_info}")"
+height="$(awk '/pixelHeight/ { print $2 }' <<<"${image_info}")"
+size="$(stat -f%z "${screenshot}")"
+if [[ -z "${width}" || -z "${height}" || "${width}" -le 0 || "${height}" -le 0 || "${size}" -le 0 ]]; then
+  echo "ios_sim_smoke=failed reason=screenshot-not-readable" >&2
+  exit 1
+fi
+echo "ios_sim_smoke=passed device=${device} ${launch_output} screenshot=${width}x${height}"
