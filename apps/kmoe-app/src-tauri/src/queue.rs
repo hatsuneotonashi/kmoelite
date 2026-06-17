@@ -80,6 +80,10 @@ async fn process_queue_at(
         processed += 1;
     }
 
+    if processed == 0 {
+        return Err("没有待处理下载任务，请先从详情页加入本地队列。".to_string());
+    }
+
     Ok(processed)
 }
 
@@ -278,6 +282,29 @@ mod tests {
 
         assert!(error.contains("下载队列已在运行"));
         let _ = std::fs::remove_file(db_path);
+    }
+
+    #[tokio::test]
+    async fn empty_queue_run_reports_no_pending_tasks() {
+        let root = std::env::temp_dir().join(format!("kmoe-queue-empty-{}", timestamp()));
+        let db_path = root.join("queue.sqlite3");
+        let download_root = root.join("downloads");
+        std::fs::create_dir_all(&root).expect("temp dir creates");
+        let conn = db::open_connection(db_path.clone()).expect("db opens");
+        drop(conn);
+
+        let client = KmoeHttpClient::new().expect("http client initializes");
+        let error = process_download_queue_at(
+            Some(db_path.clone()),
+            &client,
+            Some(download_root.to_string_lossy().to_string()),
+        )
+        .await
+        .expect_err("empty queue is rejected");
+
+        assert!(error.contains("没有待处理下载任务"));
+        assert!(!download_root.exists());
+        let _ = std::fs::remove_dir_all(root);
     }
 
     fn sample_task(id: &str, vol_id: &str, volume_title: &str, created_at: &str) -> DownloadTask {
