@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径，但还没有完成真机、下载、Reader 和签名发布验证。Apple TV 和 Android TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径，但还没有完成真机、下载、Reader 和签名发布验证。Android TV 已有最薄实验入口和模拟器启动/方向键焦点 smoke，但不等同于完整 TV 支持。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -49,8 +49,11 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 
 ## Android TV
 
-- 后续研究方向，不属于当前 Alpha 可用范围。
-- 需要先设计遥控器输入、横屏阅读、焦点导航、缓存清理和平台分发策略。
+- 实验入口存在，不属于当前 Alpha 稳定可用范围。
+- Android manifest 已声明 optional Leanback launcher；Android TV API 36 模拟器可安装并启动。
+- 前端可识别 Android TV WebView UA，进入 `androidTv` runtime、`tv` layout contract 和 `remote` input class。
+- 方向键焦点 smoke 已验证可从 shell 进入导航项。
+- Reader、下载、缓存清理、返回键、实体 TV、签名发布和分发验证仍未完成。
 
 ## 正常用户入口
 

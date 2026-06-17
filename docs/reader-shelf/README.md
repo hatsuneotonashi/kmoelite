@@ -71,9 +71,10 @@ macOS / Windows：
 - 保留桌面高密度导航、键盘/focus、hover、文件打开和显示位置。
 - 窄桌面窗口仍然按桌面运行时契约处理，不退化成手机壳。
 
-TV future：
+TV：
 
-- Apple TV 和 Android TV 需要单独设计遥控器输入、焦点导航、横屏布局和缓存策略，不能直接复用手机 UI。
+- Android TV 已有实验 shell 和方向键焦点基础；Reader、下载、缓存清理、返回键和横屏阅读仍需单独实现/验证，不能直接复用手机 UI。
+- Apple TV 仍需要先设计遥控器输入、焦点导航、横屏布局和缓存策略。
 
 ## Native 边界
 

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { detectPlatformTarget, type PlatformTarget } from '../download/pathPlanner'
 
 export type LayoutMode = 'phone' | 'tabletCompact' | 'tablet' | 'desktop'
-export type DeviceClass = 'phone' | 'tablet' | 'desktop' | 'unknown'
+export type DeviceClass = 'phone' | 'tablet' | 'desktop' | 'tv' | 'unknown'
 export type WindowClass = 'compact' | 'medium' | 'expanded' | 'wide'
-export type InputClass = 'touch' | 'pointer' | 'hybrid'
+export type InputClass = 'touch' | 'pointer' | 'hybrid' | 'remote'
 export type RuntimeClass = PlatformTarget
-export type LayoutContract = 'phone' | 'tabletCompact' | 'tablet' | 'desktop' | 'macDesktop' | 'windowsDesktop'
+export type LayoutContract = 'phone' | 'tabletCompact' | 'tablet' | 'desktop' | 'macDesktop' | 'windowsDesktop' | 'tv'
 
 export interface LayoutDetectionInput {
   width: number
@@ -39,11 +39,24 @@ export function getPlatformLayoutModel(input: LayoutDetectionInput): PlatformLay
   const coarsePointer = input.coarsePointer ?? false
   const inputClass = runtimeClass === 'ios'
     ? 'touch'
+    : runtimeClass === 'androidTv' || runtimeClass === 'appleTv'
+      ? 'remote'
     : touchPoints > 0 && !coarsePointer
       ? 'hybrid'
       : touchPoints > 0 || coarsePointer
         ? 'touch'
         : 'pointer'
+
+  if (runtimeClass === 'androidTv' || runtimeClass === 'appleTv') {
+    return {
+      layoutMode: 'desktop',
+      layoutContract: 'tv',
+      deviceClass: 'tv',
+      windowClass,
+      inputClass: 'remote',
+      runtimeClass
+    }
+  }
 
   if (runtimeClass === 'ios') {
     return {

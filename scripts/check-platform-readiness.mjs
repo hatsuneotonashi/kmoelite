@@ -131,6 +131,16 @@ addCheck({
   detail: 'Android source builds need the generated Gradle project, manifest, wrapper, and Android capability schema.'
 })
 
+const androidManifestPath = path.join(TAURI_DIR, 'gen/android/app/src/main/AndroidManifest.xml')
+const androidManifest = existsSync(androidManifestPath) ? await readFile(androidManifestPath, 'utf8') : ''
+addCheck({
+  id: 'tauri.android_tv_manifest',
+  platform: 'android-tv',
+  status: androidManifest.includes('android.software.leanback') && androidManifest.includes('android.intent.category.LEANBACK_LAUNCHER') ? 'pass' : 'warn',
+  summary: androidManifest ? 'Android manifest declares optional Leanback launcher support.' : 'Android manifest is missing.',
+  detail: 'Android TV install/launcher smoke needs the optional leanback feature and LEANBACK_LAUNCHER category before emulator/device validation.'
+})
+
 addCommandCheck('macos.hdiutil', 'macos', 'hdiutil', ['help'], 'macOS DMG tooling is available.', { activeOnlyOn: 'darwin' })
 addCommandCheck('macos.codesign', 'macos', 'xcrun', ['-find', 'codesign'], 'macOS codesign command is discoverable through xcrun.', { activeOnlyOn: 'darwin' })
 addCommandCheck('macos.homebrew', 'macos', 'brew', ['--version'], 'Homebrew is available for Tauri mobile helper tools such as libimobiledevice.', {

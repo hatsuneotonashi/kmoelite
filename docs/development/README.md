@@ -105,6 +105,7 @@ explicit download option -> local task -> native queue -> runtime authorization 
 - macOS/Windows：桌面导航、键盘/focus、hover、文件打开和显示位置。
 - iPad/Android tablet：rail/sidebar、分栏或多列布局。
 - iPhone/Android phone：safe-area aware touch navigation 和紧凑控件。
-- Apple TV/Android TV：未来方向，需要单独设计遥控器输入、焦点导航和横屏 Reader。
+- Android TV：已有实验 runtime/Leanback 入口和方向键焦点基础，但 Reader、下载、缓存清理和返回键仍需单独验证/实现。
+- Apple TV：未来方向，需要单独设计遥控器输入、焦点导航和横屏 Reader。
 
 Cover-aware 页面应尽量从真实封面像素取色。CSS 可以压暗和提高对比，但不能把所有作品洗成固定色板。

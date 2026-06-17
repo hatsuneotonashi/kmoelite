@@ -8,6 +8,7 @@
 
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.
+- Experimental Android TV entry support: optional Leanback launcher readiness check, Android TV runtime detection, TV layout contract, remote input class, and emulator direction-key focus smoke.
 - Reader 设置新增 iOS 状态栏显示选项；默认阅读时隐藏状态栏，用户可在 Settings 或 Reader 高级面板切换显示。
 - 详情页加载态新增返回操作和来源页封面/标题预览，降低 iPad/macOS 上进入详情时的空白等待感。
 - 新增统一“删除本地阅读数据”入口：Detail、Shelf/Continue Reading、Library、Reader 控制面板和 Settings 可删除 Reader cache 及对应 EPUB/源图 ZIP 本地阅读文件。
@@ -20,6 +21,7 @@
 
 - iPhone/iPad explicit downloads now write to an app-private download root first; users can export or share completed files through the system sheet instead of relying on a Files-visible `Documents` path during download.
 - Android phone/tablet platform detection now has explicit runtime classes instead of falling through to Linux desktop behavior.
+- Android TV WebView user agents such as `sdk_google_atv64` now map to the TV contract even when WebView includes `Mobile Safari`.
 - 默认 KMOE 网站入口切换为 `https://kxo.moe`，并同步前端配置、Rust Web Adapter、Tauri CSP、测试 fixture、E2E routes 和 live smoke 默认源站。
 - 详情页封面主题取色改为以真实封面主色桶为准，避免少量高饱和像素把页面洗成不相关的固定色。
 - 首页 Continue Reading 区域改为最多展示 6 个最近阅读条目，并使用自适应网格避免长页码撑坏布局。

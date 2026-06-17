@@ -1,7 +1,7 @@
 import type { AppSettings, DownloadFormat, DownloadTask } from '../types/domain'
 import { buildLocalFilename, containsPathTraversal, sanitizeFilename } from '../lib/sanitize'
 
-export type PlatformTarget = 'macos' | 'windows' | 'ipados' | 'ios' | 'android' | 'androidTablet' | 'linux' | 'unknown'
+export type PlatformTarget = 'macos' | 'windows' | 'ipados' | 'ios' | 'android' | 'androidTablet' | 'androidTv' | 'appleTv' | 'linux' | 'unknown'
 
 export interface PlatformDetectionInput {
   userAgent?: string
@@ -35,6 +35,7 @@ export function detectPlatformTarget(input?: string | PlatformDetectionInput): P
       : input?.platform ?? runtimeNavigator?.platform ?? ''
   const ua = userAgent.toLowerCase()
   const platformName = platform.toLowerCase()
+  if (/appletv|apple tv/.test(ua)) return 'appleTv'
   if (/iphone|ipod/.test(ua)) return 'ios'
   if (
     /ipad/.test(ua) ||
@@ -42,7 +43,10 @@ export function detectPlatformTarget(input?: string | PlatformDetectionInput): P
   ) {
     return 'ipados'
   }
-  if (/android/.test(ua)) return /mobile/.test(ua) ? 'android' : 'androidTablet'
+  if (/android/.test(ua)) {
+    if (/android tv|google tv|googletv|leanback|sdk_google_atv|\batv\b|aft[bstm]|bravia|shield/.test(ua)) return 'androidTv'
+    return /mobile/.test(ua) ? 'android' : 'androidTablet'
+  }
   if (/mac os x|macintosh/.test(ua)) return 'macos'
   if (/windows/.test(ua)) return 'windows'
   if (/linux/.test(ua)) return 'linux'
@@ -50,7 +54,7 @@ export function detectPlatformTarget(input?: string | PlatformDetectionInput): P
 }
 
 export function isMobileAppTarget(platform: PlatformTarget): boolean {
-  return platform === 'ios' || platform === 'ipados' || platform === 'android' || platform === 'androidTablet'
+  return platform === 'ios' || platform === 'ipados' || platform === 'android' || platform === 'androidTablet' || platform === 'androidTv' || platform === 'appleTv'
 }
 
 export function defaultDownloadDirectory(platform: PlatformTarget): string {
@@ -61,6 +65,8 @@ export function defaultDownloadDirectory(platform: PlatformTarget): string {
     case 'ios':
     case 'android':
     case 'androidTablet':
+    case 'androidTv':
+    case 'appleTv':
       return 'App Internal/Kmoe'
     case 'linux':
       return '~/Downloads/Kmoe'

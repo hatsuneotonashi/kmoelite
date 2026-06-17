@@ -4,6 +4,37 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android TV 实验入口与遥控器焦点 smoke
+
+- 变更范围：Android TV/WebView 平台识别、TV layout contract、remote input class、Android TV manifest readiness check、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。
+- 行为摘要：Android TV WebView UA（包括 `sdk_google_atv64...Mobile Safari`）不再被误判为 Android phone/tablet；前端进入 `androidTv` runtime、`tv` layout contract、`remote` input class，复用非手机宽屏 shell 和方向键空间焦点。Android manifest 已静态检查 optional Leanback feature 和 `LEANBACK_LAUNCHER`。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/downloadPathPlanner.test.ts src/tests/layoutMode.test.ts src/tests/appLayoutShell.test.ts src/tests/spatialFocus.test.ts`：passed，4 files / 13 tests。
+  - `pnpm --dir apps/kmoe-app test:run src/tests/downloadPathPlanner.test.ts src/tests/layoutMode.test.ts`：passed，2 files / 10 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：首次运行 1 个 Reader 测试未找到跳过后的第 2 页；单测复跑 passed，随后全量复跑 passed，54 files / 286 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，84 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- Android TV 工具链与 smoke：
+  - `sdkmanager "system-images;android-36;android-tv;arm64-v8a"`：passed。
+  - `avdmanager create avd -n Kmoelite_TV_API_36 -k "system-images;android-36;android-tv;arm64-v8a" -d tv_1080p --force`：passed。
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 报告上游 deprecation warning，未导致失败。
+  - Android TV API 36 emulator：APK install passed。
+  - `adb shell am start -W -n moe.kzo.client/.MainActivity`：passed，进程启动成功。
+  - WebView CDP 验证：页面为 `http://tauri.localhost/`，`runtime=androidTv`、`layout=desktop`、`contract=tv`、`device=tv`、`input=remote`。
+  - Android TV 方向键 smoke：`DPAD_DOWN` 可把焦点从 WebView 移到 shell 品牌按钮，再移到“首页”导航项。
+  - CDP screenshot 显示宽屏 sidebar shell 渲染正常；系统 `screencap` 在该 TV emulator 上截到黑屏，未作为视觉证据来源。
+- 未运行项：本轮尚未运行 Android TV Reader、下载、缓存清理、返回键、实体 TV、signed release、Google Play/TV 分发验证；未运行 Apple TV runtime；未运行真实站点 smoke 或真实下载验证。
+- 待发布风险：Android TV 仍只是实验入口和焦点基础，不等同于完整 TV 支持。Reader 横屏、遥控器 Reader 操作、下载/缓存清理、返回键和实体设备验证仍是 blocker。
+
 ## 2026-06-17 Android 工程生成、手机布局与 app data 路径验证
 
 - 变更范围：Tauri Android 工程生成、Android schema、Android platform detection、Android phone/tablet layout contract、Android/mobile 下载路径、Android app data 目录、README/README.en/CHANGELOG/docs/status/docs/platforms/AGENTS 文档。

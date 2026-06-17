@@ -62,6 +62,12 @@ describe('layout mode', () => {
       layoutContract: 'tablet',
       deviceClass: 'tablet'
     })
+    expect(getPlatformLayoutModel({ width: 1920, platform: 'androidTv' })).toMatchObject({
+      layoutMode: 'desktop',
+      layoutContract: 'tv',
+      deviceClass: 'tv',
+      inputClass: 'remote'
+    })
     expect(getPlatformLayoutModel({ width: 1366, platform: 'ipados', maxTouchPoints: 5 })).toMatchObject({
       layoutMode: 'tablet',
       windowClass: 'wide'
