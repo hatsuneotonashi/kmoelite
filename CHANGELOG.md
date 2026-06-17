@@ -6,6 +6,7 @@
 
 ### Added
 
+- Platform readiness now checks the root `pnpm smoke:ios-sim` entry so iPhone/iPad simulator smoke coverage cannot drift out of the release checklist unnoticed.
 - Added `pnpm smoke:ios-sim`, a minimal iPhone/iPad simulator build/install/launch smoke that selects an iOS simulator explicitly instead of accidentally targeting a booted Apple TV simulator.
 - iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page.
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.

@@ -4,6 +4,24 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS simulator smoke readiness 覆盖
+
+- 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：平台 readiness 自检现在会检查根目录 `smoke:ios-sim` 脚本，避免 iPhone/iPad simulator smoke 入口被删除、改名或从发布检查清单漂移而没有报警。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=53 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，tracked 文件未发现 `.env`、cookie/session、SQLite DB、下载文件、`dist`、`target`、`test-results` 等发布风险路径。
+- 未运行项：未运行 Playwright E2E；本轮只补平台 readiness 检查和文档记录，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行登录、详情、Reader、下载、缓存清理和真机安装。
+- 待发布风险：该检查只保证 `pnpm smoke:ios-sim` 入口存在；真实 iPhone/iPad 登录、Reader、显式下载、文件导出/分享、缓存清理和 signed physical-device 验证仍需单独执行。
+
 ## 2026-06-18 iOS simulator smoke 脚本
 
 - 变更范围：`scripts/smoke-ios-simulator.sh`、`package.json`、`docs/development/README.md`、CHANGELOG、TASK_PROGRESS。

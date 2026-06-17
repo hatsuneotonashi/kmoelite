@@ -50,6 +50,7 @@ addCommandCheck('tool.rustup', 'all', 'rustup', ['--version'], 'rustup is availa
 addScriptCheck('script.release_gate', 'all', rootPackage, 'verify:release')
 addScriptCheck('script.platform_readiness', 'all', rootPackage, 'check:platforms')
 addScriptCheck('script.ios_assets_check', 'ios', rootPackage, 'check:ios-assets')
+addScriptCheck('script.ios_sim_smoke', 'ios', rootPackage, 'smoke:ios-sim')
 addScriptCheck('script.ios_tools_setup', 'ios', rootPackage, 'setup:ios-tools')
 addScriptCheck('script.macos_app', 'macos', rootPackage, 'tauri:build:mac-app:debug')
 addScriptCheck('script.macos_dmg', 'macos', rootPackage, 'tauri:build:mac-dmg:debug')
