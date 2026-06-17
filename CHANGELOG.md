@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Detail Reader entry now keeps the online EPUB/source retrieval path available when the Library only has metadata-only records without a real local file.
 - Native queue startup now reports an empty queue as an error instead of returning a successful zero-task run.
 - Native queue startup now reports an already-running queue as an error instead of returning a successful zero-task run.
 - Download enqueue boundaries now reject empty task batches in both the frontend native helper and the Rust command, so empty download requests cannot be reported as successful.

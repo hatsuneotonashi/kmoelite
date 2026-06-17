@@ -44,6 +44,19 @@ describe('reader entry state resolver', () => {
     expect(state.label).toBe('获取 EPUB')
   })
 
+  it('does not let metadata-only library records block online Reader download', () => {
+    const state = resolveReaderEntryState({
+      option: option({ availableFormats: ['mobi', 'epub'] }),
+      chapters: [],
+      library: [downloadedFile({ format: 'epub', localPath: 'Imported metadata only/book.epub' })],
+      tasks: []
+    })
+
+    expect(state.kind).toBe('queue_source_zip')
+    expect(state.readerFormat).toBe('epub')
+    expect(state.label).toBe('获取 EPUB')
+  })
+
   it('offers source ZIP reading even when metadata detected availability without a size', () => {
     const state = resolveReaderEntryState({
       option: option({

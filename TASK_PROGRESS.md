@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Detail metadata-only Reader 入口修复
+
+- 变更范围：`apps/kmoe-app/src/reading/readerEntry.ts`、`apps/kmoe-app/src/tests/readerEntryState.test.ts`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：详情页 Reader 入口遇到只有迁移元数据、没有真实本地 EPUB/源图文件的资料库记录时，不再优先挡住在线获取流程；如果当前章节可获取 EPUB/源图，仍显示获取并阅读路径，符合低存储在线阅读主流程。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/readerEntryState.test.ts`：passed，1 file / 8 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 310 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，91 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+  - 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复只调整详情页 Reader 入口状态优先级；各平台真实下载、导出/分享、签名发布和真机验证仍按平台文档继续验证。
+
 ## 2026-06-18 下载队列空启动假成功修复
 
 - 变更范围：`apps/kmoe-app/src-tauri/src/queue.rs`、README、CHANGELOG、TASK_PROGRESS。

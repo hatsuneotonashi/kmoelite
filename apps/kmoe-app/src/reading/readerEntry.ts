@@ -67,20 +67,6 @@ export function resolveReaderEntryState(input: {
     }
   }
 
-  const sourceArchive = findReaderArchiveForVolume(library, option.comicId, option.volId)
-  if (sourceArchive && isMetadataOnlyDownloadedFile(sourceArchive)) {
-    const readerFormat = sourceArchive.format as ReaderArchiveFormat
-    return {
-      kind: 'bind_local_source',
-      enabled: true,
-      label: `绑定${readerArchiveFormatLabel(readerFormat)}`,
-      helper: `资料库只有记录，还需要绑定本机${readerArchiveFormatLabel(readerFormat)}文件。`,
-      sourceFile: sourceArchive,
-      readerFormat,
-      blockingReasons: []
-    }
-  }
-
   const readerFormat = selectReaderArchiveFormat(option)
   const sourceTask = findLatestReaderArchiveTask(tasks, option.comicId, option.volId, preferredReaderArchiveTaskFormats(readerFormat))
   if (sourceTask && ['queued', 'authorizing', 'downloading', 'paused', 'verifying'].includes(sourceTask.status)) {
@@ -133,6 +119,20 @@ export function resolveReaderEntryState(input: {
         ? '获取源图 ZIP/CBZ 后可准备内置阅读缓存。'
         : '获取 EPUB 后可准备内置阅读缓存。',
       readerFormat,
+      blockingReasons: []
+    }
+  }
+
+  const sourceArchive = findReaderArchiveForVolume(library, option.comicId, option.volId)
+  if (sourceArchive && isMetadataOnlyDownloadedFile(sourceArchive)) {
+    const metadataFormat = sourceArchive.format as ReaderArchiveFormat
+    return {
+      kind: 'bind_local_source',
+      enabled: true,
+      label: `绑定${readerArchiveFormatLabel(metadataFormat)}`,
+      helper: `资料库只有记录，还需要绑定本机${readerArchiveFormatLabel(metadataFormat)}文件。`,
+      sourceFile: sourceArchive,
+      readerFormat: metadataFormat,
       blockingReasons: []
     }
   }
