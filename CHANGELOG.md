@@ -6,6 +6,7 @@
 
 ### Added
 
+- Apple TV/tvOS platform-readiness checks for tvOS SDK, simulator runtime, Apple TV simulator device types, and tvOS Rust targets.
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.
 - Experimental Android TV entry support: optional Leanback launcher readiness check, Android TV runtime detection, TV layout contract, remote input class, and emulator direction-key focus smoke.

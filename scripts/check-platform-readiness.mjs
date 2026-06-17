@@ -161,6 +161,35 @@ addCheck({
   detail: 'Apple signing and iOS/iPadOS device builds require full Xcode, not only Command Line Tools.'
 })
 
+const xcodeSdks = commandOutput('xcodebuild', ['-showsdks'])
+const tvosSdkName = xcodeSdks.stdout.match(/-sdk\s+(appletvos[^\s]+)/)?.[1]
+addCheck({
+  id: 'appletv.tvos_sdk',
+  platform: 'appletv',
+  status: hostPlatform !== 'darwin' ? 'external' : xcodeSdks.ok && tvosSdkName ? 'pass' : 'external',
+  summary: hostPlatform === 'darwin' && tvosSdkName ? `${tvosSdkName} available` : 'tvOS SDK check requires macOS/Xcode.',
+  detail: 'Apple TV validation needs the tvOS SDK before a WKWebView shell or simulator build can be verified.'
+})
+
+const simctlRuntimes = commandOutput('xcrun', ['simctl', 'list', 'runtimes'])
+const hasTvosRuntime = /com\.apple\.CoreSimulator\.SimRuntime\.tvOS|tvOS/i.test(simctlRuntimes.stdout)
+addCheck({
+  id: 'appletv.tvos_sim_runtime',
+  platform: 'appletv',
+  status: hostPlatform !== 'darwin' ? 'external' : simctlRuntimes.ok && hasTvosRuntime ? 'pass' : 'external',
+  summary: hostPlatform === 'darwin' && simctlRuntimes.ok && hasTvosRuntime ? 'tvOS simulator runtime is installed.' : 'tvOS simulator runtime not installed.',
+  detail: 'Apple TV simulator smoke needs an installed tvOS runtime, not only SDK headers.'
+})
+
+const simctlDeviceTypes = commandOutput('xcrun', ['simctl', 'list', 'devicetypes'])
+addCheck({
+  id: 'appletv.sim_device_type',
+  platform: 'appletv',
+  status: hostPlatform !== 'darwin' ? 'external' : simctlDeviceTypes.ok && /Apple TV/.test(simctlDeviceTypes.stdout) ? 'pass' : 'external',
+  summary: hostPlatform === 'darwin' && simctlDeviceTypes.ok && /Apple TV/.test(simctlDeviceTypes.stdout) ? 'Apple TV simulator device types are available.' : 'Apple TV simulator device type not confirmed.',
+  detail: 'Apple TV simulator smoke needs an Apple TV CoreSimulator device type.'
+})
+
 addCommandCheck('windows.sign_tool', 'windows', 'signtool', [], 'Windows Authenticode signing tool is available.', {
   activeOnlyOn: 'win32',
   missingStatus: 'external'
@@ -177,6 +206,16 @@ for (const target of ['aarch64-apple-ios', 'aarch64-apple-ios-sim', 'x86_64-appl
     status: installedRustTargets.includes(target) ? 'pass' : 'external',
     summary: installedRustTargets.includes(target) ? `${target} installed` : `${target} not installed`,
     detail: 'iOS/iPadOS validation needs the relevant Rust target plus full Xcode and provisioning.'
+  })
+}
+
+for (const target of ['aarch64-apple-tvos', 'aarch64-apple-tvos-sim']) {
+  addCheck({
+    id: `appletv.rust_target.${target}`,
+    platform: 'appletv',
+    status: installedRustTargets.includes(target) ? 'pass' : 'external',
+    summary: installedRustTargets.includes(target) ? `${target} installed` : `${target} not installed`,
+    detail: 'Apple TV validation needs tvOS Rust targets before any Rust-backed tvOS shell can be built.'
   })
 }
 

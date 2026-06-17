@@ -4,6 +4,31 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Apple TV readiness 检查入口
+
+- 变更范围：平台 readiness 脚本、CHANGELOG/docs/status/docs/platforms/docs/development/docs/release 文档。
+- 行为摘要：`pnpm check:platforms` 现在显式检查 Apple TV/tvOS 前置条件，包括 tvOS SDK、tvOS simulator runtime、Apple TV simulator device type，以及 `aarch64-apple-tvos` / `aarch64-apple-tvos-sim` Rust targets。该检查只用于暴露真实环境和源码前置条件，不代表 Apple TV App 已可运行。
+- 本机工具状态：
+  - `xcodebuild -showsdks`：tvOS SDK present，`appletvos26.5`。
+  - `xcrun simctl list devicetypes`：Apple TV simulator device types present。
+  - `xcrun simctl list runtimes`：tvOS simulator runtime missing；当前只有 iOS runtime 可用。
+  - `rustup target add aarch64-apple-tvos-sim`：passed。
+  - `rustup target add aarch64-apple-tvos`：passed。
+- 验证：
+  - `git diff --check`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 293 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - 敏感文本扫描：passed，修改文件中未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径；命中项仅为文档中的环境变量名和占位示例。
+- 未运行项：本轮未生成 tvOS/WKWebView 壳，未运行 Apple TV simulator 安装/启动、遥控器焦点、Reader、下载或缓存清理验证。
+- 待发布风险：Apple TV 仍未达到可运行平台；下一步需要先安装 tvOS simulator runtime，再实现最薄 tvOS 壳并接入现有前端和必要 native bridge。
+
 ## 2026-06-17 Android tablet Reader 自动下载重试与真实 EPUB Reader smoke
 
 - 变更范围：详情页 Reader 自动下载队列启动重试、详情页 Reader 入口测试、README/README.en/CHANGELOG/docs/status/docs/platforms 文档。

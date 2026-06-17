@@ -167,6 +167,8 @@ Android TV：
 Apple TV：
 
 - 当前仅为未来研究方向。
+- `check:platforms` 已覆盖 tvOS SDK、Apple TV simulator device type、tvOS simulator runtime 和 tvOS Rust targets。
+- 当前仍缺可运行 tvOS/WKWebView 壳和 tvOS simulator runtime 验证。
 - 需要先完成遥控器输入、焦点导航、横屏 Reader、缓存策略和平台分发可行性设计。
 
 ## 安全规则

@@ -37,6 +37,7 @@ Developer-preview usable surfaces:
 - Android phone: experimental source path exists; a Pixel 8 emulator has passed live login, detail, EPUB download, Reader, page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android tablet: experimental source path exists; a Pixel Tablet emulator has passed live login, detail, EPUB download, Reader spread page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, direction-key focus, remote Back, native DPAD/OK bridging, and synthetic local Reader-cache OK/Back smoke have been validated, but download/cache/device validation is incomplete.
+- Apple TV: future research target; platform checks now cover the tvOS SDK, simulator runtime, Apple TV simulator device types, and tvOS Rust targets, but no runnable tvOS shell exists yet.
 
 Future plan:
 
@@ -44,11 +45,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-17: added Apple TV/tvOS readiness checks for the tvOS SDK, simulator runtime, Apple TV device types, and Rust targets.
 - 2026-06-17: fixed an intermittent mobile/tablet detail Reader auto-download queue-start failure; Android phone and tablet emulators have passed live EPUB-to-Reader and local reading-data deletion smoke.
 - 2026-06-17: added the Android TV native DPAD/OK bridge and verified Reader OK/Back smoke on a TV emulator with a synthetic local Reader cache.
 - 2026-06-17: fixed native login session validation and verified a live app-login smoke on an Android tablet emulator.
 - 2026-06-17: added the experimental Android TV entry and verified Leanback launcher, TV runtime detection, wide shell, and direction-key focus smoke.
-- 2026-06-17: added the Android Tauri project and debug APK/AAB build path, and fixed Android phones being misclassified as Linux desktop layouts.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 
