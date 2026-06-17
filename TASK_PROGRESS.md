@@ -4,6 +4,18 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 生产界面临时文案收敛
+
+- 变更范围：Shelf、Download Center、mobile download preflight、file export fallback、oversized-download error copy。
+- 行为摘要：移除生产界面中的“后续/暂未/当前版本”等临时口吻，改为说明当前真实行为：书架只描述本地状态，移动端下载提示保持 App 打开，iPhone/iPad 可用系统分享表导出，Android 保存在 App 私有下载目录，超大下载直接报告无法保存。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - 生产源码残留扫描：passed；剩余 `placeholderData: keepPreviousData` 命中是 TanStack Query 正式 API 名称，不是用户可见 mock/placeholder。
+- 未运行项：本轮未改业务逻辑、路由、布局、Reader、SQLite schema 或测试 fixture，未运行完整 Vitest/build/E2E/native test gate。
+- 待发布风险：本轮只是文案收敛，不改变下载、导出或平台验证状态。
+
 ## 2026-06-17 kmoelite 可见应用名统一与 iPhone packaged smoke
 
 - 变更范围：web title、桌面 sidebar 品牌、Tauri product/window metadata、Android app display strings、iOS Xcode product metadata、macOS DMG packaging script、iOS asset sync cleanup script、Rust test fixture path、AGENTS/README/CHANGELOG/TASK_PROGRESS、Playwright visual baselines。

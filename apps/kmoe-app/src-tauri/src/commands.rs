@@ -1335,7 +1335,7 @@ fn share_file_with_system_sheet(target: &Path) -> Result<(), String> {
 
 #[cfg(not(target_os = "ios"))]
 fn share_file_with_system_sheet(_target: &Path) -> Result<(), String> {
-    Err("系统分享暂未在当前平台实现。".to_string())
+    Err("当前平台不支持系统分享导出，请保留 App 私有下载目录中的文件。".to_string())
 }
 
 #[cfg(target_os = "ios")]
@@ -1624,7 +1624,7 @@ fn preflight_download_queue_with_conn(
             "file-download",
             "前台下载",
             "warn",
-            "移动端当前使用前台下载；请保持 App 打开。iPhone/iPad 可导出到分享表，Android 导出仍需后续平台验证。",
+            "移动端使用前台下载；请保持 App 打开。iPhone/iPad 可导出到分享表；Android 会保存在 App 私有下载目录。",
         );
     } else {
         push_preflight_check(

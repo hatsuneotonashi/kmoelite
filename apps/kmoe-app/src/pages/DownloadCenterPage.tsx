@@ -175,7 +175,7 @@ export function DownloadCenterPage() {
       setNativeQueueRunning(true)
       setMessage(
         mobileFileExport
-          ? '前台下载运行中，请保持 Kmoe 打开；当前版本不会后台下载。'
+          ? '前台下载运行中，请保持 App 打开。'
           : '下载队列运行中，正在刷新任务状态。'
       )
       pollNativeSnapshot(runId)

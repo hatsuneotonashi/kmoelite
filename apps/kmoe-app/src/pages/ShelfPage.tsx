@@ -199,7 +199,7 @@ export function ShelfPage() {
     <div className="content-grid">
       <PageHeader
         title="书架"
-        description="本地优先的阅读工作台。收藏、阅读进度、缓存状态和下载记录保持分离，后续登录同步不会覆盖本机记录。"
+        description="本地优先的阅读工作台。收藏、阅读进度、缓存状态和下载记录保持分离。"
       />
 
       <section className="shelf-metrics-grid grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -333,7 +333,7 @@ export function ShelfPage() {
       ) : null}
 
       {updated.length > 0 ? (
-        <ShelfSection title="有更新" description="来自本地记录的未读数或最近更新时间，后续可接入网站收藏同步。">
+        <ShelfSection title="有更新" description="来自本地记录的未读数或最近更新时间。">
           {updated.map((item) => (
             <ShelfItemCard key={item.comicId} item={item} selected={selectedSet.has(item.comicId)} cachedChapters={cachedChapters} hasLocalReadingData={hasShelfLocalReadingData(item.comicId, cachedChapters, library)} deletingLocalData={deletingLocalDataComicIds.includes(item.comicId)} onDeleteLocalData={() => void deleteItemLocalReadingData(item)} onSelect={() => toggleSelected(item.comicId)} onRemove={() => removeFromShelf([item.comicId])} onBatch={runBatchForComics} compact />
           ))}
