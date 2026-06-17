@@ -41,6 +41,7 @@ describe('DownloadCenter reader action', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    setNavigatorPlatform({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', platform: 'MacIntel', maxTouchPoints: 0 })
     useSettingsStore.getState().resetSafetyDefaults()
     useDownloadStore.setState({ tasks: [completedEpubTask()], library: [] })
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
@@ -129,6 +130,16 @@ describe('DownloadCenter reader action', () => {
     expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
   })
 
+  it('keeps completed EPUB downloads exportable on iPad without desktop folder wording', async () => {
+    setNavigatorPlatform({ userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X)', platform: 'iPad', maxTouchPoints: 5 })
+
+    renderDownloadCenter()
+
+    expect(await screen.findByRole('button', { name: '阅读' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '导出文件' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '查看位置' })).not.toBeInTheDocument()
+  })
+
   it('shows a recoverable state when a completed task is missing its local path', async () => {
     const taskWithoutPath = completedEpubTask({ localPath: undefined })
     useDownloadStore.setState({ tasks: [taskWithoutPath], library: [] })
@@ -186,6 +197,20 @@ function renderDownloadCenter() {
       </Routes>
     </MemoryRouter>
   )
+}
+
+function setNavigatorPlatform({
+  userAgent,
+  platform,
+  maxTouchPoints
+}: {
+  userAgent: string
+  platform: string
+  maxTouchPoints: number
+}) {
+  Object.defineProperty(window.navigator, 'userAgent', { value: userAgent, configurable: true })
+  Object.defineProperty(window.navigator, 'platform', { value: platform, configurable: true })
+  Object.defineProperty(window.navigator, 'maxTouchPoints', { value: maxTouchPoints, configurable: true })
 }
 
 function completedEpubTask(patch: Partial<DownloadTask> = {}): DownloadTask {

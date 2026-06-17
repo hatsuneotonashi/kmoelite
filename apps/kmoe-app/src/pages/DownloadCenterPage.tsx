@@ -24,7 +24,6 @@ import {
   revealLocalFile,
   resumeNativeDownloadTask,
   retryNativeDownloadTask,
-  showLocalFileLocation,
   startNativeDownloadQueue,
   type NativeDownloadPreflight,
   type NativeDownloadPreflightCheck
@@ -512,19 +511,21 @@ export function DownloadCenterPage() {
                               {mobileFileExport ? '导出文件' : '打开文件'}
                             </Button>
                           ) : null}
-                          <Button
-                            className="w-full sm:w-auto"
-                            onClick={async () => {
-                              if (!task.localPath) return
-                              const result = mobileFileExport
-                                ? await showLocalFileLocation(task.localPath)
-                                : await revealLocalFile(task.localPath)
-                              showMessage(result.message)
-                            }}
-                          >
-                            <FolderOpen className="h-4 w-4" />
-                            查看位置
-                          </Button>
+                          {canReadDownloadedTask || !mobileFileExport ? (
+                            <Button
+                              className="w-full sm:w-auto"
+                              onClick={async () => {
+                                if (!task.localPath) return
+                                const result = mobileFileExport
+                                  ? await exportLocalFile(task.localPath)
+                                  : await revealLocalFile(task.localPath)
+                                showMessage(result.message)
+                              }}
+                            >
+                              <FolderOpen className="h-4 w-4" />
+                              {mobileFileExport ? '导出文件' : '查看位置'}
+                            </Button>
+                          ) : null}
                         </>
                       ) : null}
                     </div>

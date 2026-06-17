@@ -10,11 +10,12 @@ import { useDownloadStore } from '../store/downloadStore'
 import { useCacheStore } from '../store/cacheStore'
 import { formatBytes, readableAppMessage } from '../lib/format'
 import type { DownloadedFile, DownloadFormat } from '../types/domain'
-import { linkNativeDownloadedFile, openLocalFile, prepareNativeReaderChapterCache, revealLocalFile } from '../platform/nativeCommands'
+import { exportLocalFile, linkNativeDownloadedFile, openLocalFile, prepareNativeReaderChapterCache, revealLocalFile } from '../platform/nativeCommands'
 import { isMetadataOnlyDownloadedFile, isReaderArchiveFormat } from '../reading/sourceArchive'
 import { resolveLibraryReaderEntryState } from '../reading/readerEntry'
 import { syncNativeLibraryRecords } from '../library/nativeLibrarySync'
 import { deleteLocalReadingData } from '../reading/localReadingData'
+import { detectPlatformTarget, isMobileAppTarget } from '../download/pathPlanner'
 
 export function LibraryPage() {
   const store = useDownloadStore()
@@ -121,6 +122,8 @@ function LibraryFileCard({
   const fileName = displayFileName(file.localPath)
   const canDeleteLocalReadingData = isReaderArchiveFormat(file.format)
   const [deletingLocalData, setDeletingLocalData] = useState(false)
+  const platformTarget = useMemo(() => detectPlatformTarget(), [])
+  const mobileFileExport = isMobileAppTarget(platformTarget)
   const cachedChapters = useMemo(() => Object.values(chaptersById), [chaptersById])
   const readerState = useMemo(
     () => resolveLibraryReaderEntryState({ file, chapters: cachedChapters }),
@@ -195,24 +198,31 @@ function LibraryFileCard({
           className="w-full sm:w-auto"
           disabled={metadataOnly}
           onClick={async () => {
-            const result = await openLocalFile(file.localPath)
-            onMessage(readableAppMessage(result.message, '暂时无法打开文件，请确认文件仍在保存位置。'))
+            const result = mobileFileExport
+              ? await exportLocalFile(file.localPath)
+              : await openLocalFile(file.localPath)
+            onMessage(readableAppMessage(
+              result.message,
+              mobileFileExport ? '暂时无法导出文件，请确认文件仍在 App 保存区。' : '暂时无法打开文件，请确认文件仍在保存位置。'
+            ))
           }}
         >
           <ExternalLink className="h-4 w-4" />
-          打开文件
+          {mobileFileExport ? '导出文件' : '打开文件'}
         </Button>
-        <Button
-          className="w-full sm:w-auto"
-          disabled={metadataOnly}
-          onClick={async () => {
-            const result = await revealLocalFile(file.localPath)
-            onMessage(readableAppMessage(result.message, '暂时无法显示文件位置，请确认文件仍在保存位置。'))
-          }}
-        >
-          <FolderOpen className="h-4 w-4" />
-          查看位置
-        </Button>
+        {!mobileFileExport ? (
+          <Button
+            className="w-full sm:w-auto"
+            disabled={metadataOnly}
+            onClick={async () => {
+              const result = await revealLocalFile(file.localPath)
+              onMessage(readableAppMessage(result.message, '暂时无法显示文件位置，请确认文件仍在保存位置。'))
+            }}
+          >
+            <FolderOpen className="h-4 w-4" />
+            查看位置
+          </Button>
+        ) : null}
         {canDeleteLocalReadingData ? (
           <Button
             className="w-full sm:w-auto"

@@ -4,6 +4,25 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 移动端资料库/下载中心导出语义修复
+
+- 变更范围：`apps/kmoe-app/src/pages/LibraryPage.tsx`、`apps/kmoe-app/src/pages/DownloadCenterPage.tsx`、对应 Vitest、mobile Playwright visual snapshots、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：iPhone、iPad、Android phone/tablet/TV 和 Apple TV runtime 的资料库文件动作改为“导出文件”，不再显示桌面“打开文件/查看位置”组合；下载中心在移动端对 Reader-capable EPUB/source ZIP 保留“阅读 + 导出文件”，对非 Reader 文件只保留一个导出动作，避免重复系统分享按钮和桌面文件夹语义。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/libraryReaderEntry.test.tsx src/tests/downloadCenterReaderAction.test.tsx`：passed，2 files / 9 tests。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 305 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed; generated outputs remain ignored.
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，88 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。第一次全量 E2E 暴露移动端资料库预期截图变化和一个书架像素漂移；更新对应 mobile visual snapshots 后重跑全量通过。
+- 未运行项：未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。未重新部署 iPad/Android 真机。
+- 待发布风险：该修复保证移动端 UI 语义与 app-private 导出路径一致，但 iPhone/iPad 真机真实下载、系统分享表、文件导出到 Files 和 Reader 下载后打开仍需继续实机验证。
+
 ## 2026-06-18 移动端保存位置设置只读化
 
 - 变更范围：`apps/kmoe-app/src/pages/SettingsPage.tsx`、`apps/kmoe-app/src/tests/settingsNativeConfig.test.tsx`、README、CHANGELOG、TASK_PROGRESS。

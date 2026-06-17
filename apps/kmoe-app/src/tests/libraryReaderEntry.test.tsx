@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { LibraryPage } from '../pages/LibraryPage'
-import { deleteNativeLocalReadingData, listNativeDownloadedFiles, prepareNativeReaderChapterCache } from '../platform/nativeCommands'
+import { deleteNativeLocalReadingData, exportLocalFile, listNativeDownloadedFiles, prepareNativeReaderChapterCache } from '../platform/nativeCommands'
 import { useCacheStore } from '../store/cacheStore'
 import { useDownloadStore } from '../store/downloadStore'
 import type { ChapterCacheRecord, PageCacheRecord } from '../types/cache'
@@ -31,6 +31,7 @@ vi.mock('../platform/nativeCommands', () => ({
       library: []
     }
   })),
+  exportLocalFile: vi.fn(async () => ({ ok: true, available: true, message: 'exported' })),
   isNativeUnavailable: vi.fn((result: { available: boolean }) => !result.available),
   linkNativeDownloadedFile: vi.fn(async () => ({ ok: false, available: false, message: 'unavailable' })),
   listNativeDownloadedFiles: vi.fn(),
@@ -42,6 +43,7 @@ vi.mock('../platform/nativeCommands', () => ({
 const listNativeDownloadedFilesMock = vi.mocked(listNativeDownloadedFiles)
 const prepareReaderCacheMock = vi.mocked(prepareNativeReaderChapterCache)
 const deleteLocalReadingDataMock = vi.mocked(deleteNativeLocalReadingData)
+const exportLocalFileMock = vi.mocked(exportLocalFile)
 
 describe('Library reader entry', () => {
   beforeEach(() => {
@@ -49,6 +51,7 @@ describe('Library reader entry', () => {
     window.localStorage.clear()
     useDownloadStore.setState({ tasks: [], library: [] })
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
+    setNavigatorPlatform({ userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', platform: 'MacIntel', maxTouchPoints: 0 })
     listNativeDownloadedFilesMock.mockResolvedValue({
       ok: true,
       available: true,
@@ -181,6 +184,22 @@ describe('Library reader entry', () => {
       expect(screen.getByText(/已删除本地阅读数据/)).toBeInTheDocument()
     })
   })
+
+  it('uses mobile export wording instead of desktop folder location on iPad', async () => {
+    setNavigatorPlatform({ userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X)', platform: 'iPad', maxTouchPoints: 5 })
+
+    renderLibrary()
+
+    expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '导出文件' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '查看位置' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: '导出文件' }))
+
+    await waitFor(() => {
+      expect(exportLocalFileMock).toHaveBeenCalledWith('/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip')
+    })
+  })
 })
 
 function renderLibrary() {
@@ -192,6 +211,20 @@ function renderLibrary() {
       </Routes>
     </MemoryRouter>
   )
+}
+
+function setNavigatorPlatform({
+  userAgent,
+  platform,
+  maxTouchPoints
+}: {
+  userAgent: string
+  platform: string
+  maxTouchPoints: number
+}) {
+  Object.defineProperty(window.navigator, 'userAgent', { value: userAgent, configurable: true })
+  Object.defineProperty(window.navigator, 'platform', { value: platform, configurable: true })
+  Object.defineProperty(window.navigator, 'maxTouchPoints', { value: maxTouchPoints, configurable: true })
 }
 
 function sourceArchive(patch: Partial<DownloadedFile> = {}): DownloadedFile {
