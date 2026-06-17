@@ -46,6 +46,7 @@
 
 ### Fixed
 
+- Fixed download failure copy so site-side quota/permission responses such as `no permission` are not misreported as local save-location permission errors.
 - iOS deep-link routing now stores a pending native route and uses a frontend Tauri event listener, making cold-start route delivery less dependent on direct `history.pushState` timing.
 - Android system share export now checks that a chooser target exists before reporting success, and bridge failures are surfaced to the UI instead of being treated as successful exports.
 - 修复已恢复站点会话但账号页字段暂不可解析时，首页仍把用户误判为未登录并显示“登录账号”的问题。

@@ -4,6 +4,20 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 下载失败文案归因修复
+
+- 变更范围：`apps/kmoe-app/src/lib/format.ts`、`apps/kmoe-app/src/tests/formatMessages.test.ts`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：站点返回 `no permission`、下载权限不足、额度不足等下载授权/站点限制文案时，前端不再误显示为“保存位置权限”。本地文件系统 `Permission denied` 仍保持为保存位置权限提示。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run -- src/tests/formatMessages.test.ts`：passed，Vitest reported 55 files / 302 tests passed。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed; generated outputs remain ignored.
+  - `node scripts/verify-real-site-smoke.mjs` with runtime-only credentials from `.env.local`：passed；checked login_page、login_post、profile、catalog、detail、book_data on `https://kxo.moe`，forbiddenEndpointsCalled=false。
+  - 新增/修改文件敏感扫描：passed，未发现账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。
+- 待发布风险：该修复只解决错误归因和 kxo live smoke；iPhone/iPad 真机真实下载、导出分享表和 Reader 下载后打开仍需继续验证。
+
 ## 2026-06-18 Apple TV readiness warning classification
 
 - 变更范围：`scripts/check-platform-readiness.mjs`、CHANGELOG、docs/status、TASK_PROGRESS。

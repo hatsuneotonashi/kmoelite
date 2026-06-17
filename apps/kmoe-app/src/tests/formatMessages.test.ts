@@ -9,6 +9,12 @@ describe('download-facing message formatting', () => {
     expect(readableAppMessage('未能取得可用的下载地址，请确认登录状态和下载权限。')).toBe(
       '站点没有返回可下载文件，请重新登录并检查账号额度或下载权限。'
     )
+    expect(readableDownloadIssue('no permission')).toBe(
+      '站点没有返回可下载文件，请重新登录并检查账号额度或下载权限。'
+    )
+    expect(readableAppMessage('没有下载权限')).toBe(
+      '站点没有返回可下载文件，请重新登录并检查账号额度或下载权限。'
+    )
   })
 
   it('keeps local write failures separate from account permission failures', () => {
