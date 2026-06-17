@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 
 type NativeCall = { cmd: string; args?: Record<string, unknown> }
+type FixtureArchiveFormat = 'source_zip' | 'epub'
 type NativeReaderFixtureOptions = {
   chapters?: ReturnType<typeof makeNativeReaderChapter>[]
   downloadedFiles?: ReturnType<typeof makeNativeReaderDownloadedFile>[]
@@ -71,7 +72,7 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
       comicTitle: string
       volumeId: string
       volumeTitle: string
-      format: 'source_zip'
+      format: 'source_zip' | 'epub'
       cacheKind: 'reading_cache'
       sourceTaskId?: string
       cacheDir: string
@@ -118,19 +119,21 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
       volumeId: string
       volumeTitle: string
       sourceTaskId?: string
+      format?: 'source_zip' | 'epub'
       policy?: string
     }): FixtureChapter {
       const createdAt = nowIso()
+      const format = input.format ?? 'source_zip'
       return {
         id: readerChapterCacheId(input.comicId, input.volumeId),
         comicId: input.comicId,
         comicTitle: input.comicTitle,
         volumeId: input.volumeId,
         volumeTitle: input.volumeTitle,
-        format: 'source_zip',
+        format,
         cacheKind: 'reading_cache',
         sourceTaskId: input.sourceTaskId,
-        cacheDir: `/tmp/Kmoe/ReadingCache/${input.comicId}/${input.volumeId}/source_zip`,
+        cacheDir: `/tmp/Kmoe/ReadingCache/${input.comicId}/${input.volumeId}/${format}`,
         sizeBytes: 3,
         pageCount: 3,
         status: 'ready',
@@ -172,8 +175,9 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
     }
 
     function makeManifest(chapter: FixtureChapter) {
+      const extension = chapter.format === 'epub' ? 'epub' : 'zip'
       return {
-        fileName: `${chapter.volumeTitle}.zip`,
+        fileName: `${chapter.volumeTitle}.${extension}`,
         pageCount: chapter.pageCount,
         pages: Array.from({ length: chapter.pageCount }, (_item, index) => ({
           index,
@@ -255,7 +259,9 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
               activeCount: 0,
               downloadDirectory: '/Users/example/Downloads/Kmoe',
               firstTaskId: queuedTasks.length > 0 && typeof queuedTasks[0] === 'object' && queuedTasks[0] && 'id' in queuedTasks[0] ? String((queuedTasks[0] as { id: unknown }).id) : undefined,
-              firstTaskLabel: queuedTasks.length > 0 ? '尖帽子的魔法工房 / 話 089-095 / SOURCE_ZIP' : undefined,
+              firstTaskLabel: queuedTasks.length > 0 && typeof queuedTasks[0] === 'object' && queuedTasks[0]
+                ? `尖帽子的魔法工房 / 話 089-095 / ${String((queuedTasks[0] as { format?: unknown }).format ?? 'source_zip').toUpperCase()}`
+                : undefined,
               checks: queuedTasks.length > 0
                 ? [
                     { id: 'download-dir', label: '下载目录', status: 'pass', detail: '目录可用。' },
@@ -319,6 +325,7 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
               volumeId?: string
               volumeTitle?: string
               sourceTaskId?: string
+              format?: 'source_zip' | 'epub'
               policy?: string
             }
             const chapter = makePreparedChapter({
@@ -327,6 +334,7 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
               volumeId: String(input.volumeId ?? '3089'),
               volumeTitle: String(input.volumeTitle ?? '話 089-095'),
               sourceTaskId: input.sourceTaskId,
+              format: input.format,
               policy: input.policy
             })
             const pages = makePreparedPages(chapter)
@@ -359,17 +367,17 @@ export async function installNativeReaderFixture(page: Page, options: NativeRead
   }, { chapters, pagesByChapter, imagesByChapter, downloadedFiles, readingProgress, imageDataUrl, fixtureDetailHtml, fixtureBookData, fixtureProfileHtml })
 }
 
-export function makeNativeReaderChapter(id: string, volumeId: string, volumeTitle: string, pageCount: number) {
+export function makeNativeReaderChapter(id: string, volumeId: string, volumeTitle: string, pageCount: number, format: FixtureArchiveFormat = 'source_zip') {
   return {
     id,
     comicId: '53339',
     comicTitle: '尖帽子的魔法工房',
     volumeId,
     volumeTitle,
-    format: 'source_zip' as const,
+    format,
     cacheKind: 'reading_cache' as const,
     sourceTaskId: `task-53339-${volumeId}`,
-    cacheDir: `/tmp/Kmoe/ReadingCache/53339/${volumeId}/source_zip`,
+    cacheDir: `/tmp/Kmoe/ReadingCache/53339/${volumeId}/${format}`,
     sizeBytes: pageCount,
     pageCount,
     status: 'ready' as const,

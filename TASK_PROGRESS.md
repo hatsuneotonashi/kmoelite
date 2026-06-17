@@ -4,6 +4,33 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android debug 构建复核与 Reader E2E EPUB 证据同步
+
+- 变更范围：Playwright Reader 入口 fixture 和 E2E 断言；产品代码未变更。
+- 行为摘要：详情页默认 Reader 自动下载已经是 EPUB 优先，本轮把 `reader-entry.spec.ts` 从旧的 source ZIP 断言同步为 EPUB 任务、EPUB Reader cache 准备和 Reader 打开路径。Library 入口仍保留 source ZIP 本地归档准备 Reader 的覆盖。
+- Android 构建复核：
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 仅报告上游 deprecation warning。
+- Android emulator 复核：
+  - `Kmoelite_Tablet_API_36`：本轮本机 emulator 未完成启动，ADB 一直停在 `offline` 或进程退出，未达到 `sys.boot_completed`。
+  - `Pixel_8_API_36`：本轮本机 emulator 未完成启动；`-no-window`、`-gpu swiftshader_indirect` 和 `-wipe-data` 尝试后仍未进入可安装验证状态。
+  - 结论：本轮没有完成 Android phone/tablet app 安装、下载、Reader 或缓存清理验证；这不是 Android 支持通过结论。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app exec playwright test e2e/reader-entry.spec.ts --project=desktop-chromium`：passed，3 tests。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 292 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮未运行 Android 真机、iPad 真机、真实站点 smoke 或真实下载验证。
+- 待发布风险：Android phone/tablet 仍需要在能正常启动 emulator 或实体设备的环境里完成安装、登录、下载、Reader、缓存清理验证。
+
 ## 2026-06-17 详情页自动 Reader 下载格式改为 EPUB 优先
 
 - 变更范围：详情页自动下载格式选择、Reader entry 自动缺失归档选择、详情页 Reader 入口测试、README/CHANGELOG/AGENTS 文档。

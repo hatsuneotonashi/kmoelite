@@ -9,7 +9,7 @@ import {
 } from './fixtures/nativeReaderFixture'
 
 test.describe('reader entry points', () => {
-  test('Detail downloads a single source ZIP task, prepares cache, and opens Reader', async ({ page }) => {
+  test('Detail downloads a single EPUB task, prepares cache, and opens Reader', async ({ page }) => {
     await installKmoeFixtureRoutes(page)
     await installNativeReaderFixture(page, {
       chapters: [],
@@ -27,9 +27,13 @@ test.describe('reader entry points', () => {
     await expect(page).toHaveURL(/\/reader\/cache\/cache-53339-3089/)
     await expect(page.getByAltText('第 1 页')).toBeVisible()
     const calls = await getNativeReaderCalls(page)
-    expect(calls.some((call) => call.cmd === 'enqueue_download_tasks')).toBe(true)
+    const enqueueCall = calls.find((call) => call.cmd === 'enqueue_download_tasks')
+    expect(enqueueCall?.args?.tasks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ format: 'epub', volId: '3089' })
+    ]))
     expect(calls.some((call) => call.cmd === 'start_download_queue')).toBe(true)
-    expect(calls.some((call) => call.cmd === 'prepare_reader_chapter_cache')).toBe(true)
+    const prepareCall = calls.find((call) => call.cmd === 'prepare_reader_chapter_cache')
+    expect(prepareCall?.args?.input).toEqual(expect.objectContaining({ format: 'epub', volumeId: '3089' }))
   })
 
   test('Library prepares a source ZIP cache and opens Reader', async ({ page }) => {
