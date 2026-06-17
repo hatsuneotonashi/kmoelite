@@ -4,6 +4,16 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 移动端下载路径规划对齐 App 私有保存区
+
+- 变更范围：`apps/kmoe-app/src/download/pathPlanner.ts`、`apps/kmoe-app/src/tests/downloadPathPlanner.test.ts`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：iPhone、iPad、Android phone/tablet/TV 和未来 Apple TV 目标的前端下载路径规划不再使用旧的桌面保存位置设置，始终显示 App 私有保存区并标记需要导出/分享；native 下载保存根目录已经强制使用 App 私有路径，本次让 UI 计划和真实 native 行为一致。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/downloadPathPlanner.test.ts`：passed，1 file / 7 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 未运行项：未运行完整 Vitest/build/Rust/platform/E2E gate；本轮只改 TypeScript 下载路径规划和对应测试。未运行真实下载验证、移动真机导出/分享、Windows 真机或 TV 实体设备验证。
+- 待发布风险：移动端真实 downloaded-file 系统分享/导出和签名发布仍需按平台文档继续做实机验证。
+
 ## 2026-06-18 Android deep link fallback 一次性消费
 
 - 变更范围：`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、CHANGELOG、TASK_PROGRESS。

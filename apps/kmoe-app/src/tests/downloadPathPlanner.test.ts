@@ -47,6 +47,14 @@ describe('download path planner', () => {
     expect(windowsPlan.finalPath).toContain('%USERPROFILE%\\Downloads\\Kmoe\\尖帽子_魔法\\')
   })
 
+  it('ignores stale desktop save paths on mobile app targets', () => {
+    const plan = planDownloadPath(task, settings, 'ipados')
+
+    expect(plan.directory).toBe(defaultDownloadDirectory('ipados'))
+    expect(plan.exportRequired).toBe(true)
+    expect(plan.finalPath).toContain('App Internal/Kmoe/尖帽子_魔法/')
+  })
+
   it('uses platform defaults and detects known browser UA strings', () => {
     expect(defaultDownloadDirectory('windows')).toContain('Downloads')
     expect(defaultDownloadDirectory('ios')).toContain('App Internal')

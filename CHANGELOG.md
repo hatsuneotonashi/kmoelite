@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Mobile download path planning now ignores stale desktop save-location settings and always presents the app-private save area for iPhone, iPad, Android, Android tablet, Android TV, and future Apple TV targets.
 - Android deep-link fallback state is now consumed once and cleared after native route events, preventing stale comic routes from being replayed later.
 - Android deep-link startup now avoids reusing a stale global fallback route after the native pending-route bridge has already consumed it.
 - Android packaged apps no longer crash when a safe `kmoelite://comic/<id>` link is delivered while the app is already running.

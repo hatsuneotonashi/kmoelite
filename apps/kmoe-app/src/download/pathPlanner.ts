@@ -99,6 +99,7 @@ export function planDownloadPath(task: Pick<DownloadTask, 'comicTitle' | 'volume
 
 function safeDownloadDirectory(input: string | undefined, platform: PlatformTarget): string {
   const fallback = defaultDownloadDirectory(platform)
+  if (isMobileAppTarget(platform)) return fallback
   const directory = input?.trim() || fallback
   if (containsPathTraversal(directory)) return fallback
   return directory.replace(/[\u0000-\u001f]/g, '').trim() || fallback
