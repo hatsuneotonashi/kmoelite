@@ -219,16 +219,6 @@ export async function revealLocalFile(path: string): Promise<NativeCommandResult
   return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
 }
 
-export async function showLocalFileLocation(path: string): Promise<NativeCommandResult<string>> {
-  const result = await nativeCommand<string>(
-    'reveal_in_folder',
-    { path },
-    '已打开系统分享，请选择保存到“文件”或其他目标。',
-    '当前运行环境暂不支持查看文件位置。'
-  )
-  return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
-}
-
 export async function enqueueNativeDownloadTasks(tasks: DownloadTask[]): Promise<NativeCommandResult<DownloadTask[]>> {
   return nativeCommand(
     'enqueue_download_tasks',

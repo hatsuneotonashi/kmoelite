@@ -4,6 +4,18 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 移动端文件动作死代码清理
+
+- 变更范围：`apps/kmoe-app/src/platform/nativeCommands.ts`、`apps/kmoe-app/src/tests/downloadCenterReaderAction.test.tsx`、TASK_PROGRESS。
+- 行为摘要：删除上一轮移动端导出语义修复后不再被生产代码调用的 `showLocalFileLocation` helper 和对应测试 mock；移动端文件导出统一走 `exportLocalFile`，桌面文件夹定位继续走 `revealLocalFile`。
+- 验证：
+  - `rg -n "showLocalFileLocation" apps/kmoe-app/src apps/kmoe-app/e2e apps/kmoe-app/src-tauri || true`：passed，无命中。
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/nativeCommands.test.ts src/tests/downloadCenterReaderAction.test.tsx`：passed，2 files / 33 tests。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 未运行项：未重复运行完整 Vitest/build/Rust/platform/E2E gate；本轮只删除无调用 TypeScript helper，不改变 native/Rust 边界或用户可见 UI。
+- 待发布风险：无新增平台风险；真实 iPhone/iPad/Android 文件导出仍以对应设备 smoke 结果为准。
+
 ## 2026-06-18 移动端资料库/下载中心导出语义修复
 
 - 变更范围：`apps/kmoe-app/src/pages/LibraryPage.tsx`、`apps/kmoe-app/src/pages/DownloadCenterPage.tsx`、对应 Vitest、mobile Playwright visual snapshots、README、CHANGELOG、TASK_PROGRESS。

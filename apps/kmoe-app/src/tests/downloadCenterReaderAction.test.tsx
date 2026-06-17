@@ -28,7 +28,6 @@ vi.mock('../platform/nativeCommands', () => ({
   revealLocalFile: vi.fn(),
   resumeNativeDownloadTask: vi.fn(),
   retryNativeDownloadTask: vi.fn(),
-  showLocalFileLocation: vi.fn(),
   startNativeDownloadQueue: vi.fn()
 }))
 
