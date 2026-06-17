@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { deleteLocalReadingData } from '../reading/localReadingData'
+import { deleteLocalReadingData, hasLocalReadingDataForComic } from '../reading/localReadingData'
 import { deleteNativeLocalReadingData } from '../platform/nativeCommands'
 import { useCacheStore } from '../store/cacheStore'
 import { useDownloadStore } from '../store/downloadStore'
@@ -69,6 +69,15 @@ describe('local reading data deletion helper', () => {
       cacheStatus: 'none'
     })
   })
+
+  it('does not count metadata-only reader archive records as local reading data', () => {
+    useDownloadStore.setState({
+      tasks: [],
+      library: [sampleFile({ localPath: 'Imported metadata only/book.epub', format: 'epub' })]
+    })
+
+    expect(hasLocalReadingDataForComic('53339')).toBe(false)
+  })
 })
 
 function sampleChapter(): ChapterCacheRecord {
@@ -89,7 +98,7 @@ function sampleChapter(): ChapterCacheRecord {
   }
 }
 
-function sampleFile(): DownloadedFile {
+function sampleFile(patch: Partial<DownloadedFile> = {}): DownloadedFile {
   return {
     id: 'file-source',
     taskId: 'task-source',
@@ -100,7 +109,8 @@ function sampleFile(): DownloadedFile {
     format: 'source_zip',
     localPath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
     sizeBytes: 2048,
-    downloadedAt: '2026-05-24T09:00:00.000Z'
+    downloadedAt: '2026-05-24T09:00:00.000Z',
+    ...patch
   }
 }
 

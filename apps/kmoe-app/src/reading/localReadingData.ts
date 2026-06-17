@@ -8,7 +8,7 @@ import {
 import { useCacheStore } from '../store/cacheStore'
 import { useDownloadStore } from '../store/downloadStore'
 import { useShelfStore } from '../store/shelfStore'
-import { isReaderArchiveFormat } from './sourceArchive'
+import { isMetadataOnlyDownloadedFile, isReaderArchiveFormat } from './sourceArchive'
 
 export type LocalReadingDataDeleteInput = NativeDeleteLocalReadingDataInput
 
@@ -62,6 +62,7 @@ export function hasLocalReadingDataForComic(
   ) || downloadState.library.some((file) =>
     file.comicId === comicId
     && isReaderArchiveFormat(file.format)
+    && !isMetadataOnlyDownloadedFile(file)
     && (!volumeSet || volumeSet.has(file.volId))
   )
 }
