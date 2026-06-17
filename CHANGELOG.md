@@ -8,6 +8,7 @@
 
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.
 - Android FileProvider roots are now limited to app-owned files/cache directories instead of broad external storage.
+- Android builds now include a system share bridge for app-owned downloaded files after the Rust path/SQLite open-file guard succeeds.
 - Apple TV/tvOS platform-readiness checks for tvOS SDK, simulator runtime, Apple TV simulator device types, actual simulator devices, and tvOS Rust targets.
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.

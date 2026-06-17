@@ -21,11 +21,13 @@ import {
   nativeFetchKmoeCatalog,
   nativeFetchBookData,
   nativeFetchCoverImage,
+  openLocalFile,
   prepareNativeReaderChapterCache,
   preflightNativeDownloadQueue,
   prioritizeNativeDownloadTask,
   readNativeCachedReaderPage,
   repairNativeReaderChapterCache,
+  revealLocalFile,
   removeNativeShelfItems,
   saveNativeChapterCache,
   saveNativeMigrationSnapshot,
@@ -49,6 +51,7 @@ describe('native command bridge', () => {
     vi.useRealTimers()
     invokeMock.mockReset()
     Reflect.deleteProperty(window, '__TAURI_INTERNALS__')
+    Reflect.deleteProperty(window, 'KmoeliteAndroidFile')
   })
 
   it('reports unavailable when not running inside Tauri', async () => {
@@ -169,6 +172,41 @@ describe('native command bridge', () => {
       message: '已读取应用设置。'
     })
     expect(invokeMock).toHaveBeenCalledWith('get_app_config', undefined)
+  })
+
+  it('falls back to the Android system share bridge after native path validation succeeds', async () => {
+    enableTauriRuntime()
+    const shareFile = vi.fn(() => 'ok')
+    Object.defineProperty(window, 'KmoeliteAndroidFile', {
+      value: { shareFile },
+      configurable: true
+    })
+    invokeMock.mockRejectedValueOnce('当前平台不支持系统分享导出，请保留 App 私有下载目录中的文件。')
+
+    const result = await openLocalFile('/data/data/moe.kzo.client/files/Downloads/Kmoe/book.epub')
+
+    expect(result).toEqual({
+      ok: true,
+      available: true,
+      value: '/data/data/moe.kzo.client/files/Downloads/Kmoe/book.epub',
+      message: '已打开系统分享，请选择保存到“文件”或其他目标。'
+    })
+    expect(shareFile).toHaveBeenCalledWith('/data/data/moe.kzo.client/files/Downloads/Kmoe/book.epub')
+  })
+
+  it('does not call the Android share bridge for unrelated native errors', async () => {
+    enableTauriRuntime()
+    const shareFile = vi.fn(() => 'ok')
+    Object.defineProperty(window, 'KmoeliteAndroidFile', {
+      value: { shareFile },
+      configurable: true
+    })
+    invokeMock.mockRejectedValueOnce('failed to resolve open target')
+
+    const result = await revealLocalFile('/data/data/moe.kzo.client/files/Downloads/Kmoe/book.epub')
+
+    expect(result).toEqual({ ok: false, available: true, message: 'failed to resolve open target' })
+    expect(shareFile).not.toHaveBeenCalled()
   })
 
   it('keeps invokeNative and invokeOptional compatible for existing callers', async () => {

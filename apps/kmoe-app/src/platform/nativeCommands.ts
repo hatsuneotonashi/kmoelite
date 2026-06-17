@@ -5,9 +5,18 @@ import { invokeNative } from './tauri'
 
 const KMOE_WEB_COMMAND_TIMEOUT_MS = 45_000
 const KMOE_WEB_COMMAND_TIMEOUT_MESSAGE = 'Kmoe 网站请求超时，请检查网络后重试。'
+const ANDROID_SHARE_UNSUPPORTED_MESSAGE = '当前平台不支持系统分享导出，请保留 App 私有下载目录中的文件。'
 const KMOE_WEB_COMMAND_OPTIONS: NativeInvokeOptions = {
   timeoutMs: KMOE_WEB_COMMAND_TIMEOUT_MS,
   timeoutMessage: KMOE_WEB_COMMAND_TIMEOUT_MESSAGE
+}
+
+declare global {
+  interface Window {
+    KmoeliteAndroidFile?: {
+      shareFile(path: string): string
+    }
+  }
 }
 
 export type NativeCommandResult<T> = {
@@ -191,29 +200,33 @@ export async function setNativeDownloadDir(path: string): Promise<NativeCommandR
 }
 
 export async function openLocalFile(path: string): Promise<NativeCommandResult<string>> {
-  return nativeCommand('open_file', { path }, '正在打开文件。', '当前运行环境暂不支持打开文件。')
+  const result = await nativeCommand<string>('open_file', { path }, '正在打开文件。', '当前运行环境暂不支持打开文件。')
+  return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
 }
 
 export async function exportLocalFile(path: string): Promise<NativeCommandResult<string>> {
-  return nativeCommand(
+  const result = await nativeCommand<string>(
     'open_file',
     { path },
     '已打开系统分享，请选择保存到“文件”或其他目标。',
     '当前运行环境暂不支持导出文件。'
   )
+  return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
 }
 
 export async function revealLocalFile(path: string): Promise<NativeCommandResult<string>> {
-  return nativeCommand('reveal_in_folder', { path }, '正在打开所在文件夹。', '当前运行环境暂不支持打开文件夹。')
+  const result = await nativeCommand<string>('reveal_in_folder', { path }, '正在打开所在文件夹。', '当前运行环境暂不支持打开文件夹。')
+  return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
 }
 
 export async function showLocalFileLocation(path: string): Promise<NativeCommandResult<string>> {
-  return nativeCommand(
+  const result = await nativeCommand<string>(
     'reveal_in_folder',
     { path },
     '已打开系统分享，请选择保存到“文件”或其他目标。',
     '当前运行环境暂不支持查看文件位置。'
   )
+  return withAndroidFileShareFallback(result, path, '已打开系统分享，请选择保存到“文件”或其他目标。')
 }
 
 export async function enqueueNativeDownloadTasks(tasks: DownloadTask[]): Promise<NativeCommandResult<DownloadTask[]>> {
@@ -473,4 +486,28 @@ async function nativeCommand<T>(
 
 export function isNativeUnavailable(result: NativeCommandResult<unknown>): boolean {
   return !result.available
+}
+
+function withAndroidFileShareFallback(
+  result: NativeCommandResult<string>,
+  path: string,
+  successMessage: string
+): NativeCommandResult<string> {
+  if (result.ok || result.message !== ANDROID_SHARE_UNSUPPORTED_MESSAGE) return result
+  const bridge = typeof window === 'undefined' ? undefined : window.KmoeliteAndroidFile
+  if (typeof bridge?.shareFile !== 'function') return result
+
+  try {
+    const bridgeResult = bridge.shareFile(path)
+    if (bridgeResult === 'ok') {
+      return { ok: true, available: true, value: path, message: successMessage }
+    }
+    return { ok: false, available: true, message: 'Android 系统分享未能打开，请确认文件仍在 App 私有保存区。' }
+  } catch (error) {
+    return {
+      ok: false,
+      available: true,
+      message: error instanceof Error ? error.message : 'Android 系统分享未能打开，请确认文件仍在 App 私有保存区。'
+    }
+  }
 }

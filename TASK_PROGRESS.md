@@ -4,6 +4,21 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android 系统分享导出桥
+
+- 变更范围：Android `MainActivity.kt`、前端 native command fallback、Android source-level 测试、native command 测试、README/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。
+- 行为摘要：Android WebView 注册 `KmoeliteAndroidFile.shareFile(path)`，只允许 app-owned `filesDir` / `cacheDir` 下的真实文件通过 `FileProvider` 和系统 `ACTION_SEND` chooser 导出。前端仍先调用 Rust `open_file` / `reveal_in_folder`，只有 Rust 路径/SQLite 校验通过并返回 Android 系统分享未支持错误时，才调用 Android bridge；其他 native 错误不会被吞掉或伪造成成功。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/nativeCommands.test.ts src/tests/androidTvInputBridge.test.ts`：passed，2 files / 32 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 300 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=0 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，Kotlin/Gradle/XML resources/debug APK/AAB packaging passed；构建产物未进入 git 状态。
+- 未运行项：Android emulator runtime share smoke 未完成；本轮尝试启动 `Pixel_8_API_36` 时第一次因当前 shell 缺少 `ANDROID_HOME` 误展开为 `/emulator/emulator`，第二次使用 Android SDK emulator 后进程退出且未连接 adb，日志无有效输出。未单独运行 `pnpm --dir apps/kmoe-app build`，但 Android debug build 的 `beforeBuildCommand` 已执行 production build；未运行 Rust gate，因为本轮未改 Rust；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
+- 待发布风险：Android 系统分享桥已编译并有前端 fallback 测试，但仍需要 emulator/device 上用真实 downloaded-file 记录触发系统分享表，才能把 Android 文件导出/分享从 release blocker 中移除。
+
 ## 2026-06-17 Android FileProvider 私有目录边界
 
 - 变更范围：Android `file_paths.xml`、Android 壳 source-level 测试、CHANGELOG/TASK_PROGRESS。

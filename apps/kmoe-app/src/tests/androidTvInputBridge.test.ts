@@ -34,6 +34,19 @@ describe('Android app links', () => {
   })
 })
 
+describe('Android file bridge', () => {
+  it('shares only validated app-owned files through Android FileProvider', () => {
+    expect(mainActivitySource).toContain('webView.addJavascriptInterface(AndroidFileBridge(this), "KmoeliteAndroidFile")')
+    expect(mainActivitySource).toContain('@JavascriptInterface')
+    expect(mainActivitySource).toContain('FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)')
+    expect(mainActivitySource).toContain('Intent.ACTION_SEND')
+    expect(mainActivitySource).toContain('Intent.FLAG_GRANT_READ_URI_PERMISSION')
+    expect(mainActivitySource).toContain('activity.filesDir.canonicalFile')
+    expect(mainActivitySource).toContain('activity.cacheDir.canonicalFile')
+    expect(mainActivitySource).toContain('file.path.startsWith(root.path + File.separator)')
+  })
+})
+
 describe('Android file export boundary', () => {
   it('limits FileProvider sharing roots to app-owned files and cache directories', () => {
     expect(androidFilePathsSource).toContain('<files-path name="app_files" path="." />')

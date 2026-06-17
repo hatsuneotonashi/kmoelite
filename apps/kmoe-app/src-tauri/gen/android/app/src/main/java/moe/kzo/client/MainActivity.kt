@@ -3,8 +3,12 @@ package moe.kzo.client
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
+import android.webkit.JavascriptInterface
+import android.webkit.MimeTypeMap
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.FileProvider
+import java.io.File
 
 class MainActivity : TauriActivity() {
   private var appWebView: WebView? = null
@@ -19,6 +23,7 @@ class MainActivity : TauriActivity() {
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
     appWebView = webView
+    webView.addJavascriptInterface(AndroidFileBridge(this), "KmoeliteAndroidFile")
     pendingRoute?.let { route ->
       pendingRoute = null
       navigateToAppRoute(route)
@@ -119,4 +124,39 @@ class MainActivity : TauriActivity() {
   }
 
   private data class RemoteKey(val key: String, val code: String, val keyCode: Int)
+}
+
+private class AndroidFileBridge(private val activity: MainActivity) {
+  @JavascriptInterface
+  fun shareFile(path: String?): String {
+    val file = validatedAppFile(path) ?: return "error:invalid-file"
+    val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+      type = mimeTypeFor(file)
+      putExtra(Intent.EXTRA_STREAM, uri)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    activity.runOnUiThread {
+      activity.startActivity(Intent.createChooser(sendIntent, "导出文件"))
+    }
+    return "ok"
+  }
+
+  private fun validatedAppFile(path: String?): File? {
+    if (path.isNullOrBlank()) return null
+    val file = File(path).canonicalFile
+    if (!file.isFile) return null
+
+    val roots = listOf(activity.filesDir.canonicalFile, activity.cacheDir.canonicalFile)
+    val allowed = roots.any { root ->
+      file.path == root.path || file.path.startsWith(root.path + File.separator)
+    }
+    return if (allowed) file else null
+  }
+
+  private fun mimeTypeFor(file: File): String {
+    val extension = file.extension.lowercase()
+    return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
+  }
 }
