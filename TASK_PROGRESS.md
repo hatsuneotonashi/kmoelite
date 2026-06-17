@@ -4,6 +4,19 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android app-private 分享表 smoke
+
+- 变更范围：Android `MainActivity.kt` share bridge、Android source-level 测试、CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。
+- 行为摘要：Android debug build 新增 `shareDebugTempFile()` WebView bridge 方法，仅在 `BuildConfig.DEBUG` 下可用。它在 app-private cache 中创建临时 smoke 文件，并复用正式 `FileProvider` / `ACTION_SEND` 分享路径，避免再依赖 `adb root` 或 `run-as` 伪造 app 私有文件。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts src/tests/nativeCommands.test.ts`：passed，2 files / 34 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，production web build、iOS asset sync、Rust Android targets、Kotlin/Gradle/XML resources、debug APK/AAB packaging passed；构建产物未进入 git 状态。
+  - `Pixel_8_API_36` emulator install/launch：passed，debug APK 安装成功，`moe.kzo.client/.MainActivity` 启动后进程保持存活。
+  - Android WebView debug share chooser smoke：passed，DevTools Runtime 中 `window.KmoeliteAndroidFile.shareDebugTempFile()` 返回 `ok`，确认 app-private cache 临时文件能触发系统分享路径；最近日志未见崩溃关键字。
+- 未运行项：本轮未使用真实 downloaded-file/Library 记录触发分享表；未运行完整 Vitest/build/Rust/platform gate，因为本轮只改 Android bridge 和文档；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
+- 待发布风险：Android app-private 文件分享路径已有 emulator chooser smoke，但真实 downloaded-file 记录分享、真机和签名 release 仍需继续验证。
+
 ## 2026-06-18 Android 系统分享失败回传
 
 - 变更范围：Android `MainActivity.kt` share bridge、前端 native command Android fallback、Android source-level 测试、native command 测试、README/CHANGELOG/TASK_PROGRESS。

@@ -50,6 +50,14 @@ describe('Android file bridge', () => {
     expect(mainActivitySource).toContain('activity.cacheDir.canonicalFile')
     expect(mainActivitySource).toContain('file.path.startsWith(root.path + File.separator)')
   })
+
+  it('exposes a debug-only app-private share smoke through the same bridge', () => {
+    expect(mainActivitySource).toContain('fun shareDebugTempFile(): String')
+    expect(mainActivitySource).toContain('if (!BuildConfig.DEBUG) return "error:debug-only"')
+    expect(mainActivitySource).toContain('File(activity.cacheDir, "share-smoke")')
+    expect(mainActivitySource).toContain('File(dir, "kmoelite-share-smoke.txt")')
+    expect(mainActivitySource).toContain('shareValidatedFile(file.canonicalFile)')
+  })
 })
 
 describe('Android file export boundary', () => {

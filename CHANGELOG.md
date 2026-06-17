@@ -9,6 +9,7 @@
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.
 - Android FileProvider roots are now limited to app-owned files/cache directories instead of broad external storage.
 - Android builds now include a system share bridge for app-owned downloaded files after the Rust path/SQLite open-file guard succeeds.
+- Android debug builds now include a debug-only app-private share smoke method that creates a temporary cache file and exercises the same system share bridge without requiring `adb root`.
 - Apple TV/tvOS platform-readiness checks for tvOS SDK, simulator runtime, Apple TV simulator device types, actual simulator devices, and tvOS Rust targets.
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.
@@ -74,7 +75,7 @@
 
 ### Validation
 
-- Android Pixel 8 emulator has passed debug APK install/launch and WebView share-bridge injection smoke; real downloaded-file share chooser validation remains incomplete.
+- Android Pixel 8 emulator has passed debug APK install/launch, WebView share-bridge injection smoke, and app-private debug share chooser smoke; real downloaded-file record share validation remains incomplete.
 - Android phone/tablet/TV emulator packaged smoke passed for app launch and primary home/detail rendering after the mobile detail visual fix.
 - iPad simulator has passed packaged launch, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator has passed packaged launch and session-restore smoke. Signed physical-device validation remains incomplete.
 - Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke; real TV hardware and signed distribution remain incomplete.

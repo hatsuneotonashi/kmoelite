@@ -131,22 +131,40 @@ private class AndroidFileBridge(private val activity: MainActivity) {
   fun shareFile(path: String?): String {
     return try {
       val file = validatedAppFile(path) ?: return "error:invalid-file"
-      val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
-      val sendIntent = Intent(Intent.ACTION_SEND).apply {
-        type = mimeTypeFor(file)
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-      }
-      val chooser = Intent.createChooser(sendIntent, "导出文件")
-      if (chooser.resolveActivity(activity.packageManager) == null) return "error:no-share-target"
-
-      activity.runOnUiThread {
-        activity.startActivity(chooser)
-      }
-      "ok"
+      shareValidatedFile(file)
     } catch (error: Exception) {
       "error:${error.javaClass.simpleName.ifBlank { "share-failed" }}"
     }
+  }
+
+  @JavascriptInterface
+  fun shareDebugTempFile(): String {
+    if (!BuildConfig.DEBUG) return "error:debug-only"
+    return try {
+      val dir = File(activity.cacheDir, "share-smoke").apply { mkdirs() }
+      val file = File(dir, "kmoelite-share-smoke.txt").apply {
+        writeText("kmoelite Android share smoke\n")
+      }
+      shareValidatedFile(file.canonicalFile)
+    } catch (error: Exception) {
+      "error:${error.javaClass.simpleName.ifBlank { "share-failed" }}"
+    }
+  }
+
+  private fun shareValidatedFile(file: File): String {
+    val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+      type = mimeTypeFor(file)
+      putExtra(Intent.EXTRA_STREAM, uri)
+      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    val chooser = Intent.createChooser(sendIntent, "导出文件")
+    if (chooser.resolveActivity(activity.packageManager) == null) return "error:no-share-target"
+
+    activity.runOnUiThread {
+      activity.startActivity(chooser)
+    }
+    return "ok"
   }
 
   private fun validatedAppFile(path: String?): File? {
