@@ -45,11 +45,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-17: fixed restored site sessions being shown as signed out when the account page is authenticated but profile fields are temporarily unavailable; the iPhone simulator packaged app now shows the account-center entry after session restore.
 - 2026-06-17: iPad simulator passed live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator passed packaged render and session-restore smoke.
 - 2026-06-17: Android TV emulator passed live login, detail, EPUB-to-Reader, remote page-turn, and local reading-data deletion smoke.
 - 2026-06-17: advanced Apple TV/tvOS readiness to an installed tvOS runtime, a bootable Apple TV simulator, and platform checks for actual simulator devices; no runnable tvOS shell exists yet.
 - 2026-06-17: fixed an intermittent mobile/tablet detail Reader auto-download queue-start failure; Android phone and tablet emulators have passed live EPUB-to-Reader and local reading-data deletion smoke.
-- 2026-06-17: added the Android TV native DPAD/OK bridge and verified Reader OK/Back smoke on a TV emulator with a synthetic local Reader cache.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

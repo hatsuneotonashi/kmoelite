@@ -52,10 +52,7 @@ export class WebKmoeApi implements KmoeApi {
   async getSession(): Promise<SessionState> {
     try {
       const user = await this.getUserProfile()
-      const authenticated = Boolean(user.nickname || user.id || user.level || user.quotaNow !== undefined)
-      return authenticated
-        ? { authenticated, mode: 'live', user }
-        : { authenticated: false, mode: 'live', error: '当前会话未登录或已过期。' }
+      return { authenticated: true, mode: 'live', user }
     } catch (error) {
       return { authenticated: false, mode: 'live', error: error instanceof Error ? error.message : String(error) }
     }

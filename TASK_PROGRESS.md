@@ -4,6 +4,22 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 iPhone session restore 登录状态误判修复
+
+- 变更范围：`WebKmoeApi.getSession()`、native API 聚焦测试、README/README.en/CHANGELOG/TASK_PROGRESS。
+- 行为摘要：已恢复站点会话时，只要 `getUserProfile()` 成功解析为非登录页，就把 session 视为 authenticated；不再要求账号页必须解析出昵称、KMOE ID、等级或额度字段。parser 仍负责识别未登录页并抛出“当前会话未登录或已过期”。
+- iPhone simulator packaged app：
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed，生成 `kmoelite.app`。
+  - iPhone 17 simulator install/launch：passed，bundle id `moe.kzo.client`。
+  - 通过 runtime credentials 获取站点 session 并写入 app-private simulator SQLite：passed；输出未打印账号、密码或最终修复后的 session cookie。
+  - session restore UI：passed；首页账号入口从“登录账号”变为“账号中心”。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/webKmoeApiNativeErrors.test.ts`：passed，1 file / 10 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 安全记录：本轮第一次临时管道命令错误地把一个 runtime session cookie 写入了工具输出；没有写入仓库、文件、截图、提交或文档。后续命令改为 0600 临时文件 + SQLite 写入 + 立即删除临时文件。该旧 session 应通过站点退出登录或账号密码轮换使其失效。
+- 未运行项：iPhone 详情/Reader/下载/缓存清理仍未完成；`simctl openurl` 只会打开 Safari，Computer Use 无法读取 Simulator 窗口，坐标点击未能稳定进入详情页。
+- 待发布风险：iPhone packaged app 的会话恢复 UI 已修复并验证，但 iPhone 真实 Reader/download/cache smoke 仍是 release blocker。
+
 ## 2026-06-17 生产界面临时文案收敛
 
 - 变更范围：Shelf、Download Center、mobile download preflight、file export fallback、oversized-download error copy。

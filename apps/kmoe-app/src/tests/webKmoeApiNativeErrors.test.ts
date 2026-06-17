@@ -191,6 +191,20 @@ describe('WebKmoeApi native error handling', () => {
     await expect(api().getUserProfile()).rejects.toThrow('native profile request failed')
     expect(fetchMock).not.toHaveBeenCalled()
   })
+
+  it('treats any parsed non-login profile page as an authenticated session', async () => {
+    nativeMocks.nativeFetchUserProfileHtml.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: '<html><body>帳戶資料暫時不可用</body></html>',
+      message: 'profile ok'
+    })
+
+    await expect(api().getSession()).resolves.toMatchObject({
+      authenticated: true,
+      mode: 'live'
+    })
+  })
 })
 
 function api() {
