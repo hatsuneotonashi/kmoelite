@@ -17,7 +17,7 @@ const initialSettings: AppSettings = {
   ...DEFAULT_SETTINGS
 }
 
-const PREFERRED_DOWNLOAD_FORMATS: DownloadFormat[] = ['mobi', 'epub', 'source_zip']
+const PREFERRED_DOWNLOAD_FORMATS: DownloadFormat[] = ['epub', 'source_zip', 'mobi']
 const READER_PAGE_TURN_ANIMATIONS: ReaderPageTurnAnimation[] = ['slide', 'curl', 'fade']
 
 export function sanitizePersistedSettings(stored: Partial<AppSettings>): Partial<AppSettings> {

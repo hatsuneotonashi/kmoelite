@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -204,6 +204,16 @@ describe('Detail reader entry', () => {
 
     expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
     expect(document.querySelector('.detail-back-button')).toHaveTextContent('返回')
+  })
+
+  it('shows ordinary explicit download formats before advanced file-only choices', async () => {
+    renderDetail()
+
+    expect(await screen.findByText('尖帽子的魔法工房')).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: '离线下载' })[0])
+    const group = screen.getByRole('group', { name: '下载格式' })
+    const labels = within(group).getAllByRole('button').map((button) => button.textContent)
+    expect(labels).toEqual(['自动', 'EPUB', '源图 ZIP', 'MOBI'])
   })
 
   it('shows a themed loading page with the route preview before detail data resolves', async () => {

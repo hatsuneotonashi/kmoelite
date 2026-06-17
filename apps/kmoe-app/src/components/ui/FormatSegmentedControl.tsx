@@ -11,7 +11,7 @@ export function FormatSegmentedControl({
   return (
     <div className="grid gap-2">
       <div className="segmented-shell" role="group" aria-label="下载格式">
-        {(['mobi', 'epub', 'source_zip'] as DownloadFormat[]).map((format) => {
+        {(['epub', 'source_zip', 'mobi'] as DownloadFormat[]).map((format) => {
           return (
             <button
               key={format}

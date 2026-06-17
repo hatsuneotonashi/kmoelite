@@ -62,7 +62,7 @@ interface DetailRoutePreview {
   coverUrl?: string
 }
 
-const DOWNLOAD_MODE_FORMATS: DownloadModeFormat[] = ['auto', 'source_zip', 'epub', 'mobi']
+const DOWNLOAD_MODE_FORMATS: DownloadModeFormat[] = ['auto', 'epub', 'source_zip', 'mobi']
 
 export function DetailPage() {
   const { comicId = '53339' } = useParams()

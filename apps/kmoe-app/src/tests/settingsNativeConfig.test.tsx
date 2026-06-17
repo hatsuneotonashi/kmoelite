@@ -84,6 +84,14 @@ describe('Settings native config sync', () => {
     expect(useSettingsStore.getState().preferredFormat).toBe('epub')
   })
 
+  it('shows EPUB before source ZIP and MOBI in explicit download settings', async () => {
+    render(<SettingsPage />)
+
+    const select = await screen.findByLabelText('默认格式')
+    const options = Array.from(select.querySelectorAll('option')).map((option) => option.value)
+    expect(options).toEqual(['epub', 'source_zip', 'mobi'])
+  })
+
   it('shows mobile app-private downloads as read-only', async () => {
     const restoreUserAgent = setNavigatorGetter('userAgent', 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)')
     const restorePlatform = setNavigatorGetter('platform', 'MacIntel')
