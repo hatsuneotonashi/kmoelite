@@ -14,6 +14,7 @@
   - `xcrun simctl list runtimes`：tvOS simulator runtime missing；当前只有 iOS runtime 可用。
   - `rustup target add aarch64-apple-tvos-sim`：passed。
   - `rustup target add aarch64-apple-tvos`：passed。
+  - `xcodebuild -downloadPlatform tvOS`：failed twice，Apple MobileAsset catalog download returned a general networking error while fetching `com.apple.MobileAsset.appleTVOSSimulatorRuntime`。Shell proxy env 未设置。
 - 验证：
   - `git diff --check`：passed。
   - `node scripts/check-platform-readiness.mjs --self-test`：passed。
@@ -27,7 +28,7 @@
   - `node scripts/check-ios-assets.mjs`：passed，27 files。
   - 敏感文本扫描：passed，修改文件中未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径；命中项仅为文档中的环境变量名和占位示例。
 - 未运行项：本轮未生成 tvOS/WKWebView 壳，未运行 Apple TV simulator 安装/启动、遥控器焦点、Reader、下载或缓存清理验证。
-- 待发布风险：Apple TV 仍未达到可运行平台；下一步需要先安装 tvOS simulator runtime，再实现最薄 tvOS 壳并接入现有前端和必要 native bridge。
+- 待发布风险：Apple TV 仍未达到可运行平台；下一步需要先让 Xcode 成功安装 tvOS simulator runtime，再实现最薄 tvOS 壳并接入现有前端和必要 native bridge。
 
 ## 2026-06-17 Android tablet Reader 自动下载重试与真实 EPUB Reader smoke
 
