@@ -38,6 +38,7 @@
 
 ### Fixed
 
+- 修复 Android 手机 WebView 在封面取色详情页中可能把目录标题、说明和目录条目文字绘制到错误层级，导致系统截图/设备画面出现大块断层或文字消失的问题。
 - 修复 iPhone/iPad simulator 打包 App 启动后白屏的问题；打包入口不再写死根 `<base href="/">`，保持移动 bundle 资源相对加载。
 - 修复平板/移动端详情页 Reader 自动下载在原生队列短暂启动失败后可能留下排队任务、需要手动进入下载中心启动的问题；目标任务仍处于排队状态时会自动重试一次启动队列。
 - 修复 native 登录成功后账号页会被误判为未建立有效会话的问题；登录表单现在始终请求站点会话 cookie，同时“记住登录状态”只控制本地会话持久化。
@@ -66,6 +67,7 @@
 
 ### Validation
 
+- Android phone/tablet/TV emulator packaged smoke passed for app launch and primary home/detail rendering after the mobile detail visual fix.
 - iPad simulator has passed packaged launch, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator has passed packaged launch and session-restore smoke. Signed physical-device validation remains incomplete.
 - Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke; real TV hardware and signed distribution remain incomplete.
 - 最新本地验证结果记录在 [TASK_PROGRESS.md](TASK_PROGRESS.md)。

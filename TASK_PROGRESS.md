@@ -4,6 +4,43 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android 手机详情页目录合成层修复与平台 smoke
+
+- 变更范围：移动端 cover-theme 详情页目录 CSS、移动详情页 Playwright 视觉基线、README/CHANGELOG/TASK_PROGRESS。
+- 前置状态：
+  - `git status --short --branch`：dirty，仅包含本轮 CSS/视觉基线/文档改动；ignored 产物包括 `.env.local`、`dist`、Tauri Android/iOS build、`target`、`test-results` 和 `node_modules`。
+  - 本轮截图证据均为临时本地文件，未写入仓库；未打印账号、密码、Cookie、Session、Token 或授权 URL。
+- 修复：
+  - Android 手机 WebView 系统截图中，封面取色详情页的目录标题、说明和目录条目普通文字可能被绘制到错误层级，表现为目录区域大块断层、只剩按钮/Badge 可见。
+  - 移动端 cover-theme 目录容器改为透明布局容器；标题区、提示区和目录条目的主内容/操作区使用独立稳定背景层，并显式提升文本绘制层。
+- Android phone emulator：
+  - `Pixel_8_API_36` cold boot、debug APK install、package launch：passed。
+  - 首页：passed，真实 catalog 和封面渲染成功，底部导航和 safe-area 可用。
+  - 详情页：passed，从首页进入 `/comic/20213`；系统截图确认目录标题、说明、目录条目标题/页数、状态和阅读按钮均可见。
+- Android tablet emulator：
+  - `Kmoelite_Tablet_API_36` cold boot、debug APK install、package launch：passed。
+  - 首页：passed，平板 rail/sidebar、宽屏搜索区、Continue Reading 和 catalog 卡片布局正常。
+- Android TV emulator：
+  - `Kmoelite_TV_API_36` cold boot、debug APK install、package launch：passed。
+  - 首页：passed，Leanback/TV 入口可打开，深色 TV sidebar、搜索区和 Continue Reading 布局正常。
+- iOS simulator / physical-device 状态：
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed。
+  - iPhone 17 simulator install/launch/home render：passed。
+  - signed physical iPad build/install：未完成。Xcode 自动签名命令能进入设备部署阶段，但真机当时处于 locked 状态，DDI 挂载返回 device locked；需要解锁并保持唤醒后重试。
+- 提交前验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 294 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：initial run found the expected mobile detail visual baseline diff; updated the one fixture screenshot baseline, reran full suite, passed 114 / skipped 50。
+- 未运行项：Android/iOS signed release build、Android 实体手机/平板/TV、iPad 真机重新部署、Windows 真机、真实登录/下载回归、长时间 Reader/前后台验证。
+- 待发布风险：Android phone/tablet/TV emulator packaged smoke 已覆盖启动和关键 UI 渲染；这不等同于实体设备、签名发行或真实下载全流程验证完成。iPad 真机仍需要在设备解锁且 DDI 可用时重试安装。
+
 ## 2026-06-17 iPad simulator 真实 EPUB Reader smoke
 
 - 变更范围：验证日志和平台状态文档；产品代码未变更。
