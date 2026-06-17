@@ -502,7 +502,7 @@ function withAndroidFileShareFallback(
     if (bridgeResult === 'ok') {
       return { ok: true, available: true, value: path, message: successMessage }
     }
-    return { ok: false, available: true, message: 'Android 系统分享未能打开，请确认文件仍在 App 私有保存区。' }
+    return { ok: false, available: true, message: androidShareFailureMessage(bridgeResult) }
   } catch (error) {
     return {
       ok: false,
@@ -510,4 +510,11 @@ function withAndroidFileShareFallback(
       message: error instanceof Error ? error.message : 'Android 系统分享未能打开，请确认文件仍在 App 私有保存区。'
     }
   }
+}
+
+function androidShareFailureMessage(bridgeResult: string): string {
+  const reason = bridgeResult.startsWith('error:') ? bridgeResult.slice('error:'.length) : ''
+  if (reason === 'invalid-file') return 'Android 系统分享未能打开：文件不在 App 私有保存区或已被删除。'
+  if (reason === 'no-share-target') return 'Android 系统分享未能打开：系统没有可用的分享目标。'
+  return 'Android 系统分享未能打开，请确认文件仍在 App 私有保存区。'
 }

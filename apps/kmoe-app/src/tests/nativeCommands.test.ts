@@ -194,6 +194,25 @@ describe('native command bridge', () => {
     expect(shareFile).toHaveBeenCalledWith('/data/data/moe.kzo.client/files/Downloads/Kmoe/book.epub')
   })
 
+  it('reports Android share bridge failures instead of pretending success', async () => {
+    enableTauriRuntime()
+    const shareFile = vi.fn(() => 'error:invalid-file')
+    Object.defineProperty(window, 'KmoeliteAndroidFile', {
+      value: { shareFile },
+      configurable: true
+    })
+    invokeMock.mockRejectedValueOnce('当前平台不支持系统分享导出，请保留 App 私有下载目录中的文件。')
+
+    const result = await openLocalFile('/data/data/moe.kzo.client/files/Downloads/Kmoe/missing.epub')
+
+    expect(result).toEqual({
+      ok: false,
+      available: true,
+      message: 'Android 系统分享未能打开：文件不在 App 私有保存区或已被删除。'
+    })
+    expect(shareFile).toHaveBeenCalledWith('/data/data/moe.kzo.client/files/Downloads/Kmoe/missing.epub')
+  })
+
   it('does not call the Android share bridge for unrelated native errors', async () => {
     enableTauriRuntime()
     const shareFile = vi.fn(() => 'ok')

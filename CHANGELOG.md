@@ -43,6 +43,7 @@
 
 ### Fixed
 
+- Android system share export now checks that a chooser target exists before reporting success, and bridge failures are surfaced to the UI instead of being treated as successful exports.
 - 修复已恢复站点会话但账号页字段暂不可解析时，首页仍把用户误判为未登录并显示“登录账号”的问题。
 - 修复 Android 手机 WebView 在封面取色详情页中可能把目录标题、说明和目录条目文字绘制到错误层级，导致系统截图/设备画面出现大块断层或文字消失的问题。
 - 修复 iPhone/iPad simulator 打包 App 启动后白屏的问题；打包入口不再写死根 `<base href="/">`，保持移动 bundle 资源相对加载。

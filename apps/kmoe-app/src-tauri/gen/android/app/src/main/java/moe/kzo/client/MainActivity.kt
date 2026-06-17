@@ -129,18 +129,24 @@ class MainActivity : TauriActivity() {
 private class AndroidFileBridge(private val activity: MainActivity) {
   @JavascriptInterface
   fun shareFile(path: String?): String {
-    val file = validatedAppFile(path) ?: return "error:invalid-file"
-    val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
-    val sendIntent = Intent(Intent.ACTION_SEND).apply {
-      type = mimeTypeFor(file)
-      putExtra(Intent.EXTRA_STREAM, uri)
-      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
+    return try {
+      val file = validatedAppFile(path) ?: return "error:invalid-file"
+      val uri = FileProvider.getUriForFile(activity, "${activity.packageName}.fileprovider", file)
+      val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = mimeTypeFor(file)
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+      }
+      val chooser = Intent.createChooser(sendIntent, "导出文件")
+      if (chooser.resolveActivity(activity.packageManager) == null) return "error:no-share-target"
 
-    activity.runOnUiThread {
-      activity.startActivity(Intent.createChooser(sendIntent, "导出文件"))
+      activity.runOnUiThread {
+        activity.startActivity(chooser)
+      }
+      "ok"
+    } catch (error: Exception) {
+      "error:${error.javaClass.simpleName.ifBlank { "share-failed" }}"
     }
-    return "ok"
   }
 
   private fun validatedAppFile(path: String?): File? {

@@ -4,6 +4,17 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android 系统分享失败回传
+
+- 变更范围：Android `MainActivity.kt` share bridge、前端 native command Android fallback、Android source-level 测试、native command 测试、README/CHANGELOG/TASK_PROGRESS。
+- 行为摘要：Android 系统分享 bridge 现在会在返回 `ok` 前确认系统存在可处理的 chooser target；无有效文件、无分享目标或原生异常会返回 `error:*`，前端据此显示失败，不再把 bridge 失败伪造成“已打开系统分享”。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/nativeCommands.test.ts src/tests/androidTvInputBridge.test.ts`：passed，2 files / 33 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，Kotlin/Gradle/XML resources/debug APK/AAB packaging passed；构建产物未进入 git 状态。
+- 未运行项：Android runtime chooser smoke 未完成；本轮尝试用 headless `Pixel_8_API_36` emulator 做最小 bridge smoke 时，emulator 进程未连上 ADB，仅输出启动初始日志。未运行完整 Vitest/build/Rust/platform gate，因为本轮只改 Android bridge 和前端 fallback；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
+- 待发布风险：该改动消除了 Android 分享 bridge 的假成功路径，但真实 downloaded-file 分享 chooser 仍需在 emulator/device 上用实际本地下载文件触发后才能移除 release blocker。
+
 ## 2026-06-17 Android 系统分享导出桥
 
 - 变更范围：Android `MainActivity.kt`、前端 native command fallback、Android source-level 测试、native command 测试、README/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。
