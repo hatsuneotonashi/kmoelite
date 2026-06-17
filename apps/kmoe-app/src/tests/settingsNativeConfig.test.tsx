@@ -9,7 +9,9 @@ const nativeMocks = vi.hoisted(() => ({
   clearNativeReadingCache: vi.fn(),
   deleteNativeLocalReadingData: vi.fn(),
   getNativeAppConfig: vi.fn(),
-  getNativeCacheStats: vi.fn()
+  getNativeCacheStats: vi.fn(),
+  getNativeDownloadDir: vi.fn(),
+  setNativeDownloadDir: vi.fn()
 }))
 
 vi.mock('../platform/nativeCommands', () => ({
@@ -17,8 +19,8 @@ vi.mock('../platform/nativeCommands', () => ({
   deleteNativeLocalReadingData: nativeMocks.deleteNativeLocalReadingData,
   getNativeAppConfig: nativeMocks.getNativeAppConfig,
   getNativeCacheStats: nativeMocks.getNativeCacheStats,
-  getNativeDownloadDir: () => Promise.resolve({ ok: false, available: false, message: 'Native download directory is available only inside Tauri.' }),
-  setNativeDownloadDir: () => Promise.resolve({ ok: false, available: false, message: 'Saving native download directory requires Tauri.' }),
+  getNativeDownloadDir: nativeMocks.getNativeDownloadDir,
+  setNativeDownloadDir: nativeMocks.setNativeDownloadDir,
   isNativeUnavailable: (result: { available: boolean }) => !result.available
 }))
 
@@ -42,6 +44,8 @@ describe('Settings native config sync', () => {
     nativeMocks.deleteNativeLocalReadingData.mockReset()
     nativeMocks.getNativeAppConfig.mockReset()
     nativeMocks.getNativeCacheStats.mockReset()
+    nativeMocks.getNativeDownloadDir.mockReset()
+    nativeMocks.setNativeDownloadDir.mockReset()
     nativeMocks.getNativeAppConfig.mockResolvedValue({
       ok: false,
       available: false,
@@ -51,6 +55,16 @@ describe('Settings native config sync', () => {
       ok: false,
       available: false,
       message: 'Native cache stats are available only inside Tauri.'
+    })
+    nativeMocks.getNativeDownloadDir.mockResolvedValue({
+      ok: false,
+      available: false,
+      message: 'Native download directory is available only inside Tauri.'
+    })
+    nativeMocks.setNativeDownloadDir.mockResolvedValue({
+      ok: false,
+      available: false,
+      message: 'Saving native download directory requires Tauri.'
     })
     nativeMocks.clearNativeReadingCache.mockResolvedValue({
       ok: false,
@@ -62,6 +76,36 @@ describe('Settings native config sync', () => {
       available: false,
       message: 'Native local reading data deletion is available only inside Tauri.'
     })
+  })
+
+  it('shows mobile app-private downloads as read-only', async () => {
+    const restoreUserAgent = setNavigatorGetter('userAgent', 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)')
+    const restorePlatform = setNavigatorGetter('platform', 'MacIntel')
+    const restoreTouchPoints = setNavigatorGetter('maxTouchPoints', 5)
+    nativeMocks.getNativeAppConfig.mockResolvedValue({
+      ok: true,
+      available: true,
+      value: {
+        concurrency: 1,
+        downloadDirectory: '/app/container/Library/Application Support/moe.kzo.client/Downloads/Kmoe'
+      },
+      message: 'Loaded native config.'
+    })
+
+    try {
+      render(<SettingsPage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('App 私有保存区')).toBeInTheDocument()
+      })
+      expect(screen.queryByLabelText('保存位置')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: '保存' })).not.toBeInTheDocument()
+      expect(screen.getByText(/下载先保存在 App 内部/)).toBeInTheDocument()
+    } finally {
+      restoreUserAgent()
+      restorePlatform()
+      restoreTouchPoints()
+    }
   })
 
   it('loads a native download directory without runtime mode switches', async () => {
@@ -345,5 +389,20 @@ function sampleChapter(
     createdAt: '2026-05-24T08:00:00.000Z',
     updatedAt: '2026-05-24T08:00:00.000Z',
     ...patch
+  }
+}
+
+function setNavigatorGetter(key: string, value: unknown): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(window.navigator, key)
+  Object.defineProperty(window.navigator, key, {
+    configurable: true,
+    get: () => value
+  })
+  return () => {
+    if (descriptor) {
+      Object.defineProperty(window.navigator, key, descriptor)
+    } else {
+      delete (window.navigator as unknown as Record<string, unknown>)[key]
+    }
   }
 }

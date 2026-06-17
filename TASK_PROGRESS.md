@@ -4,6 +4,17 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 移动端保存位置设置只读化
+
+- 变更范围：`apps/kmoe-app/src/pages/SettingsPage.tsx`、`apps/kmoe-app/src/tests/settingsNativeConfig.test.tsx`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：iPhone、iPad、Android phone/tablet/TV 和 Apple TV runtime 的 Settings 不再显示可编辑保存位置和“保存”按钮，改为展示 App 私有保存区和导出/分享说明。桌面仍保留可编辑保存位置。移动端点击“恢复默认值”后会重新读取 native download dir，避免短暂回到桌面默认路径。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/settingsNativeConfig.test.tsx`：passed，1 file / 9 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed; generated outputs remain ignored.
+- 未运行项：未运行完整 Vitest/Rust/platform/E2E gate；本轮只改 Settings UI 和对应测试。未运行真实 iPhone/iPad/Android 设备验证。
+- 待发布风险：该改动减少移动端下载保存位置误解，但 iPhone/iPad 真机真实下载、导出分享表、前后台行为和显式缓存清理仍需继续验证。
+
 ## 2026-06-18 下载失败文案归因修复
 
 - 变更范围：`apps/kmoe-app/src/lib/format.ts`、`apps/kmoe-app/src/tests/formatMessages.test.ts`、README、CHANGELOG、TASK_PROGRESS。

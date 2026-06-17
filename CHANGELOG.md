@@ -27,6 +27,7 @@
 
 ### Changed
 
+- Mobile and TV Settings now present the download location as an app-private read-only storage area with export/share guidance, while desktop keeps the editable save-location field.
 - Platform readiness now marks the known Apple TV/tvOS WebKit absence as a warning instead of hiding it as an external host-tool gap.
 - Tightened production UI/native copy for Shelf, Download Center, mobile download preflight, file export fallback, and oversized-download errors so the app explains current behavior without future-plan or "not implemented" wording in normal flows.
 - Visible app branding is now consistently `kmoelite` across the HTML title, app shell, Tauri product/window metadata, Android display strings, iOS bundle product metadata, and macOS DMG packaging names, while preserving legacy storage identifiers for compatibility.

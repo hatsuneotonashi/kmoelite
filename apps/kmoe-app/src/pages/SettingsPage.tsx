@@ -1,5 +1,5 @@
 import { Database, Eye, EyeOff, FolderSync, Palette, RefreshCcw, Sparkles, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Button } from '../components/Button'
 import { TextField } from '../components/Field'
 import { PageHeader } from '../components/layout/PageHeader'
@@ -11,6 +11,7 @@ import { formatBytes, mbToBytes, readableAppMessage } from '../lib/format'
 import type { CachePolicyMode, CacheStats } from '../types/cache'
 import type { DownloadFormat, ReaderPageTurnAnimation } from '../types/domain'
 import { useNativeAppConfigSync } from '../hooks/useNativeAppConfigSync'
+import { detectPlatformTarget, isMobileAppTarget } from '../download/pathPlanner'
 
 const cacheModes: Array<{ value: CachePolicyMode; label: string; description: string }> = [
   { value: 'space_saver', label: '省空间', description: '只保留当前章；适合极端存储紧张时使用。' },
@@ -28,6 +29,8 @@ export function SettingsPage() {
   useNativeAppConfigSync()
   const settings = useSettingsStore()
   const cache = useCacheStore()
+  const platformTarget = useMemo(() => detectPlatformTarget(), [])
+  const appPrivateDownloads = isMobileAppTarget(platformTarget)
   const [nativeMessage, setNativeMessage] = useState('')
   const [cacheMessage, setCacheMessage] = useState('')
   const [nativeCacheStats, setNativeCacheStats] = useState<CacheStats | null>(null)
@@ -198,12 +201,24 @@ export function SettingsPage() {
           </div>
         </div>
 
-        <TextField label="保存位置" value={settings.downloadDirectory} onValueChange={settings.setDownloadDirectory} />
+        {appPrivateDownloads ? (
+          <div className="metric-tile grid gap-1 p-3 text-sm">
+            <div className="font-medium">App 私有保存区</div>
+            <div className="break-words text-[var(--app-muted)]">{settings.downloadDirectory}</div>
+            <div className="text-[var(--app-muted)]">移动端下载先保存在 App 内部；需要放入“文件”App 或其他位置时，使用下载完成后的导出/分享入口。</div>
+          </div>
+        ) : (
+          <TextField label="保存位置" value={settings.downloadDirectory} onValueChange={settings.setDownloadDirectory} />
+        )}
 
         <div className="settings-actions flex flex-wrap gap-2">
           <Button
-            onClick={() => {
+            onClick={async () => {
               settings.resetSafetyDefaults()
+              if (appPrivateDownloads) {
+                const result = await getNativeDownloadDir()
+                if (result.value) settings.setDownloadDirectory(result.value)
+              }
               setNativeMessage('已恢复默认下载设置。')
             }}
           >
@@ -219,16 +234,18 @@ export function SettingsPage() {
             <FolderSync className="h-4 w-4" />
             读取保存位置
           </Button>
-          <Button
-            variant="primary"
-            onClick={async () => {
-              const result = await setNativeDownloadDir(settings.downloadDirectory)
-              if (result.value) settings.setDownloadDirectory(result.value)
-              setNativeMessage(readableAppMessage(result.message, '暂时无法保存设置，请稍后重试。'))
-            }}
-          >
-            保存
-          </Button>
+          {!appPrivateDownloads ? (
+            <Button
+              variant="primary"
+              onClick={async () => {
+                const result = await setNativeDownloadDir(settings.downloadDirectory)
+                if (result.value) settings.setDownloadDirectory(result.value)
+                setNativeMessage(readableAppMessage(result.message, '暂时无法保存设置，请稍后重试。'))
+              }}
+            >
+              保存
+            </Button>
+          ) : null}
         </div>
         {nativeMessage ? <div className="metric-tile p-3 text-sm text-[var(--app-muted)]">{nativeMessage}</div> : null}
       </section>
