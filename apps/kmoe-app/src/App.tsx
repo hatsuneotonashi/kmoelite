@@ -77,6 +77,9 @@ function TauriDeepLinkRouteListener() {
     }
 
     void invokeOptional<string>('get_pending_deep_link_route').then(openRoute)
+    openRoute(readAndroidPendingDeepLinkRoute())
+    const handleAndroidRoute = (event: Event) => openRoute((event as CustomEvent).detail)
+    window.addEventListener('kmoelite-android-deep-link-route', handleAndroidRoute)
     void listen<string>('kmoelite-deep-link-route', (event) => openRoute(event.payload)).then((dispose) => {
       if (disposed) {
         dispose()
@@ -87,11 +90,26 @@ function TauriDeepLinkRouteListener() {
 
     return () => {
       disposed = true
+      window.removeEventListener('kmoelite-android-deep-link-route', handleAndroidRoute)
       unlisten?.()
     }
   }, [navigate])
 
   return null
+}
+
+function readAndroidPendingDeepLinkRoute(): string | undefined {
+  const bridge = (window as Window & {
+    KmoeliteAndroidApp?: {
+      takePendingRoute?: () => string
+    }
+  }).KmoeliteAndroidApp
+  try {
+    const route = bridge?.takePendingRoute?.()
+    return route || (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute
+  } catch {
+    return (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute
+  }
 }
 
 function RouteLoadingState() {

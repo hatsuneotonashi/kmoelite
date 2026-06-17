@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Android packaged apps no longer crash when a safe `kmoelite://comic/<id>` link is delivered while the app is already running.
 - iPhone/iPad/Android Library and Download Center file actions now use export/share wording instead of desktop-only folder-location wording, and mobile EPUB/source archives keep a clear Reader plus export path.
 - Fixed download failure copy so site-side quota/permission responses such as `no permission` are not misreported as local save-location permission errors.
 - iOS deep-link routing now stores a pending native route and uses a frontend Tauri event listener, making cold-start route delivery less dependent on direct `history.pushState` timing.
@@ -82,6 +83,7 @@
 
 ### Validation
 
+- Android Pixel 8 emulator has passed debug APK install/direct launch and running-app `kmoelite://comic/<id>` delivery without the previous native intent crash.
 - Android Pixel 8 emulator has passed debug APK install/launch, WebView share-bridge injection smoke, and app-private debug share chooser smoke; real downloaded-file record share validation remains incomplete.
 - Android phone/tablet/TV emulator packaged smoke passed for app launch and primary home/detail rendering after the mobile detail visual fix.
 - iPad simulator has passed packaged launch, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator has passed packaged launch and session-restore smoke. Signed physical-device validation remains incomplete.

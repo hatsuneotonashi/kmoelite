@@ -24,16 +24,14 @@ class MainActivity : TauriActivity() {
     super.onWebViewCreate(webView)
     appWebView = webView
     webView.addJavascriptInterface(AndroidFileBridge(this), "KmoeliteAndroidFile")
-    pendingRoute?.let { route ->
-      pendingRoute = null
-      navigateToAppRoute(route)
-    }
+    webView.addJavascriptInterface(AndroidAppBridge(this), "KmoeliteAndroidApp")
+    pendingRoute?.let { route -> navigateToAppRoute(route) }
   }
 
   override fun onNewIntent(intent: Intent) {
-    super.onNewIntent(intent)
     setIntent(intent)
-    handleDeepLinkIntent(intent)
+    if (handleDeepLinkIntent(intent)) return
+    super.onNewIntent(intent)
   }
 
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -76,9 +74,10 @@ class MainActivity : TauriActivity() {
     """.trimIndent()
   }
 
-  private fun handleDeepLinkIntent(intent: Intent?) {
-    val route = routeFromDeepLink(intent) ?: return
+  private fun handleDeepLinkIntent(intent: Intent?): Boolean {
+    val route = routeFromDeepLink(intent) ?: return false
     navigateToAppRoute(route)
+    return true
   }
 
   private fun routeFromDeepLink(intent: Intent?): String? {
@@ -96,11 +95,9 @@ class MainActivity : TauriActivity() {
   }
 
   private fun navigateToAppRoute(route: String) {
+    pendingRoute = route
     val webView = appWebView
-    if (webView == null) {
-      pendingRoute = route
-      return
-    }
+    if (webView == null) return
 
     webView.post {
       webView.evaluateJavascript(appRouteScript(route), null)
@@ -111,10 +108,12 @@ class MainActivity : TauriActivity() {
     return """
       (() => {
         const route = '$route';
+        window.__kmoeliteAndroidPendingRoute = route;
         if (window.location.pathname !== route) {
           window.history.pushState({}, '', route);
           window.dispatchEvent(new Event('popstate'));
         }
+        window.dispatchEvent(new CustomEvent('kmoelite-android-deep-link-route', { detail: route }));
       })();
     """.trimIndent()
   }
@@ -123,7 +122,20 @@ class MainActivity : TauriActivity() {
     return value.matches(Regex("[A-Za-z0-9_-]{1,80}"))
   }
 
+  fun takePendingRoute(): String {
+    val route = pendingRoute ?: return ""
+    pendingRoute = null
+    return route
+  }
+
   private data class RemoteKey(val key: String, val code: String, val keyCode: Int)
+}
+
+private class AndroidAppBridge(private val activity: MainActivity) {
+  @JavascriptInterface
+  fun takePendingRoute(): String {
+    return activity.takePendingRoute()
+  }
 }
 
 private class AndroidFileBridge(private val activity: MainActivity) {

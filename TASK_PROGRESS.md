@@ -4,6 +4,19 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android deep link 运行中崩溃修复
+
+- 变更范围：`apps/kmoe-app/src-tauri/gen/android/app/src/main/java/moe/kzo/client/MainActivity.kt`、`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Android packaged app 收到安全 `kmoelite://comic/<id>` intent 时，先由 `MainActivity` 识别并交给前端 pending-route bridge；运行中的 app 不再把自有 deep link 继续传给 Tauri native `onNewIntent` 路径触发崩溃。前端启动时会读取 Android pending route，运行中则监听 Android bridge 派发的 route 事件。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts`：passed，1 file / 5 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，debug APK/AAB generated；构建产物保持 ignored。
+  - `Pixel_8_API_36` emulator debug APK install/direct launch：passed，`moe.kzo.client/.MainActivity` 启动后进程保持存活。
+  - `Pixel_8_API_36` emulator running-app `kmoelite://comic/53339` smoke：passed，intent delivered to the running top activity，进程号保持不变，最近日志未见 `Rust_onNewIntent`、panic、fatal crash 或 `AndroidRuntime` fatal 关键字。
+- 未运行项：未运行完整 Vitest/build/Rust/platform/E2E gate；本轮只改 Android deep-link bridge、前端 route handoff 和对应 source-level 测试。未运行真实登录、真实下载验证、Android 真机、iPhone/iPad 或 Windows 验证。
+- 待发布风险：Android 模拟器已覆盖运行中 deep link 崩溃回归，但 signed Android 真机、真实下载文件分享、Android 平板/TV 实体设备和商店分发仍需继续验证。
+
 ## 2026-06-18 移动端文件动作死代码清理
 
 - 变更范围：`apps/kmoe-app/src/platform/nativeCommands.ts`、`apps/kmoe-app/src/tests/downloadCenterReaderAction.test.tsx`、TASK_PROGRESS。
