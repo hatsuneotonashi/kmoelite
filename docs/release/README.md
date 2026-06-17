@@ -160,9 +160,9 @@ Android phone/tablet：
 
 Android TV：
 
-- Leanback launcher、TV runtime 识别和方向键焦点已有实验 smoke。
-- Remote Back、native DPAD/OK 输入桥和合成本地 Reader cache OK/Back smoke 已在 Android TV 模拟器验证。
-- Reader 下载、缓存清理、实体 TV、签名 release 和 TV 分发验证仍未完成。
+- Leanback launcher、TV runtime 识别、方向键焦点、Remote Back 和 native DPAD/OK 输入桥已有实验 smoke。
+- 真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据删除已在 Android TV 模拟器验证。
+- 实体 TV、文件导出/分享、签名 release 和 TV 分发验证仍未完成。
 
 Apple TV：
 

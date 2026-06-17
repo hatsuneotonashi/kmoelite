@@ -4,6 +4,36 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android TV emulator 真实 EPUB Reader 与清理验证
+
+- 变更范围：验证日志和平台状态文档；产品代码未变更。
+- Android TV emulator：
+  - `Kmoelite_TV_API_36` cold boot reached `device` and `sys.boot_completed=1`。
+  - Debug APK installed successfully and launched with package `moe.kzo.client`。
+  - WebView URL was packaged `http://tauri.localhost/`, not a Mac dev-server URL。
+  - Runtime model was `androidTv` / `tv` / `remote`。
+- 真实站点 smoke：
+  - 登录：passed，使用 runtime credentials；输出未打印账号、密码、Cookie、Session 或授权 URL。
+  - Account：passed，账号页确认 authenticated account state。
+  - Detail：passed，`/comic/53339` 真实详情页和目录加载成功。
+- 真实 EPUB 单项下载到 Reader：
+  - 详情页目录项“阅读 / 获取 EPUB”创建并执行 EPUB 单项下载。
+  - 下载完成后自动准备 Reader cache，并打开 `/reader/cache/reader-cache%3A53339%3A3001%3Aepub`。
+  - Reader 第 1 页图片加载成功。
+- Android TV remote Reader smoke：
+  - `DPAD_CENTER`：passed，显示 Reader chrome。
+  - `DPAD_LEFT`：passed，翻到双页 `第 2-3 / 235 页`，两张图片加载成功。
+- 本地阅读数据删除验证：
+  - Settings “删除全部本地阅读数据”：passed。
+  - 重新打开旧 Reader cache URL 不再显示漫画图片，提示本地没有找到章节缓存，需要重新准备。
+- 进程清理：emulator 已通过 ADB 关闭，`adb devices -l` 为空。
+- 提交前检查：
+  - `git diff --check`：passed。
+  - 敏感文本扫描：passed，修改文档中未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+  - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
+- 未运行项：本轮未运行 Android TV 实体设备、签名 release、TV 分发、长时间遥控器焦点巡航、文件导出/分享或 source ZIP 成功下载。
+- 待发布风险：Android TV emulator 已验证真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据删除；这仍不等同于实体 TV、签名发行或商店分发完成。
+
 ## 2026-06-17 Apple TV readiness 检查入口
 
 - 变更范围：平台 readiness 脚本、CHANGELOG/docs/status/docs/platforms/docs/development/docs/release 文档。

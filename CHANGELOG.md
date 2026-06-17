@@ -65,6 +65,7 @@
 
 ### Validation
 
+- Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke; real TV hardware and signed distribution remain incomplete.
 - 最新本地验证结果记录在 [TASK_PROGRESS.md](TASK_PROGRESS.md)。
 
 ## 0.1.0
