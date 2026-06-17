@@ -14,6 +14,12 @@ fn native_task_shape_rejects_restricted_policy_rows() {
 }
 
 #[test]
+fn enqueue_download_tasks_rejects_empty_batches() {
+    let error = enqueue_download_tasks(Vec::new()).expect_err("empty enqueue rejected");
+    assert!(error.contains("没有可加入的下载任务"));
+}
+
+#[test]
 fn app_config_serializes_download_directory_for_frontend_settings() {
     let value = serde_json::to_value(AppConfig {
         concurrency: 1,

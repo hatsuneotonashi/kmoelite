@@ -4,6 +4,20 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 下载队列空任务边界拦截
+
+- 变更范围：`apps/kmoe-app/src/platform/nativeCommands.ts`、`apps/kmoe-app/src-tauri/src/commands.rs`、对应 Vitest/Rust tests、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：前端 `enqueueNativeDownloadTasks` 和 Rust `enqueue_download_tasks` command 都会拒绝空任务批次；任何入口即使漏掉页面级检查，也不能再把空下载请求当作成功写入 native 队列。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/nativeCommands.test.ts src/tests/detailReaderEntry.test.tsx`：passed，2 files / 43 tests。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，89 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `git diff --check`：passed。
+  - 本轮改动文件敏感扫描：passed，无账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径命中。
+- 未运行项：未运行完整 Vitest/build/Rust cargo check/platform/E2E gate；本轮只改下载队列空任务边界和对应测试。未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复收紧空任务边界；各平台真实下载、导出/分享、签名发布和真机验证仍按平台文档继续验证。
+
 ## 2026-06-18 Detail 显式离线下载空任务拦截
 
 - 变更范围：`apps/kmoe-app/src/pages/DetailPage.tsx`、`apps/kmoe-app/src/tests/detailReaderEntry.test.tsx`、README、CHANGELOG、TASK_PROGRESS。

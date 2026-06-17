@@ -60,6 +60,9 @@ fn read_download_dir_setting() -> Result<String, String> {
 
 #[tauri::command]
 pub fn enqueue_download_tasks(tasks: Vec<DownloadTask>) -> Result<Vec<DownloadTask>, String> {
+    if tasks.is_empty() {
+        return Err("没有可加入的下载任务。".to_string());
+    }
     let mut inserted = Vec::new();
     let conn = db::open_default_connection().map_err(|error| error.to_string())?;
     for task in tasks {

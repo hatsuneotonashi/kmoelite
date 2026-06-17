@@ -140,6 +140,15 @@ describe('native command bridge', () => {
     expect(invokeMock).toHaveBeenCalledWith('enqueue_download_tasks', { tasks })
   })
 
+  it('rejects empty native enqueue requests before invoking Tauri', async () => {
+    enableTauriRuntime()
+
+    const result = await enqueueNativeDownloadTasks([])
+
+    expect(result).toEqual({ ok: false, available: true, message: '没有可加入的下载任务。' })
+    expect(invokeMock).not.toHaveBeenCalled()
+  })
+
   it('can prioritize a queued native download task', async () => {
     enableTauriRuntime()
     const task = sampleTask()

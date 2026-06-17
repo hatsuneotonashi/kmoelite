@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Download enqueue boundaries now reject empty task batches in both the frontend native helper and the Rust command, so empty download requests cannot be reported as successful.
 - Explicit Detail offline downloads now fail cleanly when task creation returns no tasks, instead of sending an empty task set to the native download queue.
 - Detail Reader startup now fails cleanly when the website/task parser returns no reader-download tasks, instead of enqueueing an empty native queue and showing a misleading existing-queue message.
 - Mobile download path planning now ignores stale desktop save-location settings and always presents the app-private save area for iPhone, iPad, Android, Android tablet, Android TV, and future Apple TV targets.

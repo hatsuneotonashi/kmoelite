@@ -220,6 +220,7 @@ export async function revealLocalFile(path: string): Promise<NativeCommandResult
 }
 
 export async function enqueueNativeDownloadTasks(tasks: DownloadTask[]): Promise<NativeCommandResult<DownloadTask[]>> {
+  if (tasks.length === 0) return { ok: false, available: true, message: '没有可加入的下载任务。' }
   return nativeCommand(
     'enqueue_download_tasks',
     { tasks },
