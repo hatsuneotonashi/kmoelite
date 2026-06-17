@@ -21,6 +21,7 @@
 
 ### Changed
 
+- 详情页“开始阅读”和离线下载“自动”格式改为优先使用 EPUB，源图 ZIP/CBZ 保留为用户显式选择的高画质选项，避免普通阅读路径默认排入更容易被站点授权拒绝的源图 ZIP 任务。
 - iPhone/iPad explicit downloads now write to an app-private download root first; users can export or share completed files through the system sheet instead of relying on a Files-visible `Documents` path during download.
 - Android phone/tablet platform detection now has explicit runtime classes instead of falling through to Linux desktop behavior.
 - Android TV WebView user agents such as `sdk_google_atv64` now map to the TV contract even when WebView includes `Mobile Safari`.

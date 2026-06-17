@@ -4,6 +4,32 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 详情页自动 Reader 下载格式改为 EPUB 优先
+
+- 变更范围：详情页自动下载格式选择、Reader entry 自动缺失归档选择、详情页 Reader 入口测试、README/CHANGELOG/AGENTS 文档。
+- 行为摘要：详情页“开始阅读”和离线下载“自动”格式现在优先创建 EPUB 单项任务；源图 ZIP/CBZ 仍作为用户显式选择的高画质/手动格式保留。该调整避免普通阅读路径默认排入当前真实站点上更容易授权失败的 `source_zip` 任务。
+- 真实下载验证：
+  - `KMOE_REAL_DOWNLOAD_VERIFY=I_UNDERSTAND_THIS_MAY_USE_QUOTA KMOE_VERIFY_FORMAT=source_zip KMOE_VERIFY_COMIC_IDS=53339 KMOE_VERIFY_ALLOW_UNKNOWN_SOURCE_ZIP=1 KMOE_VERIFY_MAX_MB=120 KMOE_VERIFY_MAX_CANDIDATE_ATTEMPTS=6 pnpm verify:real-source-zip-reader`：failed，站点未返回可用 source ZIP 下载地址；输出已脱敏，未打印账号、密码、Cookie、Session、授权 URL 或本地下载路径。
+  - `KMOE_REAL_DOWNLOAD_VERIFY=I_UNDERSTAND_THIS_MAY_USE_QUOTA KMOE_VERIFY_FORMAT=epub KMOE_VERIFY_COMIC_IDS=53339,14140,10180 KMOE_VERIFY_MAX_MB=120 KMOE_VERIFY_MAX_CANDIDATE_ATTEMPTS=3 pnpm verify:real-source-zip-reader`：passed，`format=epub`，完成真实单项下载、Library 记录、Reader cache 准备、前后翻页、继续阅读进度和 cache cleanup 验证；输出已脱敏，下载目录使用临时目录并在验证后清理。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/detailReaderEntry.test.tsx`：passed，1 file / 10 tests。
+- 回归修复：首次全量 Vitest 发现旧 source ZIP 任务会被新的 EPUB 默认选择忽略，已修复为“新建默认 EPUB，但已有 EPUB/source ZIP Reader 任务都必须识别，避免重复排队”。
+- 补充聚焦验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/readerEntryState.test.ts src/tests/detailReaderEntry.test.tsx`：passed，2 files / 17 tests。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 292 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮未运行 Android/iPad 真机部署、Android/iPad 下载 UI 手工 smoke、macOS signed bundle、Windows 真机、真实 source ZIP 成功验证或 GitHub push。
+- 待发布风险：source ZIP 仍可能在真实站点授权阶段失败；本次修复只改变普通自动阅读/自动下载默认选择，不声称 source ZIP 授权已修复。
+
 ## 2026-06-17 Android 平板 native 登录会话修复验证
 
 - 变更范围：Rust native KMOE Web Adapter 登录表单、native 会话 cookie 传递、账号页 authenticated profile 判定、浏览器 fallback 登录表单、登录回归测试、README/CHANGELOG/docs/status/docs/platforms/AGENTS 文档。

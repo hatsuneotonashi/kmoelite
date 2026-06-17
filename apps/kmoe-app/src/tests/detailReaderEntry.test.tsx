@@ -77,7 +77,9 @@ describe('Detail reader entry', () => {
     })
     mocks.api.getComicDetail.mockResolvedValue(sampleComic())
     mocks.api.getSession.mockResolvedValue({ authenticated: true, mode: 'live', user: { warnings: [] } })
-    mocks.api.createDownloadTasks.mockResolvedValue([sourceZipTask()])
+    mocks.api.createDownloadTasks.mockImplementation(async ({ format }) => [
+      sourceZipTask({ id: `53339-3089-${format}`, format })
+    ])
     deleteNativeLocalReadingDataMock.mockResolvedValue({
       ok: true,
       available: true,
@@ -222,11 +224,45 @@ describe('Detail reader entry', () => {
     expect(screen.getByAltText('圣洁少女的秘密情事')).toHaveAttribute('src', 'https://kmimg.mxomo.com/cover/secret.jpg')
   })
 
-  it('downloads one local source ZIP task, prepares cache, and opens Reader when reading without a local archive', async () => {
+  it('downloads one local EPUB task, prepares cache, and opens Reader when reading without a local archive', async () => {
     renderDetail()
 
     expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
-    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
+
+    await waitFor(() => {
+      expect(mocks.api.createDownloadTasks).toHaveBeenCalledWith({
+        comic: expect.objectContaining({ id: '53339' }),
+        selectedVolIds: ['3089'],
+        format: 'epub'
+      })
+      expect(enqueueNativeDownloadTasksMock).toHaveBeenCalledWith([expect.objectContaining({
+        comicId: '53339',
+        volId: '3089',
+        format: 'epub',
+        status: 'queued'
+      })])
+      expect(preflightNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(startNativeDownloadQueueMock).toHaveBeenCalled()
+      expect(useDownloadStore.getState().tasks).toHaveLength(1)
+      expect(prepareReaderCacheMock).toHaveBeenCalledWith(expect.objectContaining({
+        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.epub',
+        comicId: '53339',
+        volumeId: '3089',
+        format: 'epub'
+      }))
+    })
+    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
+  })
+
+  it('keeps source ZIP available when it is explicitly selected', async () => {
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /离线下载/ })[0])
+    fireEvent.click(screen.getByRole('button', { name: '源图 ZIP' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: '选择 話 089-095' }))
+    fireEvent.click(screen.getAllByRole('button', { name: /加入队列/ })[0])
 
     await waitFor(() => {
       expect(mocks.api.createDownloadTasks).toHaveBeenCalledWith({
@@ -240,17 +276,7 @@ describe('Detail reader entry', () => {
         format: 'source_zip',
         status: 'queued'
       })])
-      expect(preflightNativeDownloadQueueMock).toHaveBeenCalled()
-      expect(startNativeDownloadQueueMock).toHaveBeenCalled()
-      expect(useDownloadStore.getState().tasks).toHaveLength(1)
-      expect(prepareReaderCacheMock).toHaveBeenCalledWith(expect.objectContaining({
-        archivePath: '/Users/example/Downloads/Kmoe/尖帽子的魔法工房/話 089-095.zip',
-        comicId: '53339',
-        volumeId: '3089',
-        format: 'source_zip'
-      }))
     })
-    expect(await screen.findByRole('heading', { name: 'Reader Opened' })).toBeInTheDocument()
   })
 
   it('starts the foreground native queue after iPad offline-download enqueue', async () => {
@@ -273,7 +299,7 @@ describe('Detail reader entry', () => {
       expect(enqueueNativeDownloadTasksMock).toHaveBeenCalledWith([expect.objectContaining({
         comicId: '53339',
         volId: '3089',
-        format: 'source_zip',
+        format: 'epub',
         status: 'queued'
       })])
       expect(preflightNativeDownloadQueueMock).toHaveBeenCalled()
@@ -293,7 +319,7 @@ describe('Detail reader entry', () => {
     renderDetail()
 
     expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
-    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: 'Login Page' })).toBeInTheDocument()
@@ -360,7 +386,7 @@ describe('Detail reader entry', () => {
     renderDetail()
 
     expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
-    fireEvent.click(screen.getAllByRole('button', { name: /获取源图/ })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
 
     expect((await screen.findAllByText(/登录会话已失效/)).length).toBeGreaterThan(0)
     expect(prepareReaderCacheMock).not.toHaveBeenCalled()

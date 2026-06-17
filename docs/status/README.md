@@ -26,10 +26,12 @@
 最近一次本地 source gate 记录了以下结果：
 
 - TypeScript typecheck：passed。
-- Vitest：55 files / 290 tests passed。
-- Rust lib tests：84 passed。
+- Vitest：55 files / 292 tests passed。
+- Rust lib tests：86 passed。
 - `pnpm check:platforms`：`pass=45 warn=0 external=3 fail=0`。
 - Playwright E2E：114 passed / 50 skipped。
+- 真实 EPUB 单项下载到 Reader：passed，覆盖下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。
+- 真实 source ZIP 单项下载：failed，站点未返回可用 source ZIP 下载地址；普通自动阅读路径已改为 EPUB 优先，source ZIP 仍保留为显式高级格式。
 - macOS debug `.app` bundle：build passed，并完成一次启动/退出 smoke。
 - Android debug APK/AAB：build passed。
 - Android phone emulator：Pixel 8 API 36 install/launch smoke passed，确认 phone contract 和底部导航。
@@ -59,7 +61,7 @@
 - Android phone/tablet 真机、下载/Reader 全链路、缓存清理、签名发布和分发验证未完成。
 - Android TV Reader 下载、缓存清理、实体设备、签名发布和分发验证未完成；当前 TV Reader smoke 只覆盖合成本地 Reader cache 的 OK/Back 行为，不覆盖真实站点、下载或缓存清理链路。
 - Apple TV 输入、布局、缓存策略和平台可行性未完成。
-- 本轮默认不运行真实站点 smoke 和真实下载验证。
+- 最近一轮运行了真实 EPUB 单项下载验证；真实站点 smoke、source ZIP 成功验证和各平台 native 下载/Reader/cache 清理 smoke 仍需按发布目标重新执行。
 - Store 分发仍需要平台政策、签名、provisioning 和 packaging review。
 
 ## 验证模型

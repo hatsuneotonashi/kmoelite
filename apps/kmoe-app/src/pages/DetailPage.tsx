@@ -240,7 +240,7 @@ export function DetailPage() {
       if (queueableOptions.length === 0) return []
       const tasks: DownloadTask[] = []
       if (downloadModeFormat === 'auto') {
-        for (const groupFormat of ['source_zip', 'epub', 'mobi'] as DownloadFormat[]) {
+        for (const groupFormat of ['epub', 'source_zip', 'mobi'] as DownloadFormat[]) {
           const groupVolIds = queueableOptions
             .filter((option) => resolveDownloadFormatForOption(option, 'auto') === groupFormat)
             .map((option) => option.volId)
@@ -1403,8 +1403,8 @@ function delay(ms: number): Promise<void> {
 
 function resolveDownloadFormatForOption(option: VolumeDownloadOption, mode: DownloadModeFormat): DownloadFormat {
   if (mode !== 'auto') return mode
-  if (canQueueDownloadOption(option, 'source_zip')) return 'source_zip'
   if (canQueueDownloadOption(option, 'epub')) return 'epub'
+  if (canQueueDownloadOption(option, 'source_zip')) return 'source_zip'
   return 'mobi'
 }
 
@@ -1484,7 +1484,7 @@ function DownloadModeFormatPicker({
           </button>
         ))}
       </div>
-      <p>自动会优先选择可用于内置阅读器的源图 ZIP；缺失时使用 EPUB，最后回退到 MOBI 文件。</p>
+      <p>自动会优先选择已验证可用于内置阅读器的 EPUB；源图 ZIP 保留为手动高画质选项，最后回退到 MOBI 文件。</p>
     </div>
   )
 }

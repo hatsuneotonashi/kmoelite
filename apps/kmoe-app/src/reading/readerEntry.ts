@@ -82,7 +82,7 @@ export function resolveReaderEntryState(input: {
   }
 
   const readerFormat = selectReaderArchiveFormat(option)
-  const sourceTask = findLatestReaderArchiveTask(tasks, option.comicId, option.volId, readerFormat ? [readerFormat] : ['source_zip', 'epub'])
+  const sourceTask = findLatestReaderArchiveTask(tasks, option.comicId, option.volId, preferredReaderArchiveTaskFormats(readerFormat))
   if (sourceTask && ['queued', 'authorizing', 'downloading', 'paused', 'verifying'].includes(sourceTask.status)) {
     const taskFormat = sourceTask.format as ReaderArchiveFormat
     return {
@@ -262,11 +262,19 @@ function findLatestReaderArchiveTask(
 }
 
 function selectReaderArchiveFormat(option: VolumeDownloadOption): ReaderArchiveFormat | undefined {
-  if (canQueueDownloadOption(option, 'source_zip')) return 'source_zip'
   if (canQueueDownloadOption(option, 'epub')) return 'epub'
-  if (option.availableFormats.includes('source_zip')) return 'source_zip'
+  if (canQueueDownloadOption(option, 'source_zip')) return 'source_zip'
   if (option.availableFormats.includes('epub')) return 'epub'
+  if (option.availableFormats.includes('source_zip')) return 'source_zip'
   return undefined
+}
+
+function preferredReaderArchiveTaskFormats(format: ReaderArchiveFormat | undefined): ReaderArchiveFormat[] {
+  const formats: ReaderArchiveFormat[] = format ? [format] : []
+  for (const candidate of ['epub', 'source_zip'] as ReaderArchiveFormat[]) {
+    if (!formats.includes(candidate)) formats.push(candidate)
+  }
+  return formats
 }
 
 function hasDocumentFormat(option: VolumeDownloadOption): boolean {
