@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android TV remote Back 与 Reader OK/Back 键位
+
+- 变更范围：remote/TV 键位 helper、非手机 App shell Back 导航、Reader OK/Back 键位、Reader/布局聚焦测试、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。
+- 行为摘要：`remote` 输入契约下，App shell 可把 Back/BrowserBack/Backspace 等返回键映射到浏览历史返回；Reader 可用 OK/Enter 显示或隐藏 chrome，并用 Back/BrowserBack/Backspace 先关闭打开的 Reader 面板，再返回上一页。文本输入框仍不会被 Backspace 劫持。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/spatialFocus.test.ts src/tests/appLayoutShell.test.ts src/tests/readerPage.test.tsx`：passed，3 files / 35 tests。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，54 files / 289 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，84 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未重新运行 Android TV emulator 安装/Reader Back smoke、真实站点 smoke、真实下载验证、实体 TV、Android phone/tablet 真机、iPhone/iPad 真机、Windows 真机或 Apple TV。
+- 待发布风险：该改动补齐 remote 键位语义和源码验证，不等同于 Android TV Reader、下载、缓存清理或实体设备支持完成。
+
 ## 2026-06-17 Android TV 实验入口与遥控器焦点 smoke
 
 - 变更范围：Android TV/WebView 平台识别、TV layout contract、remote input class、Android TV manifest readiness check、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。

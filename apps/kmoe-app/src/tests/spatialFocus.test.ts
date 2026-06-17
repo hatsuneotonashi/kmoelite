@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { moveSpatialFocus } from '../lib/spatialFocus'
+import { isBackNavigationKey, isPrimaryActionKey, moveSpatialFocus } from '../lib/spatialFocus'
 
 describe('moveSpatialFocus', () => {
   afterEach(() => {
@@ -38,6 +38,13 @@ describe('moveSpatialFocus', () => {
     expect(moveSpatialFocus(event, root)).toBe(false)
     expect(document.activeElement).toBe(input)
     expect(event.defaultPrevented).toBe(false)
+  })
+
+  it('recognizes remote back and primary action keys', () => {
+    expect(isBackNavigationKey(new KeyboardEvent('keydown', { key: 'BrowserBack' }))).toBe(true)
+    expect(isBackNavigationKey(new KeyboardEvent('keydown', { key: 'Backspace' }))).toBe(true)
+    expect(isPrimaryActionKey(new KeyboardEvent('keydown', { key: 'Enter' }))).toBe(true)
+    expect(isPrimaryActionKey(new KeyboardEvent('keydown', { key: 'Select' }))).toBe(true)
   })
 })
 

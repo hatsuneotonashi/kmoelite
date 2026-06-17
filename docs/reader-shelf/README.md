@@ -73,7 +73,7 @@ macOS / Windows：
 
 TV：
 
-- Android TV 已有实验 shell 和方向键焦点基础；Reader、下载、缓存清理、返回键和横屏阅读仍需单独实现/验证，不能直接复用手机 UI。
+- Android TV 已有实验 shell、方向键焦点、remote Back 和 Reader OK/Back 键位基础；Reader 下载、缓存清理、端到端 TV smoke 和横屏阅读仍需单独实现/验证，不能直接复用手机 UI。
 - Apple TV 仍需要先设计遥控器输入、焦点导航、横屏布局和缓存策略。
 
 ## Native 边界

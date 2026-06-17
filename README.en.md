@@ -36,7 +36,7 @@ Developer-preview usable surfaces:
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
 - Android phone: experimental source path exists; a Tauri Android debug APK/AAB builds and launches on a Pixel 8 emulator with the phone layout, but real-device, download, Reader, and signed distribution validation are incomplete.
 - Android tablet: experimental source path exists; tablet layout rules exist, but Android tablet emulator/device validation is incomplete.
-- Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, and direction-key focus smoke were verified on an Android TV emulator, but Reader/download/cache validation is incomplete.
+- Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, direction-key focus, remote Back, and Reader OK/Back key handling have source support and focused tests, but Reader/download/cache validation is incomplete.
 
 Future plan:
 
@@ -44,11 +44,11 @@ Future plan:
 
 ## Recent Updates
 
+- 2026-06-17: added Android TV/remote Back handling and Reader OK/Back key support so remote navigation can enter and leave views.
 - 2026-06-17: added the experimental Android TV entry and verified Leanback launcher, TV runtime detection, wide shell, and direction-key focus smoke.
 - 2026-06-17: added the Android Tauri project and debug APK/AAB build path, and fixed Android phones being misclassified as Linux desktop layouts.
 - 2026-06-17: added spatial arrow-key focus movement in the non-phone app shell, building the shared baseline for desktop keyboard, iPad keyboard, and TV remote navigation.
 - 2026-06-08: fixed iPad/iPhone login input behavior and the site `e400` message; the email is trimmed while the password is submitted exactly as typed.
-- 2026-06-08: fixed the iPhone/iPad explicit-download storage path and download error messaging; mobile downloads are saved in the app-private area first, then exported through the system share sheet.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 

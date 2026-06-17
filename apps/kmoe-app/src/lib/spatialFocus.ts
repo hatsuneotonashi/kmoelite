@@ -1,4 +1,6 @@
 const spatialKeys = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
+const backNavigationKeys = new Set(['Escape', 'Backspace', 'BrowserBack', 'Back', 'GoBack'])
+const primaryActionKeys = new Set(['Enter', 'Accept', 'Select'])
 const focusableSelector = [
   'a[href]',
   'button:not([disabled])',
@@ -24,6 +26,14 @@ export function moveSpatialFocus(event: KeyboardEvent, root: ParentNode = docume
   event.preventDefault()
   next.focus()
   return true
+}
+
+export function isBackNavigationKey(event: KeyboardEvent): boolean {
+  return backNavigationKeys.has(event.key) || event.keyCode === 4
+}
+
+export function isPrimaryActionKey(event: KeyboardEvent): boolean {
+  return primaryActionKeys.has(event.key)
 }
 
 function findNextElement(current: HTMLElement, candidates: HTMLElement[], key: string): HTMLElement | null {
@@ -68,7 +78,7 @@ function isVisibleFocusable(element: HTMLElement): boolean {
   return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden'
 }
 
-function isTextEntryTarget(target: EventTarget | null): boolean {
+export function isTextEntryTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
   if (target.isContentEditable) return true
   return ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)

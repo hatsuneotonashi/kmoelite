@@ -47,6 +47,7 @@ import { useSettingsStore } from '../store/settingsStore'
 import { useLayoutMode } from '../hooks/useLayoutMode'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import { readableAppMessage } from '../lib/format'
+import { isBackNavigationKey, isPrimaryActionKey, isTextEntryTarget } from '../lib/spatialFocus'
 import { ReaderHelpPanel, getReaderHelpMode } from '../reader/ReaderHelpPanel'
 import { ReaderPagePanel } from '../reader/ReaderPagePanel'
 import type { ChapterCacheRecord, PageCacheRecord } from '../types/cache'
@@ -951,8 +952,8 @@ export function ReaderPage() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (shouldIgnoreReaderShortcut(event)) return
-      if (event.key === 'Escape') {
+      if (isBackNavigationKey(event)) {
+        if (shouldIgnoreReaderBackKey(event)) return
         event.preventDefault()
         if (readerPanel !== 'closed') {
           setReaderPanel('closed')
@@ -961,7 +962,13 @@ export function ReaderPage() {
         navigate(-1)
         return
       }
+      if (shouldIgnoreReaderShortcut(event)) return
       if (readerPanel !== 'closed') return
+      if (isPrimaryActionKey(event)) {
+        event.preventDefault()
+        setControlsVisible((value) => !value)
+        return
+      }
       if (event.key === '?' || (event.key === '/' && event.shiftKey)) {
         event.preventDefault()
         setReaderPanel('help')
@@ -2037,6 +2044,10 @@ function shouldIgnoreReaderShortcut(event: KeyboardEvent): boolean {
   if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return true
   const target = event.target
   return target instanceof HTMLElement && isReaderInteractiveTarget(target)
+}
+
+function shouldIgnoreReaderBackKey(event: KeyboardEvent): boolean {
+  return event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTextEntryTarget(event.target)
 }
 
 function isPhoneLayout(): boolean {

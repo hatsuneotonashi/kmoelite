@@ -161,7 +161,8 @@ Android phone/tablet：
 Android TV：
 
 - Leanback launcher、TV runtime 识别和方向键焦点已有实验 smoke。
-- Reader、下载、缓存清理、返回键、实体 TV、签名 release 和 TV 分发验证仍未完成。
+- Remote Back 和 Reader OK/Back 键位已有源码支持和聚焦测试。
+- Reader 下载、缓存清理、实体 TV、签名 release 和 TV 分发验证仍未完成。
 
 Apple TV：
 

@@ -12,4 +12,9 @@ describe('AppLayout shell scrolling contract', () => {
     expect(appCss).toMatch(/\.app-sidebar-nav\s*\{[^}]*overflow-y:\s*auto/)
     expect(appCss).toMatch(/\.glass-sidebar\s*\{[^}]*height:\s*100dvh/)
   })
+
+  it('handles remote back navigation without changing desktop keyboard contracts', () => {
+    expect(appLayoutSource).toContain("inputClass === 'remote' && isBackNavigationKey(event)")
+    expect(appLayoutSource).toContain('navigate(-1)')
+  })
 })

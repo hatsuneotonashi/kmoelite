@@ -486,6 +486,60 @@ describe('ReaderPage', () => {
     expect(screen.getByAltText('第 1 页')).toHaveAttribute('src', 'data:image/jpeg;base64,AA==')
   })
 
+  it('supports remote reader ok and back keys', async () => {
+    listChaptersMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [sampleChapter({ pageCount: 3 })]
+    })
+    listPagesMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: [samplePage(0), samplePage(1), samplePage(2)]
+    })
+    readPageMock.mockImplementation(async (_chapterCacheId, pageIndex) => ({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleImage(pageIndex)
+    }))
+    saveProgressMock.mockResolvedValue({
+      ok: true,
+      available: true,
+      message: 'ok',
+      value: sampleNativeProgress(0)
+    })
+
+    render(
+      <MemoryRouter initialEntries={['/comic/53339', '/reader/cache/cache-53339-3089']} initialIndex={1}>
+        <Routes>
+          <Route path="/comic/:comicId" element={<h1>Detail Page</h1>} />
+          <Route path="/reader/cache/:chapterCacheId" element={<ReaderPage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByAltText('第 1 页')).toBeInTheDocument()
+    const shell = document.querySelector<HTMLElement>('.reader-shell')
+    expect(shell).toHaveAttribute('data-controls-visible', 'false')
+
+    fireEvent.keyDown(window, { key: 'Enter' })
+    expect(shell).toHaveAttribute('data-controls-visible', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: '目录' }))
+    const pageButton = await screen.findByRole('button', { name: '跳到第 1 页' })
+    pageButton.focus()
+    fireEvent.keyDown(pageButton, { key: 'BrowserBack' })
+    await waitFor(() => {
+      expect(screen.queryByLabelText('目录和页面缩略图')).not.toBeInTheDocument()
+    })
+
+    fireEvent.keyDown(window, { key: 'Backspace' })
+    expect(await screen.findByRole('heading', { name: 'Detail Page' })).toBeInTheDocument()
+  })
+
   it('inherits per-comic reader preferences when opening a new cached volume', async () => {
     useReadingStore.getState().upsertProgress({
       comicId: '53339',
