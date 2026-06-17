@@ -16,5 +16,7 @@ describe('AppLayout shell scrolling contract', () => {
   it('handles remote back navigation without changing desktop keyboard contracts', () => {
     expect(appLayoutSource).toContain("inputClass === 'remote' && isBackNavigationKey(event)")
     expect(appLayoutSource).toContain('navigate(-1)')
+    expect(appLayoutSource).toContain('subscribeTauriBackButton(handleShellBackNavigation)')
+    expect(appLayoutSource).toContain("location.pathname.startsWith('/reader/cache/')")
   })
 })

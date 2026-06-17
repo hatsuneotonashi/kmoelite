@@ -23,8 +23,26 @@ const apiMock = vi.hoisted(() => ({
   getSession: vi.fn()
 }))
 
+const tauriBackButtonMock = vi.hoisted(() => {
+  const handlers: Array<(payload?: { canGoBack?: boolean }) => void> = []
+  return {
+    handlers,
+    subscribe: vi.fn((handler: (payload?: { canGoBack?: boolean }) => void) => {
+      handlers.push(handler)
+      return () => {
+        const index = handlers.indexOf(handler)
+        if (index >= 0) handlers.splice(index, 1)
+      }
+    })
+  }
+})
+
 vi.mock('../hooks/useKmoeApi', () => ({
   useKmoeApi: () => apiMock
+}))
+
+vi.mock('../platform/tauriBackButton', () => ({
+  subscribeTauriBackButton: tauriBackButtonMock.subscribe
 }))
 
 vi.mock('../platform/nativeCommands', () => ({
@@ -55,6 +73,7 @@ const setStatusBarHiddenMock = vi.mocked(setNativeIosStatusBarHidden)
 describe('ReaderPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    tauriBackButtonMock.handlers.splice(0)
     window.localStorage.clear()
     apiMock.getSession.mockResolvedValue({ authenticated: true, mode: 'live' })
     useCacheStore.setState({ chaptersById: {}, pagesByChapterId: {} })
@@ -536,7 +555,18 @@ describe('ReaderPage', () => {
       expect(screen.queryByLabelText('目录和页面缩略图')).not.toBeInTheDocument()
     })
 
-    fireEvent.keyDown(window, { key: 'Backspace' })
+    fireEvent.click(screen.getByRole('button', { name: '目录' }))
+    await screen.findByRole('button', { name: '跳到第 1 页' })
+    act(() => {
+      tauriBackButtonMock.handlers.at(-1)?.({ canGoBack: false })
+    })
+    await waitFor(() => {
+      expect(screen.queryByLabelText('目录和页面缩略图')).not.toBeInTheDocument()
+    })
+
+    act(() => {
+      tauriBackButtonMock.handlers.at(-1)?.({ canGoBack: false })
+    })
     expect(await screen.findByRole('heading', { name: 'Detail Page' })).toBeInTheDocument()
   })
 

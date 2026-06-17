@@ -4,6 +4,32 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android TV native remote input bridge 与 Reader emulator smoke
+
+- 变更范围：Tauri App Back listener helper、非手机 App shell native Back 订阅、Reader native Back 订阅、Reader 隐藏 chrome 焦点隔离、Android MainActivity remote DPAD/OK WebView 输入桥、Android TV 输入桥测试、Reader/AppLayout 回归测试、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。
+- 行为摘要：Android TV 上系统 Back 通过 Tauri AppPlugin `onBackButtonPress` 进入 App/Reader 作用域，避免 Activity 直接退出；DPAD 方向键和 OK/Enter 在 Android WebView 不可靠派发 DOM keydown 时由 native WebView bridge 转成前端键盘事件。Reader 隐藏 chrome 后会移除隐藏 top/bottom controls 的焦点能力，OK/Enter 会优先切换 Reader chrome，Back 会先关闭 Reader 面板，再离开 Reader。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/androidTvInputBridge.test.ts src/tests/readerPage.test.tsx src/tests/appLayoutShell.test.ts`：passed，3 files / 33 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- Android TV 工具链与 smoke：
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 报告上游 deprecation warning，未导致失败。
+  - Android TV API 36 emulator：APK install/launch passed。
+  - Android TV Reader smoke：使用 App 私有目录内的合成 source ZIP 准备本地 Reader cache，`DPAD_CENTER` 可显示 Reader chrome，目录面板可打开，系统 Back 可关闭面板，再次 Back 可离开 Reader；进程保持存活。
+  - Android TV Settings smoke：进入 Settings 后系统 Back 可返回首页，未退出 Activity。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 290 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，84 tests。
+  - `pnpm check:platforms`：passed，`pass=45 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：首次运行 desktop 首批 5 个 accessibility 页面未等到 `main`，截图为空白页；立即完整复跑 passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未运行真实站点 smoke、真实下载验证、Android TV 下载/缓存清理/实体 TV/signed release、Android phone/tablet 真机、iPhone/iPad 真机、Windows 真机或 Apple TV。
+- 待发布风险：该改动证明 Android TV remote 输入桥和合成本地 Reader cache 的 OK/Back 行为，不等同于 Android TV 下载、缓存清理、真实站点业务链路、实体 TV 或公开二进制支持完成。
+
 ## 2026-06-17 Android TV remote Back 与 Reader OK/Back 键位
 
 - 变更范围：remote/TV 键位 helper、非手机 App shell Back 导航、Reader OK/Back 键位、Reader/布局聚焦测试、README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release/docs/reader-shelf/AGENTS 文档。

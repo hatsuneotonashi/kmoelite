@@ -36,7 +36,7 @@ Developer-preview usable surfaces:
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
 - Android phone: experimental source path exists; a Tauri Android debug APK/AAB builds and launches on a Pixel 8 emulator with the phone layout, but real-device, download, Reader, and signed distribution validation are incomplete.
 - Android tablet: experimental source path exists; tablet layout rules exist, but Android tablet emulator/device validation is incomplete.
-- Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, direction-key focus, remote Back, and Reader OK/Back key handling have source support and focused tests, but Reader/download/cache validation is incomplete.
+- Android TV: experimental entry exists; Leanback launcher, TV runtime detection, wide shell, direction-key focus, remote Back, native DPAD/OK bridging, and synthetic local Reader-cache OK/Back smoke have been validated, but download/cache/device validation is incomplete.
 
 Future plan:
 
@@ -44,7 +44,7 @@ Future plan:
 
 ## Recent Updates
 
-- 2026-06-17: added Android TV/remote Back handling and Reader OK/Back key support so remote navigation can enter and leave views.
+- 2026-06-17: added the Android TV native DPAD/OK bridge and verified Reader OK/Back smoke on a TV emulator with a synthetic local Reader cache.
 - 2026-06-17: added the experimental Android TV entry and verified Leanback launcher, TV runtime detection, wide shell, and direction-key focus smoke.
 - 2026-06-17: added the Android Tauri project and debug APK/AAB build path, and fixed Android phones being misclassified as Linux desktop layouts.
 - 2026-06-17: added spatial arrow-key focus movement in the non-phone app shell, building the shared baseline for desktop keyboard, iPad keyboard, and TV remote navigation.

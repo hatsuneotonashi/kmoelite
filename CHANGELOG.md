@@ -9,6 +9,7 @@
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.
 - Experimental Android TV entry support: optional Leanback launcher readiness check, Android TV runtime detection, TV layout contract, remote input class, and emulator direction-key focus smoke.
+- Android TV native remote input bridge for DPAD direction keys and OK/Enter inside the Tauri Android WebView, plus emulator Reader OK/Back smoke with a synthetic local Reader cache.
 - Android TV / remote key support for shell Back navigation and Reader OK/Back controls.
 - Reader 设置新增 iOS 状态栏显示选项；默认阅读时隐藏状态栏，用户可在 Settings 或 Reader 高级面板切换显示。
 - 详情页加载态新增返回操作和来源页封面/标题预览，降低 iPad/macOS 上进入详情时的空白等待感。
@@ -37,6 +38,8 @@
 
 - 修复 iPhone/iPad 登录表单可能被系统自动大写、自动更正或密码管理辅助影响的问题；邮箱提交前去除首尾空格，密码按原样提交，并把站点 `e400` 显示为明确的账号/密码未被接受提示。
 - 修复 Android phone WebView 被识别为 Linux 桌面运行时，导致手机首屏显示桌面 sidebar 的问题。
+- 修复 Android TV 上系统 Back 可能直接退出 Activity、以及 Android WebView 不稳定派发遥控器 OK/方向键导致 Reader 无法可靠显示 chrome 或关闭面板的问题。
+- 修复 Reader chrome 隐藏后，隐藏的顶部/底部按钮仍可能被遥控器或键盘焦点激活的问题。
 - 修复 Android native SQLite/app data 路径在无 `HOME` 环境时落到 `./.local/share` 相对路径的问题；Android 现在使用 app-private files root。
 - 修复 iPhone/iPad 下载失败时可能写入不可靠 Documents 路径的问题，并区分站点授权/额度错误与本地写入错误，避免把源站拒绝误显示成保存位置权限。
 - 修复远程封面返回极小占位图时被当成成功加载，导致详情主题和封面显示异常的问题。

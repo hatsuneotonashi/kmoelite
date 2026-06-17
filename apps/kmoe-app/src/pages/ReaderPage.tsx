@@ -48,6 +48,7 @@ import { useLayoutMode } from '../hooks/useLayoutMode'
 import { useKmoeApi } from '../hooks/useKmoeApi'
 import { readableAppMessage } from '../lib/format'
 import { isBackNavigationKey, isPrimaryActionKey, isTextEntryTarget } from '../lib/spatialFocus'
+import { subscribeTauriBackButton } from '../platform/tauriBackButton'
 import { ReaderHelpPanel, getReaderHelpMode } from '../reader/ReaderHelpPanel'
 import { ReaderPagePanel } from '../reader/ReaderPagePanel'
 import type { ChapterCacheRecord, PageCacheRecord } from '../types/cache'
@@ -99,6 +100,7 @@ export function ReaderPage() {
   const swipeStartRef = useRef<ReaderSwipeStart>(null)
   const autoPreparedSourceRef = useRef('')
   const nextChapterPrefetchRef = useRef('')
+  const readerShellRef = useRef<HTMLElement | null>(null)
   const zoomRefs = useRef<Record<number, ReactZoomPanPinchContentRef | undefined>>({})
   const continuousScrollFrameRef = useRef<number | undefined>(undefined)
   const continuousContainerRef = useRef<HTMLDivElement | null>(null)
@@ -950,16 +952,40 @@ export function ReaderPage() {
     viewportSupportsDouble
   ])
 
+  const handleReaderBackNavigation = useCallback(() => {
+    if (readerPanel !== 'closed') {
+      setReaderPanel('closed')
+      return
+    }
+    navigate(-1)
+  }, [navigate, readerPanel])
+
+  useEffect(() => subscribeTauriBackButton(handleReaderBackNavigation), [handleReaderBackNavigation])
+
+  useEffect(() => {
+    if (controlsVisible) return
+    const activeElement = document.activeElement
+    if (activeElement instanceof HTMLElement && activeElement.closest('.reader-topbar, .reader-bottombar')) {
+      activeElement.blur()
+    }
+    if (
+      readerShellRef.current
+      && (
+        activeElement === document.body
+        || activeElement === null
+        || (activeElement instanceof HTMLElement && activeElement.closest('.reader-shell'))
+      )
+    ) {
+      readerShellRef.current.focus({ preventScroll: true })
+    }
+  }, [controlsVisible, panelOpen])
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (isBackNavigationKey(event)) {
         if (shouldIgnoreReaderBackKey(event)) return
         event.preventDefault()
-        if (readerPanel !== 'closed') {
-          setReaderPanel('closed')
-          return
-        }
-        navigate(-1)
+        handleReaderBackNavigation()
         return
       }
       if (shouldIgnoreReaderShortcut(event)) return
@@ -1009,7 +1035,7 @@ export function ReaderPage() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [chapterNavigation.next, chapterNavigation.previous, goFromZone, goRelative, goToChapter, goToPage, navigate, pageCount, readerPanel])
+  }, [chapterNavigation.next, chapterNavigation.previous, goFromZone, goRelative, goToChapter, goToPage, handleReaderBackNavigation, pageCount, readerPanel])
 
   const modeLabel = useMemo(
     () => readingModes.find((item) => item.value === readingMode)?.label ?? '分页',
@@ -1032,7 +1058,9 @@ export function ReaderPage() {
 
   return (
     <main
+      ref={readerShellRef}
       className="reader-shell"
+      tabIndex={0}
       data-layout-mode={layoutMode}
       data-controls-visible={controlsVisible ? 'true' : 'false'}
       data-panel-open={panelOpen ? 'true' : 'false'}
@@ -1169,7 +1197,7 @@ export function ReaderPage() {
 
       {!loading && !error ? (
         <>
-          <div className="reader-topbar" aria-hidden={!controlsVisible} data-visible={controlsVisible ? 'true' : 'false'}>
+          <div className="reader-topbar" aria-hidden={!controlsVisible} data-visible={controlsVisible ? 'true' : 'false'} inert={!controlsVisible}>
             <div className="reader-topbar-actions">
               <Button variant="secondary" className="reader-top-button" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4" />
@@ -1201,7 +1229,7 @@ export function ReaderPage() {
             </div>
           </div>
 
-          <div className="reader-bottombar" aria-hidden={!controlsVisible} data-visible={controlsVisible ? 'true' : 'false'}>
+          <div className="reader-bottombar" aria-hidden={!controlsVisible} data-visible={controlsVisible ? 'true' : 'false'} inert={!controlsVisible}>
             <div className="reader-bottom-navigation">
               <Button variant="secondary" className="reader-page-button" disabled={physicalNavigation.left.disabled} onClick={() => goFromZone('left')}>
                 <ChevronLeft className="h-4 w-4" />

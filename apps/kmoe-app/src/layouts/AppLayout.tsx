@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BookMarked, BookOpen, Download, Home, Library, Menu, Search, Settings, SlidersHorizontal, UserRound, X } from 'lucide-react'
 import { useNativeAppConfigSync } from '../hooks/useNativeAppConfigSync'
 import { usePlatformLayoutModel } from '../hooks/useLayoutMode'
 import { PageTransition } from '../components/motion/PageTransition'
 import { isBackNavigationKey, isTextEntryTarget, moveSpatialFocus } from '../lib/spatialFocus'
+import { subscribeTauriBackButton } from '../platform/tauriBackButton'
 
 const navItems = [
   { to: '/', label: '首页', icon: Home },
@@ -49,6 +50,7 @@ export function AppLayout() {
   const phoneLayout = layoutMode === 'phone'
   const desktopLayout = layoutMode === 'desktop'
   const sidebarLayout = !phoneLayout
+  const readerRoute = location.pathname.startsWith('/reader/cache/')
   const shellGridClass = layoutMode === 'desktop'
     ? 'grid-cols-[200px_1fr]'
     : layoutMode === 'tablet'
@@ -88,6 +90,17 @@ export function AppLayout() {
       window.removeEventListener('resize', clampHorizontalScroll)
     }
   }, [phoneLayout, location.pathname, location.search])
+
+  const handleShellBackNavigation = useCallback(() => {
+    if (readerRoute) return
+    if (mobileMoreOpen) {
+      setMobileMoreOpen(false)
+      return
+    }
+    if (location.pathname !== '/') navigate(-1)
+  }, [location.pathname, mobileMoreOpen, navigate, readerRoute])
+
+  useEffect(() => subscribeTauriBackButton(handleShellBackNavigation), [handleShellBackNavigation])
 
   useEffect(() => {
     if (phoneLayout) return undefined

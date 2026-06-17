@@ -7,6 +7,10 @@
   overflow: hidden;
 }
 
+.reader-shell:focus {
+  outline: none;
+}
+
 .reader-stage {
   --reader-stage-padding-top: max(6px, env(safe-area-inset-top));
   --reader-stage-padding-right: max(4px, env(safe-area-inset-right));
