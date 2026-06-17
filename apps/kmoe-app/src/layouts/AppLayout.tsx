@@ -4,6 +4,7 @@ import { BookMarked, BookOpen, Download, Home, Library, Menu, Search, Settings, 
 import { useNativeAppConfigSync } from '../hooks/useNativeAppConfigSync'
 import { usePlatformLayoutModel } from '../hooks/useLayoutMode'
 import { PageTransition } from '../components/motion/PageTransition'
+import { moveSpatialFocus } from '../lib/spatialFocus'
 
 const navItems = [
   { to: '/', label: '首页', icon: Home },
@@ -87,6 +88,15 @@ export function AppLayout() {
       window.removeEventListener('resize', clampHorizontalScroll)
     }
   }, [phoneLayout, location.pathname, location.search])
+
+  useEffect(() => {
+    if (phoneLayout) return undefined
+    const handleKeyDown = (event: KeyboardEvent) => {
+      moveSpatialFocus(event)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [phoneLayout])
 
   return (
     <div

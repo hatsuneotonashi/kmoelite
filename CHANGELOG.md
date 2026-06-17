@@ -6,6 +6,7 @@
 
 ### Added
 
+- Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
 - Reader 设置新增 iOS 状态栏显示选项；默认阅读时隐藏状态栏，用户可在 Settings 或 Reader 高级面板切换显示。
 - 详情页加载态新增返回操作和来源页封面/标题预览，降低 iPad/macOS 上进入详情时的空白等待感。
 - 新增统一“删除本地阅读数据”入口：Detail、Shelf/Continue Reading、Library、Reader 控制面板和 Settings 可删除 Reader cache 及对应 EPUB/源图 ZIP 本地阅读文件。

@@ -100,6 +100,23 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - Platform-specific validation belongs in docs and progress logs. Keep the code paths resilient through breakpoints and capability detection instead of relying on a single simulator or workstation result.
 - Native packaging and file behavior must be verified per platform before release: macOS app bundle, Windows package/file actions, iPhone/iPad simulator, and signed physical iPhone/iPad install/export checks.
 
+## Visual Design Hard Rules
+
+- The app should feel like a native, premium manga reader, not a demo, admin dashboard, marketing landing page, or plain website wrapper. UI polish must support the core promise: open a comic, start reading quickly, and avoid wasting storage.
+- The base visual system must stay calm, sharp, and Apple-platform-friendly: system fonts, no negative letter spacing, no viewport-scaled type, clear hierarchy, tight spacing, crisp icons, and controls sized for their target platform.
+- Default non-cover pages should use the existing neutral system palette: light mode is soft off-white/near-white, and dark mode is near-black/graphite. Do not replace the app with muddy beige, brown/orange, flat gray, one-note purple/blue, or heavy decorative gradient themes.
+- Detail and other cover-aware surfaces should be dark/tinted and cover-driven. The cover image decides the hue from real cover pixels; CSS may darken, desaturate, mix, and layer for contrast, but must not force all works into one fixed red, rose, purple, gray, or beige palette.
+- Apple Music-like means adaptive cover color, glass depth, restrained saturation, and readable foregrounds. It does not mean opaque color washes, giant decorative blobs, low-contrast blur, or hiding content under visual effects.
+- Text, buttons, metadata, badges, and table/list rows must remain readable on iPhone, iPad, and desktop. White-on-white glass, low-contrast gray-on-tint, clipped titles, overflowing buttons, and metadata that disappears into the background are release blockers.
+- Glass and translucent panels should have real structure: subtle borders, controlled blur, enough backing opacity, and restrained shadows. Avoid nested card-on-card layouts, excessive blur layers, and large empty decorative panels.
+- Cards and panels should use modest radii aligned with the current system (`--radius-card`, `--radius-panel`, and `--radius-cover`); pill shapes are for buttons/chips only. Do not make every surface a large rounded floating card.
+- Reader is content-first. Manga pages must dominate the screen and must not be dimmed, blurred, faded, shadowed, or covered by persistent panels. Reader chrome should stay minimal by default, with advanced controls in panels/sheets.
+- Desktop and iPad navigation must remain stable while scrolling. Sidebars/rails should keep their full-height contract, and only the main content area should scroll unless a platform-specific design deliberately says otherwise.
+- iPhone layouts must respect safe areas and bottom navigation. iPad layouts must use rail/sidebar, split, or multi-column structure when space allows. Narrow desktop windows are still desktop runtime, not a stretched phone shell.
+- Interactive states are part of the visual system. Desktop must expose hover, focus-visible, keyboard, disabled, and loading states; touch platforms must expose clear pressed/disabled states without shrinking tap targets below usable size.
+- Visual changes must be checked in representative desktop, iPad/tablet, and iPhone/mobile viewports. If a change touches routes, layout, Reader, accessibility, or visual baselines, run the required Playwright E2E/visual checks or record why they could not run.
+- Public screenshots and visual baselines must follow the repository screenshot policy: no raw manga pages, raw covers, account state, cookies, tokens, private paths, runtime storage, or temporary manual screenshots.
+
 ## Current Architecture Rules
 
 - React UI calls the app API and native command boundaries; do not bypass those boundaries from pages when a shared store/helper already exists.

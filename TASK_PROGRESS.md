@@ -4,6 +4,24 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 非手机方向键空间焦点导航验证
+
+- 变更范围：非手机 App shell 方向键空间焦点移动、空间焦点 helper、聚焦测试、README/README.en/CHANGELOG/AGENTS 文档。
+- 行为摘要：桌面、iPad/平板和未来 TV shell 可用方向键把焦点移动到方向上最近的可见可操作元素；输入框、select、textarea 和 contenteditable 不会被方向键焦点逻辑劫持。Reader 路由不在 AppLayout 内，保留原有 Reader 翻页快捷键作用域。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/spatialFocus.test.ts src/tests/appLayoutShell.test.ts`：passed，2 files / 3 tests。
+- `pnpm --dir apps/kmoe-app typecheck`：passed。
+- `pnpm --dir apps/kmoe-app test:run`：passed，54 files / 286 tests。
+- `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+- `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+- `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+- `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，83 tests。
+- `pnpm check:platforms`：passed，`pass=32 warn=0 external=2 fail=0`。
+- `node scripts/check-ios-assets.mjs`：passed，27 files。
+- `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：本轮尚未运行真实站点 smoke、真实下载验证、真实 TV emulator/device 安装运行。
+- 待发布风险：该改动只补齐共享方向键焦点基础，不等同于 Android TV 或 Apple TV runtime、打包、遥控器实机/模拟器验证完成。
+
 ## 2026-06-08 iPad 登录 e400 输入与提示修复验证
 
 - 变更范围：LoginPage 输入属性和本地校验、WebKmoeApi 登录邮箱规范化和 `e400` 文案、Rust native login 邮箱规范化、登录回归测试、README/README.en/CHANGELOG/AGENTS 文档。
