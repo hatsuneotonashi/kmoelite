@@ -68,6 +68,29 @@ export function getPlatformLayoutModel(input: LayoutDetectionInput): PlatformLay
     }
   }
 
+  if (runtimeClass === 'android') {
+    return {
+      layoutMode: 'phone',
+      layoutContract: 'phone',
+      deviceClass: 'phone',
+      windowClass,
+      inputClass: 'touch',
+      runtimeClass
+    }
+  }
+
+  if (runtimeClass === 'androidTablet') {
+    const compact = width < 768
+    return {
+      layoutMode: compact ? 'tabletCompact' : 'tablet',
+      layoutContract: compact ? 'tabletCompact' : 'tablet',
+      deviceClass: 'tablet',
+      windowClass,
+      inputClass,
+      runtimeClass
+    }
+  }
+
   if (runtimeClass === 'macos' || runtimeClass === 'windows' || runtimeClass === 'linux') {
     const layoutContract = runtimeClass === 'macos'
       ? 'macDesktop'

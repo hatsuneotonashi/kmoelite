@@ -48,7 +48,7 @@ pub fn get_download_dir() -> Result<String, String> {
 }
 
 fn read_download_dir_setting() -> Result<String, String> {
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         return Ok(mobile_download_dir());
     }
 
@@ -1213,7 +1213,7 @@ fn ensure_open_target_allowed(conn: &rusqlite::Connection, target: &Path) -> Res
 }
 
 fn get_download_dir_from_conn(conn: &rusqlite::Connection) -> Result<String, String> {
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         return Ok(mobile_download_dir());
     }
     db::get_setting(conn, "download_dir")
@@ -1267,7 +1267,7 @@ fn canonicalize_existing_path(path: &Path, label: &str) -> Result<PathBuf, Strin
 }
 
 fn open_path(target: &Path, reveal: bool) -> Result<(), String> {
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         return share_file_with_system_sheet(target);
     }
     let spec = open_command_spec(target, reveal, std::env::consts::OS);
@@ -1291,19 +1291,19 @@ fn list_download_tasks_with_conn(
     db::list_download_tasks(conn)
 }
 
-fn is_ios_runtime() -> bool {
-    matches!(std::env::consts::OS, "ios")
+fn is_mobile_runtime() -> bool {
+    matches!(std::env::consts::OS, "ios" | "android")
 }
 
 fn normalize_download_dir_for_platform(input: Option<String>) -> Result<String, String> {
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         return Ok(mobile_download_dir());
     }
     fs_utils::normalize_download_dir(input)
 }
 
 fn ensure_download_dir_for_platform(input: Option<String>) -> Result<PathBuf, String> {
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         let path = PathBuf::from(mobile_download_dir());
         std::fs::create_dir_all(&path)
             .map_err(|error| format!("failed to create mobile app download directory: {error}"))?;
@@ -1335,7 +1335,7 @@ fn share_file_with_system_sheet(target: &Path) -> Result<(), String> {
 
 #[cfg(not(target_os = "ios"))]
 fn share_file_with_system_sheet(_target: &Path) -> Result<(), String> {
-    Err("系统分享只在 iPhone/iPad 客户端中可用。".to_string())
+    Err("系统分享暂未在当前平台实现。".to_string())
 }
 
 #[cfg(target_os = "ios")]
@@ -1618,13 +1618,13 @@ fn preflight_download_queue_with_conn(
 ) -> DownloadPreflight {
     let mut preflight = empty_preflight();
 
-    if is_ios_runtime() {
+    if is_mobile_runtime() {
         push_preflight_check(
             &mut preflight.checks,
             "file-download",
             "前台下载",
             "warn",
-            "iPhone/iPad 当前使用前台下载；请保持 App 打开，完成后可导出到分享表或在“文件”App 中查看。",
+            "移动端当前使用前台下载；请保持 App 打开。iPhone/iPad 可导出到分享表，Android 导出仍需后续平台验证。",
         );
     } else {
         push_preflight_check(

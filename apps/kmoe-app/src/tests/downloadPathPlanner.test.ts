@@ -50,8 +50,11 @@ describe('download path planner', () => {
   it('uses platform defaults and detects known browser UA strings', () => {
     expect(defaultDownloadDirectory('windows')).toContain('Downloads')
     expect(defaultDownloadDirectory('ios')).toContain('App Internal')
+    expect(defaultDownloadDirectory('android')).toContain('App Internal')
     expect(detectPlatformTarget('Mozilla/5.0 (Windows NT 10.0; Win64; x64)')).toBe('windows')
     expect(detectPlatformTarget('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)')).toBe('ios')
+    expect(detectPlatformTarget('Mozilla/5.0 (Linux; Android 16; Pixel 8) AppleWebKit/537.36 Mobile Safari/537.36')).toBe('android')
+    expect(detectPlatformTarget('Mozilla/5.0 (Linux; Android 16; Pixel Tablet) AppleWebKit/537.36 Safari/537.36')).toBe('androidTablet')
     expect(detectPlatformTarget('Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0)')).toBe('macos')
     expect(
       detectPlatformTarget({

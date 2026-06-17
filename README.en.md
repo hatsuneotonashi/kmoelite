@@ -34,19 +34,20 @@ Developer-preview usable surfaces:
 - iPad: usable for personal testing and daily preview use; tablet layout and Reader are current priorities.
 - macOS: usable as the main local development and preview platform.
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
+- Android phone: experimental source path exists; a Tauri Android debug APK/AAB builds and launches on a Pixel 8 emulator with the phone layout, but real-device, download, Reader, and signed distribution validation are incomplete.
+- Android tablet: experimental source path exists; tablet layout rules exist, but Android tablet emulator/device validation is incomplete.
 
 Future plan:
 
-- Android phones and tablets: planned for low-storage online reading and temporary cache.
 - Apple TV and Android TV: future research targets for remote-control input, landscape Reader, focus navigation, and cache policy.
 
 ## Recent Updates
 
+- 2026-06-17: added the Android Tauri project and debug APK/AAB build path, and fixed Android phones being misclassified as Linux desktop layouts.
 - 2026-06-17: added spatial arrow-key focus movement in the non-phone app shell, building the shared baseline for desktop keyboard, iPad keyboard, and TV remote navigation.
 - 2026-06-08: fixed iPad/iPhone login input behavior and the site `e400` message; the email is trimmed while the password is submitted exactly as typed.
 - 2026-06-08: fixed the iPhone/iPad explicit-download storage path and download error messaging; mobile downloads are saved in the app-private area first, then exported through the system share sheet.
 - 2026-06-08: switched the default KMOE website entry point to `kxo.moe` across frontend config, native adapter URLs, CSP, test fixtures, and live smoke defaults.
-- 2026-06-07: polished detail loading, related-title cards, cover-derived theming, the Reader status-bar setting, and Continue Reading layout; fixed some chapters being misclassified as unavailable for source-image reading.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 
@@ -82,6 +83,7 @@ pnpm typecheck
 pnpm test:run
 pnpm build
 pnpm check:platforms
+pnpm tauri:android:build:debug
 ```
 
 See [docs](docs/README.md) for architecture, development, release, security, platform status, web-adapter, and Reader/Shelf notes.

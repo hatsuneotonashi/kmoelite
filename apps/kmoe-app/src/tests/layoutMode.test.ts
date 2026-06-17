@@ -6,6 +6,7 @@ describe('layout mode', () => {
     expect(getLayoutMode(430, 'ipados')).toBe('tabletCompact')
     expect(getLayoutMode(430, 'ios')).toBe('phone')
     expect(getLayoutMode(844, 'ios')).toBe('phone')
+    expect(getLayoutMode(980, 'android')).toBe('phone')
   })
 
   it('uses tablet and desktop breakpoints for larger surfaces', () => {
@@ -48,6 +49,17 @@ describe('layout mode', () => {
     expect(getPlatformLayoutModel({ width: 507, platform: 'ipados', maxTouchPoints: 5 })).toMatchObject({
       layoutMode: 'tabletCompact',
       layoutContract: 'tabletCompact',
+      deviceClass: 'tablet'
+    })
+    expect(getPlatformLayoutModel({ width: 980, platform: 'android', maxTouchPoints: 5 })).toMatchObject({
+      layoutMode: 'phone',
+      layoutContract: 'phone',
+      deviceClass: 'phone',
+      inputClass: 'touch'
+    })
+    expect(getPlatformLayoutModel({ width: 980, platform: 'androidTablet', maxTouchPoints: 5 })).toMatchObject({
+      layoutMode: 'tablet',
+      layoutContract: 'tablet',
       deviceClass: 'tablet'
     })
     expect(getPlatformLayoutModel({ width: 1366, platform: 'ipados', maxTouchPoints: 5 })).toMatchObject({

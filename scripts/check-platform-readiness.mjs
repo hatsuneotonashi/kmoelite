@@ -53,10 +53,14 @@ addScriptCheck('script.ios_assets_check', 'ios', rootPackage, 'check:ios-assets'
 addScriptCheck('script.ios_tools_setup', 'ios', rootPackage, 'setup:ios-tools')
 addScriptCheck('script.macos_app', 'macos', rootPackage, 'tauri:build:mac-app:debug')
 addScriptCheck('script.macos_dmg', 'macos', rootPackage, 'tauri:build:mac-dmg:debug')
+addScriptCheck('script.android_build', 'android', rootPackage, 'tauri:android:build:debug')
+addScriptCheck('script.android_run', 'android', rootPackage, 'tauri:android:run')
 addScriptCheck('script.windows_msi', 'windows', rootPackage, 'tauri:build:windows-msi')
 addScriptCheck('script.windows_nsis', 'windows', rootPackage, 'tauri:build:windows-nsis')
 addScriptCheck('script.app_platform_readiness', 'all', appPackage, 'check:platforms')
 addScriptCheck('script.app_ios_tools_setup', 'ios', appPackage, 'setup:ios-tools')
+addScriptCheck('script.app_android_build', 'android', appPackage, 'tauri:android:build:debug')
+addScriptCheck('script.app_android_run', 'android', appPackage, 'tauri:android:run')
 
 addCheck({
   id: 'tauri.identifier',
@@ -112,6 +116,21 @@ addCheck({
   detail: 'iPhone/iPad builds require the generated AppIcon asset set before device packaging.'
 })
 
+const androidProjectFiles = [
+  'gen/android/app/build.gradle.kts',
+  'gen/android/app/src/main/AndroidManifest.xml',
+  'gen/android/gradlew',
+  'gen/schemas/android-schema.json'
+]
+const hasAndroidProjectFiles = filesExist(androidProjectFiles)
+addCheck({
+  id: 'tauri.android_project',
+  platform: 'android',
+  status: hasAndroidProjectFiles ? 'pass' : 'warn',
+  summary: hasAndroidProjectFiles ? 'Android Tauri project files are present.' : 'Android Tauri project files are incomplete.',
+  detail: 'Android source builds need the generated Gradle project, manifest, wrapper, and Android capability schema.'
+})
+
 addCommandCheck('macos.hdiutil', 'macos', 'hdiutil', ['help'], 'macOS DMG tooling is available.', { activeOnlyOn: 'darwin' })
 addCommandCheck('macos.codesign', 'macos', 'xcrun', ['-find', 'codesign'], 'macOS codesign command is discoverable through xcrun.', { activeOnlyOn: 'darwin' })
 addCommandCheck('macos.homebrew', 'macos', 'brew', ['--version'], 'Homebrew is available for Tauri mobile helper tools such as libimobiledevice.', {
@@ -150,6 +169,29 @@ for (const target of ['aarch64-apple-ios', 'aarch64-apple-ios-sim', 'x86_64-appl
     detail: 'iOS/iPadOS validation needs the relevant Rust target plus full Xcode and provisioning.'
   })
 }
+
+for (const target of ['aarch64-linux-android', 'armv7-linux-androideabi', 'i686-linux-android', 'x86_64-linux-android']) {
+  addCheck({
+    id: `android.rust_target.${target}`,
+    platform: 'android',
+    status: installedRustTargets.includes(target) ? 'pass' : 'external',
+    summary: installedRustTargets.includes(target) ? `${target} installed` : `${target} not installed`,
+    detail: 'Android APK/AAB validation needs the relevant Rust targets plus Android SDK/NDK.'
+  })
+}
+
+addCommandCheck('android.adb', 'android', 'adb', ['version'], 'ADB is available for Android emulator/device installation smoke.', {
+  missingStatus: 'external'
+})
+addCommandCheck('android.sdkmanager', 'android', 'sdkmanager', ['--version'], 'Android SDK manager is available for installing SDK/NDK/system images.', {
+  missingStatus: 'external'
+})
+addCommandCheck('android.avdmanager', 'android', 'avdmanager', ['--version'], 'Android AVD manager is available for emulator profile management.', {
+  missingStatus: 'external'
+})
+addCommandCheck('android.emulator', 'android', 'emulator', ['-version'], 'Android emulator is available for local smoke runs.', {
+  missingStatus: 'external'
+})
 
 addCommandCheck('ios.simctl', 'ios', 'xcrun', ['simctl', 'help'], 'iOS simulator control is available.', {
   activeOnlyOn: 'darwin',

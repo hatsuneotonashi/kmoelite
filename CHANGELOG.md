@@ -7,6 +7,7 @@
 ### Added
 
 - Non-phone app shell direction-key spatial focus movement, giving desktop keyboard, iPad keyboard, Android TV, and Apple TV work a shared focus-navigation baseline without adding dependencies.
+- Android Tauri project generation with checked-in Gradle/Manifest/resources source and a debug APK/AAB build path for experimental Android work.
 - Reader 设置新增 iOS 状态栏显示选项；默认阅读时隐藏状态栏，用户可在 Settings 或 Reader 高级面板切换显示。
 - 详情页加载态新增返回操作和来源页封面/标题预览，降低 iPad/macOS 上进入详情时的空白等待感。
 - 新增统一“删除本地阅读数据”入口：Detail、Shelf/Continue Reading、Library、Reader 控制面板和 Settings 可删除 Reader cache 及对应 EPUB/源图 ZIP 本地阅读文件。
@@ -18,6 +19,7 @@
 ### Changed
 
 - iPhone/iPad explicit downloads now write to an app-private download root first; users can export or share completed files through the system sheet instead of relying on a Files-visible `Documents` path during download.
+- Android phone/tablet platform detection now has explicit runtime classes instead of falling through to Linux desktop behavior.
 - 默认 KMOE 网站入口切换为 `https://kxo.moe`，并同步前端配置、Rust Web Adapter、Tauri CSP、测试 fixture、E2E routes 和 live smoke 默认源站。
 - 详情页封面主题取色改为以真实封面主色桶为准，避免少量高饱和像素把页面洗成不相关的固定色。
 - 首页 Continue Reading 区域改为最多展示 6 个最近阅读条目，并使用自适应网格避免长页码撑坏布局。
@@ -31,6 +33,8 @@
 ### Fixed
 
 - 修复 iPhone/iPad 登录表单可能被系统自动大写、自动更正或密码管理辅助影响的问题；邮箱提交前去除首尾空格，密码按原样提交，并把站点 `e400` 显示为明确的账号/密码未被接受提示。
+- 修复 Android phone WebView 被识别为 Linux 桌面运行时，导致手机首屏显示桌面 sidebar 的问题。
+- 修复 Android native SQLite/app data 路径在无 `HOME` 环境时落到 `./.local/share` 相对路径的问题；Android 现在使用 app-private files root。
 - 修复 iPhone/iPad 下载失败时可能写入不可靠 Documents 路径的问题，并区分站点授权/额度错误与本地写入错误，避免把源站拒绝误显示成保存位置权限。
 - 修复远程封面返回极小占位图时被当成成功加载，导致详情主题和封面显示异常的问题。
 - 修复部分站点 `volinfo` 行源图体积字段为 0、但已有源图元数据时被误判为“无源图”的问题。

@@ -23,7 +23,7 @@ For every new goal, read all core docs plus the task-relevant source. Do not sta
 - Reader cache is temporary storage. The default cache policy keeps a rolling previous/current/next chapter window.
 - Current user-facing surfaces include Home, Search, Categories, Detail, Reader, Shelf, Library, Download Center, Account, and Settings.
 - iPhone, iPad, and macOS are developer-preview usable targets; Windows has source/package paths but lacks full real-machine validation.
-- Android phone/tablet are planned targets. Apple TV and Android TV remain research targets.
+- Android phone/tablet have an experimental Tauri Android source/build path and a phone emulator launch smoke, but remain incomplete until real device, download, Reader, cache cleanup, and signed-release validation are finished. Apple TV and Android TV remain research targets.
 - Real website smoke and real download validation are explicit, runtime-only, redacted, and disabled by default.
 - The detailed status source is `docs/status/README.md`; the verification log is `TASK_PROGRESS.md`; public changes belong in `CHANGELOG.md`.
 
@@ -92,8 +92,8 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 
 ## Platform Product Rules
 
-- Planned target platforms are iPhone, iPad, Android phone, Android tablet, Windows, and macOS. Apple TV and Android TV are future research targets until platform architecture and input constraints are designed.
-- macOS, Windows, iPad, and iPhone are current first-class design targets. Android phone/tablet should follow the same product principles when implementation begins. Do not treat mobile as the only polished surface or stretch one layout across every platform.
+- Planned target platforms are iPhone, iPad, Android phone, Android tablet, Windows, and macOS. Android phone/tablet currently have an experimental Tauri Android project and debug build path, not stable release status. Apple TV and Android TV are future research targets until platform architecture and input constraints are designed.
+- macOS, Windows, iPad, iPhone, and Android phone/tablet are first-class design targets. Android implementation may remain experimental, but UI and storage rules must follow the same product principles. Do not treat mobile as the only polished surface or stretch one layout across every platform.
 - Layout decisions must be derived from runtime, device, window, and input classes together. iPad split view may become tablet-compact but not a phone layout, and macOS/Windows/Linux narrow windows must remain desktop runtime contracts rather than switching into the phone shell.
 - iPhone and Android phone should use touch-first navigation and safe-area aware layouts; iPad and Android tablet should use split/multi-column layouts when space allows; macOS and Windows should use desktop navigation, keyboard/focus states, hover states, and higher information density.
 - Cover-aware visual surfaces should follow an Apple Music-like adaptive art direction: the cover may drive saturated page color, but the hue must come from real cover pixels whenever a cover can be loaded. Hash/fallback palettes are failure-only fallbacks, not the normal theme source. Text and controls must remain high-contrast over dark/tinted translucent layers. Do not ship muddy beige/gray wash, white-on-white glass, unreadable metadata, or decorative blur that competes with real cover/comic content.

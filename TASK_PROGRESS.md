@@ -4,6 +4,37 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android 工程生成、手机布局与 app data 路径验证
+
+- 变更范围：Tauri Android 工程生成、Android schema、Android platform detection、Android phone/tablet layout contract、Android/mobile 下载路径、Android app data 目录、README/README.en/CHANGELOG/docs/status/docs/platforms/AGENTS 文档。
+- 行为摘要：Android phone/tablet 不再落入 Linux 桌面平台；Android phone 强制使用 phone contract 和底部导航，Android tablet 使用 tablet/tabletCompact contract；Android native app data 使用 app-private files root，避免 SQLite 路径落到 `./.local/share` 相对路径；移动端下载保存根目录统一走 App private download root。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/downloadPathPlanner.test.ts src/tests/layoutMode.test.ts`：passed，2 files / 10 tests。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib mobile_download_dir_uses_app_private_downloads_root`：passed，1 test。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib android_app_data_dir_uses_private_files_root`：passed，1 test。
+- 完整 source gate：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，54 files / 286 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，84 tests。
+  - `pnpm check:platforms`：passed，`pass=44 warn=0 external=3 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 安全扫描：私有路径和凭证模式扫描无真实命中；唯一命中为 release readiness 脚本自身的敏感正则文本。
+- Android 工具链与构建：
+  - `tauri android init --ci`：passed，生成 `src-tauri/gen/android`。
+  - `pnpm --dir apps/kmoe-app exec tauri android build --debug`：passed，生成 debug APK/AAB；Gradle 报告上游 deprecation warning，未导致失败。
+- Android 模拟器 smoke：
+  - Pixel 8 API 36 emulator：APK install passed。
+  - `adb shell am start -W -n moe.kzo.client/.MainActivity`：passed，进程启动成功。
+  - 启动后截图确认 Android phone 使用底部导航，不再显示桌面 sidebar。
+  - 清理 logcat 后重新启动，未再出现 `Invalid path: ./.local/share/...kmoe-client.sqlite3`。
+- 未运行项：本轮尚未运行 Android 真机、Android 平板模拟器、Android 下载/Reader 全链路、Android signed release、Google Play/TV 分发验证。
+- 待发布风险：Android 仍是实验预览源码路径，不等同于稳定 Android 支持；Android 文件导出/分享、后台/前台下载、Reader cache 清理和真实站点登录下载仍需单独验证。
+
 ## 2026-06-17 非手机方向键空间焦点导航验证
 
 - 变更范围：非手机 App shell 方向键空间焦点移动、空间焦点 helper、聚焦测试、README/README.en/CHANGELOG/AGENTS 文档。

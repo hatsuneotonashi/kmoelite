@@ -152,6 +152,9 @@ fn platform_app_data_dir_for(
 ) -> PathBuf {
     match os {
         "macos" | "ios" => home.join("Library").join("Application Support"),
+        "android" => PathBuf::from("/data/data")
+            .join(APP_IDENTIFIER)
+            .join("files"),
         "windows" => appdata.unwrap_or_else(|| home.join("AppData").join("Roaming")),
         _ => xdg_data_home.unwrap_or_else(|| home.join(".local").join("share")),
     }
@@ -271,6 +274,25 @@ mod tests {
             !path.to_string_lossy().contains(".local/share"),
             "iOS app data must not use Linux-style fallback paths"
         );
+    }
+
+    #[test]
+    fn android_app_data_dir_uses_private_files_root() {
+        let path = platform_app_data_dir_for("android", PathBuf::from("."), None, None)
+            .join(APP_IDENTIFIER);
+
+        assert_eq!(
+            path,
+            PathBuf::from("/data/data")
+                .join(APP_IDENTIFIER)
+                .join("files")
+                .join(APP_IDENTIFIER)
+        );
+        assert!(
+            !path.to_string_lossy().contains(".local/share"),
+            "Android app data must not use Linux-style fallback paths"
+        );
+        assert!(path.is_absolute());
     }
 
     #[test]

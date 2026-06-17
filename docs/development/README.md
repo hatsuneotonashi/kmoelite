@@ -49,6 +49,12 @@ pnpm check:platforms
 node scripts/check-ios-assets.mjs
 ```
 
+Android debug APK/AAB 构建入口：
+
+```bash
+pnpm tauri:android:build:debug
+```
+
 提交前默认运行以上完整 gate。涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流时再运行 `pnpm --dir apps/kmoe-app e2e`。不能运行的命令必须写入 `TASK_PROGRESS.md`，说明原因和风险。
 
 ## 无上下文接手

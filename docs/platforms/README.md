@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机、Android 平板、Apple TV 和 Android TV 是未来计划。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径，但还没有完成真机、下载、Reader 和签名发布验证。Apple TV 和 Android TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -18,14 +18,17 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。Windows 
 
 ## Android 手机
 
-- 计划支持，当前未完成完整 Android runtime、打包和真机验证。
+- 实验预览源码路径存在。
+- `src-tauri/gen/android` 已生成 Tauri Android 工程，debug APK/AAB 构建通过。
+- Pixel 8 API 36 模拟器可安装并启动，首屏使用 phone contract 和底部导航。
 - 设计原则与 iPhone 一致：触控优先、低存储占用、在线阅读优先。
-- 实现前需要补齐 Android 文件系统、缓存清理、网络状态和生命周期策略。
+- 真机、登录、下载、Reader、缓存清理、文件导出/分享、签名发布仍未完整验证。
 
 ## Android 平板
 
-- 计划支持，当前未完成平板布局、打包和真机验证。
-- 设计原则与 iPad 一致：分栏、多列、横屏高清阅读和可控缓存。
+- 实验预览源码路径存在。
+- 布局模型已有 Android tablet contract，原则与 iPad 一致：分栏、多列、横屏高清阅读和可控缓存。
+- Android 平板模拟器/真机、下载、Reader、缓存清理和签名发布仍未完整验证。
 
 ## Windows
 

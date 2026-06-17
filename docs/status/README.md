@@ -39,8 +39,8 @@
 
 - iPhone：开发预览可用；适合个人测试和日常试用，签名真机完整验证仍需继续补齐。
 - iPad：开发预览可用；平板布局和 Reader 体验已作为当前重点，签名真机完整验证仍需继续补齐。
-- Android 手机：计划支持，尚未实现完整 Android runtime、打包和真机验证。
-- Android 平板：计划支持，尚未完成平板布局和真机验证。
+- Android 手机：实验预览源码路径存在；Android debug APK/AAB 构建通过，Pixel 8 API 36 模拟器可启动手机布局；真机、下载、Reader 和签名发布仍未完整验证。
+- Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，但平板模拟器/真机、下载、Reader 和签名发布仍未完整验证。
 - Windows：源码和打包脚本存在，真实 Windows 安装/卸载/open/reveal 验证未完成。
 - macOS：开发预览可用；当前主要本地开发和日常试用平台，公开二进制仍需签名、公证、stapling 和干净机器验证。
 - Apple TV / Android TV：后续研究方向，不属于当前 Alpha 可用范围。
@@ -50,7 +50,7 @@
 - macOS 签名、公证、stapling、干净机器安装/打开验证未完成。
 - Windows 真机安装、卸载、open file、reveal folder、签名验证未完成。
 - iPhone/iPad signed physical-device install、文件导出/分享、前后台行为验证未完成。
-- Android phone/tablet 运行时、打包和真机验证未完成。
+- Android phone/tablet 真机、平板模拟器、下载/Reader 全链路、签名发布和分发验证未完成。
 - Apple TV / Android TV 输入、布局、缓存策略和平台可行性未完成。
 - 本轮默认不运行真实站点 smoke 和真实下载验证。
 - Store 分发仍需要平台政策、签名、provisioning 和 packaging review。

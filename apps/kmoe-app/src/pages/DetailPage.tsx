@@ -34,7 +34,7 @@ import {
   prioritizeNativeDownloadTask,
   startNativeDownloadQueue
 } from '../platform/nativeCommands'
-import { planDownloadPath, detectPlatformTarget } from '../download/pathPlanner'
+import { planDownloadPath, detectPlatformTarget, isMobileAppTarget } from '../download/pathPlanner'
 import { canQueueDownloadOption } from '../download/optionGuards'
 import { Info, MiniStat } from '../detail/DetailInfoTiles'
 import { clearDocumentCoverTheme, coverThemeColor, cssCoverImageValue, ensureThemeColorMeta, useCoverTheme } from '../detail/coverTheme'
@@ -72,7 +72,7 @@ export function DetailPage() {
   const api = useKmoeApi()
   const settings = useSettingsStore()
   const platformTarget = useMemo(() => detectPlatformTarget(), [])
-  const mobileFileDownload = platformTarget === 'ios' || platformTarget === 'ipados'
+  const mobileFileDownload = isMobileAppTarget(platformTarget)
   const downloadStore = useDownloadStore()
   const replaceLibrary = useDownloadStore((state) => state.replaceLibrary)
   const replaceWithNativeSnapshot = useDownloadStore((state) => state.replaceWithNativeSnapshot)

@@ -1,7 +1,7 @@
 import type { AppSettings, DownloadFormat, DownloadTask } from '../types/domain'
 import { buildLocalFilename, containsPathTraversal, sanitizeFilename } from '../lib/sanitize'
 
-export type PlatformTarget = 'macos' | 'windows' | 'ipados' | 'ios' | 'linux' | 'unknown'
+export type PlatformTarget = 'macos' | 'windows' | 'ipados' | 'ios' | 'android' | 'androidTablet' | 'linux' | 'unknown'
 
 export interface PlatformDetectionInput {
   userAgent?: string
@@ -42,10 +42,15 @@ export function detectPlatformTarget(input?: string | PlatformDetectionInput): P
   ) {
     return 'ipados'
   }
+  if (/android/.test(ua)) return /mobile/.test(ua) ? 'android' : 'androidTablet'
   if (/mac os x|macintosh/.test(ua)) return 'macos'
   if (/windows/.test(ua)) return 'windows'
   if (/linux/.test(ua)) return 'linux'
   return 'unknown'
+}
+
+export function isMobileAppTarget(platform: PlatformTarget): boolean {
+  return platform === 'ios' || platform === 'ipados' || platform === 'android' || platform === 'androidTablet'
 }
 
 export function defaultDownloadDirectory(platform: PlatformTarget): string {
@@ -54,6 +59,8 @@ export function defaultDownloadDirectory(platform: PlatformTarget): string {
       return '%USERPROFILE%\\Downloads\\Kmoe'
     case 'ipados':
     case 'ios':
+    case 'android':
+    case 'androidTablet':
       return 'App Internal/Kmoe'
     case 'linux':
       return '~/Downloads/Kmoe'
@@ -79,7 +86,7 @@ export function planDownloadPath(task: Pick<DownloadTask, 'comicTitle' | 'volume
     filename,
     finalPath,
     partPath: `${finalPath}.part`,
-    exportRequired: platform === 'ios' || platform === 'ipados',
+    exportRequired: isMobileAppTarget(platform),
     platform
   }
 }

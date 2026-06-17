@@ -30,7 +30,7 @@ import {
   type NativeDownloadPreflightCheck
 } from '../platform/nativeCommands'
 import { createDownloadPipelinePlan } from '../download/pipeline'
-import { detectPlatformTarget } from '../download/pathPlanner'
+import { detectPlatformTarget, isMobileAppTarget } from '../download/pathPlanner'
 import { compareDownloadQueueOrder } from '../download/stateMachine'
 import {
   canOpenDownloadedTask,
@@ -52,7 +52,7 @@ export function DownloadCenterPage() {
   const registerPages = useCacheStore((state) => state.registerPages)
   const settings = useSettingsStore()
   const platformTarget = useMemo(() => detectPlatformTarget(), [])
-  const mobileFileExport = platformTarget === 'ios' || platformTarget === 'ipados'
+  const mobileFileExport = isMobileAppTarget(platformTarget)
   const [tab, setTab] = useState<DownloadTabKey>('all')
   const [message, setMessage] = useState('')
   const [preflight, setPreflight] = useState<NativeDownloadPreflight | undefined>()

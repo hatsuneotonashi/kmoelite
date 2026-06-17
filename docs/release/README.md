@@ -153,9 +153,10 @@ iPhone/iPad：
 
 Android phone/tablet：
 
-- Android runtime 和打包配置。
-- 真机安装、网络、生命周期、缓存清理和文件访问验证。
-- Android 平板布局验证。
+- Android runtime 源码和 debug APK/AAB 构建路径已经存在。
+- 真机安装、网络、生命周期、下载、Reader、缓存清理和文件访问验证。
+- Android 平板模拟器/真机布局验证。
+- 签名 release、Play 分发和 TV 分发策略。
 
 Apple TV / Android TV：
 
