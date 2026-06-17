@@ -364,6 +364,21 @@ describe('Detail reader entry', () => {
     expect(screen.getByText(/下载队列已处理完成|下载完成/)).toBeInTheDocument()
   })
 
+  it('does not enqueue an empty explicit detail download task set', async () => {
+    mocks.api.createDownloadTasks.mockResolvedValue([])
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /离线下载/ })[0])
+    fireEvent.click(screen.getByRole('checkbox', { name: '选择 話 089-095' }))
+    fireEvent.click(screen.getAllByRole('button', { name: /加入队列/ })[0])
+
+    expect(await screen.findByText('没有生成可下载任务，请刷新详情后重试。')).toBeInTheDocument()
+    expect(enqueueNativeDownloadTasksMock).not.toHaveBeenCalled()
+    expect(startNativeDownloadQueueMock).not.toHaveBeenCalled()
+  })
+
   it('blocks queueing reader downloads while logged out', async () => {
     mocks.api.getSession.mockResolvedValue({ authenticated: false, mode: 'live', error: '未登录' })
 

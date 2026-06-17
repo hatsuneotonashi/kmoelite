@@ -254,6 +254,9 @@ export function DetailPage() {
           format: downloadModeFormat
         }))
       }
+      if (tasks.length === 0) {
+        throw new Error('没有生成可下载任务，请刷新详情后重试。')
+      }
       const nativeResult = await enqueueNativeDownloadTasks(tasks)
       setNativeQueueMessage(readableAppMessage(nativeResult.message, '暂时无法加入下载队列，请稍后重试。'))
       if (nativeResult.ok && nativeResult.value !== undefined) {
