@@ -4,6 +4,21 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS deep link cold-start route hardening
+
+- 变更范围：`App.tsx` Tauri deep-link route listener、Rust pending deep-link route command、README/README.en/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。
+- 行为摘要：iOS/desktop Tauri 收到安全 `kmoelite://comic/<id>` 后，会把 `/comic/<id>` 保存为 pending native route，同时向前端发 `kmoelite-deep-link-route` 事件，并保留直接 `history.pushState` 兜底。前端启动后会读取一次 `get_pending_deep_link_route`，运行中监听同一事件并用 React Router `navigate()` 进入详情，降低 packaged cold-start 时 native eval 早于前端 ready 导致路由丢失的风险。
+- 验证：
+  - `git diff --check`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml deep_links --lib`：passed，2 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed；production web build、iOS asset sync、Rust/iOS simulator build passed；构建产物保持 ignored。
+  - iPhone 17 simulator packaged open-url check：partial；`xcrun simctl openurl ... kmoelite://comic/10817` 可到达 iOS 系统“在 kmoelite 中打开?”确认框。自动化环境无法可靠点击该系统确认按钮完成详情页视觉确认；回车未触发确认。
+  - 敏感文本扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：未跑完整 Vitest/build/Rust/platform/E2E gate；未完成 iPhone 详情、Reader、下载、缓存清理或签名实机验证。
+- 待发布风险：代码路径已加固并通过编译，但 iOS deep-link 详情页视觉 smoke 仍需人工确认系统弹窗后或可用 UI automation 后补跑。
+
 ## 2026-06-18 iOS packaged deep link 入口
 
 - 变更范围：Tauri Rust app run event、iOS `Info.plist` / `project.yml` URL scheme、README/README.en/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。

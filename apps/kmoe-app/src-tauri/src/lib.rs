@@ -8,7 +8,10 @@ pub mod queue;
 pub mod reader;
 pub mod web_adapter;
 
-use tauri::Manager;
+use std::sync::Mutex;
+use tauri::{Emitter, Manager};
+
+struct PendingDeepLinkRoute(Mutex<Option<String>>);
 
 #[cfg(not(mobile))]
 fn ensure_main_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
@@ -85,10 +88,16 @@ fn is_safe_comic_id(comic_id: &str) -> bool {
 }
 
 fn open_deep_link_route<R: tauri::Runtime>(app: &tauri::AppHandle<R>, route: &str) {
+    if let Ok(mut pending_route) = app.state::<PendingDeepLinkRoute>().0.lock() {
+        *pending_route = Some(route.to_string());
+    }
     let Some(window) = app.get_webview_window("main") else {
         eprintln!("failed to open deep link route: main webview window is unavailable");
         return;
     };
+    if let Err(error) = window.emit("kmoelite-deep-link-route", route) {
+        eprintln!("failed to emit deep link route: {error}");
+    }
     let Ok(route_json) = serde_json::to_string(route) else {
         eprintln!("failed to open deep link route: route serialization failed");
         return;
@@ -107,11 +116,22 @@ fn open_deep_link_route<R: tauri::Runtime>(app: &tauri::AppHandle<R>, route: &st
     }
 }
 
+#[tauri::command]
+fn get_pending_deep_link_route(state: tauri::State<'_, PendingDeepLinkRoute>) -> Option<String> {
+    state
+        .0
+        .lock()
+        .ok()
+        .and_then(|mut pending_route| pending_route.take())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
+        .manage(PendingDeepLinkRoute(Mutex::new(None)))
         .manage(web_adapter::KmoeHttpClient::new().expect("failed to create Kmoe HTTP client"))
         .invoke_handler(tauri::generate_handler![
+            get_pending_deep_link_route,
             commands::get_app_config,
             commands::set_download_dir,
             commands::get_download_dir,

@@ -6,7 +6,7 @@
 
 ### Added
 
-- iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page; iPhone simulator install/launch/open-url smoke passed.
+- iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page.
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.
 - Android FileProvider roots are now limited to app-owned files/cache directories instead of broad external storage.
 - Android builds now include a system share bridge for app-owned downloaded files after the Rust path/SQLite open-file guard succeeds.
@@ -45,6 +45,7 @@
 
 ### Fixed
 
+- iOS deep-link routing now stores a pending native route and uses a frontend Tauri event listener, making cold-start route delivery less dependent on direct `history.pushState` timing.
 - Android system share export now checks that a chooser target exists before reporting success, and bridge failures are surfaced to the UI instead of being treated as successful exports.
 - 修复已恢复站点会话但账号页字段暂不可解析时，首页仍把用户误判为未登录并显示“登录账号”的问题。
 - 修复 Android 手机 WebView 在封面取色详情页中可能把目录标题、说明和目录条目文字绘制到错误层级，导致系统截图/设备画面出现大块断层或文字消失的问题。

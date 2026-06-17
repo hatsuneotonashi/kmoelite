@@ -30,7 +30,7 @@ This project is not stable software.
 
 Developer-preview usable surfaces:
 
-- iPhone: usable for personal testing and daily preview use; the iPhone simulator now passes packaged debug app install, launch, first-screen render, session-restore, and `kmoelite://comic/<id>` open-url smoke; detail, Reader, download, signed-device, and export/share validation still need more work.
+- iPhone: usable for personal testing and daily preview use; the iPhone simulator now passes packaged debug app install, launch, first-screen render, and session-restore smoke; iOS deep links are registered and route delivery is hardened through a pending native route, while detail, Reader, download, signed-device, and export/share validation still need more work.
 - iPad: usable for personal testing and daily preview use; the iPad simulator now passes packaged debug app install, launch, tablet-layout render, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; signed-device, export/share, and foreground/background validation still need more work.
 - macOS: usable as the main local development and preview platform.
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
@@ -45,7 +45,7 @@ Future plan:
 
 ## Recent Updates
 
-- 2026-06-18: iOS packaged builds now register `kmoelite://comic/<id>` deep links; iPhone simulator install, launch, and open-url smoke passed.
+- 2026-06-18: iOS packaged builds now register and harden `kmoelite://comic/<id>` deep links; pending native routes are delivered to React Router after frontend startup.
 - 2026-06-17: fixed restored site sessions being shown as signed out when the account page is authenticated but profile fields are temporarily unavailable; the iPhone simulator packaged app now shows the account-center entry after session restore.
 - 2026-06-17: iPad simulator passed live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator passed packaged render and session-restore smoke.
 - 2026-06-17: Android TV emulator passed live login, detail, EPUB-to-Reader, remote page-turn, and local reading-data deletion smoke.

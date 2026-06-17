@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { listen } from '@tauri-apps/api/event'
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppLayout } from './layouts/AppLayout'
 import { EmptyState } from './components/EmptyState'
@@ -7,6 +8,7 @@ import { HomePage } from './pages/HomePage'
 import { useNativeChapterCacheSync } from './hooks/useNativeChapterCacheSync'
 import { useNativeReadingProgressSync } from './hooks/useNativeReadingProgressSync'
 import { useNativeShelfSync } from './hooks/useNativeShelfSync'
+import { invokeOptional, isTauriRuntime } from './platform/tauri'
 
 const browserBasename = import.meta.env.BASE_URL.startsWith('/') ? import.meta.env.BASE_URL : '/'
 const SearchPage = lazy(() => import('./pages/SearchPage').then((module) => ({ default: module.SearchPage })))
@@ -37,6 +39,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename={browserBasename}>
+        <TauriDeepLinkRouteListener />
         <Suspense fallback={<RouteLoadingState />}>
           <Routes>
             <Route path="reader/cache/:chapterCacheId" element={<ReaderPage />} />
@@ -59,6 +62,36 @@ export function App() {
       </BrowserRouter>
     </QueryClientProvider>
   )
+}
+
+function TauriDeepLinkRouteListener() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return undefined
+
+    let disposed = false
+    let unlisten: (() => void) | undefined
+    const openRoute = (route: unknown) => {
+      if (typeof route === 'string' && route.startsWith('/comic/')) navigate(route)
+    }
+
+    void invokeOptional<string>('get_pending_deep_link_route').then(openRoute)
+    void listen<string>('kmoelite-deep-link-route', (event) => openRoute(event.payload)).then((dispose) => {
+      if (disposed) {
+        dispose()
+        return
+      }
+      unlisten = dispose
+    }).catch(() => {})
+
+    return () => {
+      disposed = true
+      unlisten?.()
+    }
+  }, [navigate])
+
+  return null
 }
 
 function RouteLoadingState() {
