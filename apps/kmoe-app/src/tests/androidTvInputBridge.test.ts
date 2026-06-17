@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 const mainActivitySource = readFileSync('src-tauri/gen/android/app/src/main/java/moe/kzo/client/MainActivity.kt', 'utf8')
 const androidManifestSource = readFileSync('src-tauri/gen/android/app/src/main/AndroidManifest.xml', 'utf8')
 const androidFilePathsSource = readFileSync('src-tauri/gen/android/app/src/main/res/xml/file_paths.xml', 'utf8')
+const appSource = readFileSync('src/App.tsx', 'utf8')
 
 describe('Android TV input bridge', () => {
   it('bridges remote DPAD keys into the Tauri WebView without replacing native Back handling', () => {
@@ -37,6 +38,7 @@ describe('Android app links', () => {
     expect(mainActivitySource).toContain("window.dispatchEvent(new Event('popstate'))")
     expect(mainActivitySource).toContain("window.dispatchEvent(new CustomEvent('kmoelite-android-deep-link-route', { detail: route }))")
     expect(mainActivitySource).toContain('Regex("[A-Za-z0-9_-]{1,80}")')
+    expect(appSource).toContain("if (typeof bridge?.takePendingRoute === 'function') return bridge.takePendingRoute() || undefined")
   })
 })
 

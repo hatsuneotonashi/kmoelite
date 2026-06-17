@@ -4,6 +4,16 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android deep link stale route 兜底修复
+
+- 变更范围：`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：Android packaged app 前端读取 deep-link pending route 时，如果 `KmoeliteAndroidApp.takePendingRoute()` bridge 已存在，就只消费 native bridge 的结果；bridge 返回空值时不再回退读取旧的 `window.__kmoeliteAndroidPendingRoute`，避免 listener 重新挂载时重复使用已消费的旧漫画路由。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts`：passed，1 file / 5 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 未运行项：未运行完整 Vitest/build/Rust/platform/E2E gate；本轮只改 Android deep-link 前端兜底读取逻辑和对应 source-level 检查。未重新构建或安装 Android APK。
+- 待发布风险：该改动减少重复路由风险，但 Android 真机、真实 downloaded-file 分享和签名发布仍按平台文档保留为未完成验证。
+
 ## 2026-06-18 Android deep link 运行中崩溃修复
 
 - 变更范围：`apps/kmoe-app/src-tauri/gen/android/app/src/main/java/moe/kzo/client/MainActivity.kt`、`apps/kmoe-app/src/App.tsx`、`apps/kmoe-app/src/tests/androidTvInputBridge.test.ts`、README、CHANGELOG、TASK_PROGRESS。

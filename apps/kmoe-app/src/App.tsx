@@ -105,8 +105,8 @@ function readAndroidPendingDeepLinkRoute(): string | undefined {
     }
   }).KmoeliteAndroidApp
   try {
-    const route = bridge?.takePendingRoute?.()
-    return route || (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute
+    if (typeof bridge?.takePendingRoute === 'function') return bridge.takePendingRoute() || undefined
+    return (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute
   } catch {
     return (window as Window & { __kmoeliteAndroidPendingRoute?: string }).__kmoeliteAndroidPendingRoute
   }

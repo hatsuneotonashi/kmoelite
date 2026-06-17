@@ -47,6 +47,7 @@
 
 ### Fixed
 
+- Android deep-link startup now avoids reusing a stale global fallback route after the native pending-route bridge has already consumed it.
 - Android packaged apps no longer crash when a safe `kmoelite://comic/<id>` link is delivered while the app is already running.
 - iPhone/iPad/Android Library and Download Center file actions now use export/share wording instead of desktop-only folder-location wording, and mobile EPUB/source archives keep a clear Reader plus export path.
 - Fixed download failure copy so site-side quota/permission responses such as `no permission` are not misreported as local save-location permission errors.
