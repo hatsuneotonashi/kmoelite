@@ -4,6 +4,42 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 iPad simulator 真实 EPUB Reader smoke
+
+- 变更范围：验证日志和平台状态文档；产品代码未变更。
+- 前置状态：
+  - `git status --short --branch`：clean，`main...origin/main`。
+  - `.env.local`：present and ignored；runtime credentials present。本轮未打印账号、密码、Cookie、Session 或授权 URL。
+  - packaged iOS simulator app 使用 `apps/kmoe-app/src-tauri/gen/apple/build/arm64-sim/Kmoe Client.app`，不是 Mac `5173` dev server。
+- iPad Air 13-inch simulator：
+  - install/launch：passed，bundle id `moe.kzo.client`。
+  - 首屏：passed，真实 catalog 数据和封面加载成功，账号入口识别为已登录状态。
+  - 登录会话：真实站点登录请求 passed；因 Simulator 文本输入自动化不稳定，本轮通过写入 app-private native SQLite `app_settings.kmoe_session_cookie_header` seed 会话后继续验证。该 cookie 只存在 simulator app container，未输出、未写入仓库。
+  - 详情页：passed，从首页真实条目进入详情页，平板 rail/sidebar 保持完整。
+  - Reader flow：passed，详情页“开始阅读”创建并执行 EPUB 单项任务，下载完成后自动准备 Reader cache 并进入 Reader。
+  - Native SQLite 状态：`download_tasks` completed epub = 1；`downloaded_files` epub = 1；ready `reading_cache` epub = 1；`page_cache` rows = 192。
+  - Reader：第 1 页图片加载成功；显示 Reader chrome 后，RTL 下一页翻到第 2 / 192 页。
+  - Reading persistence：`reading_progress.page_index = 1`，`reading_history` recorded `open` and `page_change` events。
+  - 临时截图只用于本地视觉确认，未写入仓库。
+- iPhone 17 simulator：
+  - install/launch：passed。
+  - 首屏：passed，iPhone safe-area + bottom navigation 渲染成功。
+  - 登录会话 restore：passed，受控 session seed 后账号入口变为账号中心，真实封面加载成功。
+  - 未完成：本轮未获得稳定的 iPhone simulator UI 点击自动化链路，未继续执行 iPhone 详情、Reader、下载或缓存清理 smoke。
+- 提交前验证：
+  - `git diff --check`：passed。
+  - 敏感文本扫描：passed，修改文档未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径；命中项为安全规则词和脱敏说明。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 294 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，并同步 iOS assets。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+- 未运行项：signed physical-device install、iPhone 详情/Reader/下载、iPad/iPhone 文件导出/分享、前后台行为、设置清理本地阅读数据、source ZIP 成功验证、Windows 真机。
+- 待发布风险：iPad simulator 已跑通真实 EPUB detail -> download -> Reader -> page turn -> progress；这仍不等同于 iPad 签名真机、文件导出/分享或长期前后台行为验证。iPhone simulator 本轮只覆盖 packaged render、session restore 和真实封面加载。
+
 ## 2026-06-17 iPhone/iPad simulator packaged app 白屏修复
 
 - 变更范围：移动打包入口 HTML、Tauri 安全配置测试、AGENTS/README/README.en/CHANGELOG/docs/status/docs/platforms/docs/development/docs/release 文档。
@@ -32,7 +68,8 @@
   - `pnpm check:platforms`：passed，`pass=49 warn=0 external=4 fail=0`。
   - `node scripts/check-ios-assets.mjs`：passed，27 files。
   - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
-- 未运行项：本轮尚未在 iPhone/iPad simulator 执行真实登录、详情、Reader、下载、缓存清理；未运行 signed physical-device install、文件导出/分享或前后台行为验证。
+- 补充记录：后续同日已追加 iPad simulator 真实 EPUB detail -> download -> Reader -> page turn -> progress smoke；iPhone simulator 追加了 session restore 和真实封面加载 smoke。
+- 未运行项：本轮白屏修复提交时尚未在 iPhone/iPad simulator 执行真实登录、详情、Reader、下载、缓存清理；未运行 signed physical-device install、文件导出/分享或前后台行为验证。
 - 待发布风险：iPhone/iPad simulator packaged app 已能安装、启动并渲染首屏；这不等同于签名真机或完整 Reader/download 验收完成。
 
 ## 2026-06-17 Android TV emulator 真实 EPUB Reader 与清理验证

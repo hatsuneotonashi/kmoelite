@@ -66,6 +66,7 @@
 
 ### Validation
 
+- iPad simulator has passed packaged launch, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator has passed packaged launch and session-restore smoke. Signed physical-device validation remains incomplete.
 - Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke; real TV hardware and signed distribution remain incomplete.
 - 最新本地验证结果记录在 [TASK_PROGRESS.md](TASK_PROGRESS.md)。
 

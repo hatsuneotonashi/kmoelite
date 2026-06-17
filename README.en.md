@@ -30,8 +30,8 @@ This project is not stable software.
 
 Developer-preview usable surfaces:
 
-- iPhone: usable for personal testing and daily preview use; the iPhone simulator now passes packaged debug app install, launch, and first-screen render smoke; signed-device, login, Reader, and download validation still need more work.
-- iPad: usable for personal testing and daily preview use; the iPad simulator now passes packaged debug app install, launch, and tablet-layout render smoke; signed-device, login, Reader, and download validation still need more work.
+- iPhone: usable for personal testing and daily preview use; the iPhone simulator now passes packaged debug app install, launch, first-screen render, and session-restore smoke; detail, Reader, download, signed-device, and export/share validation still need more work.
+- iPad: usable for personal testing and daily preview use; the iPad simulator now passes packaged debug app install, launch, tablet-layout render, live EPUB download-to-Reader, page-turn, and progress-persistence smoke; signed-device, export/share, and foreground/background validation still need more work.
 - macOS: usable as the main local development and preview platform.
 - Windows: source and packaging paths exist, but real-machine install/open/reveal/signing validation is incomplete.
 - Android phone: experimental source path exists; a Pixel 8 emulator has passed live login, detail, EPUB download, Reader, page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
@@ -45,7 +45,7 @@ Future plan:
 
 ## Recent Updates
 
-- 2026-06-17: fixed the packaged iPhone/iPad simulator white screen; debug simulator apps now install, launch, and render the phone/tablet home screens.
+- 2026-06-17: iPad simulator passed live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator passed packaged render and session-restore smoke.
 - 2026-06-17: Android TV emulator passed live login, detail, EPUB-to-Reader, remote page-turn, and local reading-data deletion smoke.
 - 2026-06-17: added Apple TV/tvOS readiness checks for the tvOS SDK, simulator runtime, Apple TV device types, and Rust targets.
 - 2026-06-17: fixed an intermittent mobile/tablet detail Reader auto-download queue-start failure; Android phone and tablet emulators have passed live EPUB-to-Reader and local reading-data deletion smoke.
