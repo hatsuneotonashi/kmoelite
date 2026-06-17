@@ -190,6 +190,15 @@ addCheck({
   detail: 'Apple TV simulator smoke needs an Apple TV CoreSimulator device type.'
 })
 
+const simctlDevices = commandOutput('xcrun', ['simctl', 'list', 'devices', 'available'])
+addCheck({
+  id: 'appletv.sim_device_available',
+  platform: 'appletv',
+  status: hostPlatform !== 'darwin' ? 'external' : simctlDevices.ok && /Apple TV/.test(simctlDevices.stdout) ? 'pass' : 'external',
+  summary: hostPlatform === 'darwin' && simctlDevices.ok && /Apple TV/.test(simctlDevices.stdout) ? 'Apple TV simulator devices are available.' : 'Apple TV simulator device not confirmed.',
+  detail: 'Apple TV simulator smoke needs an actual available simulator device after the tvOS runtime is installed.'
+})
+
 addCommandCheck('windows.sign_tool', 'windows', 'signtool', [], 'Windows Authenticode signing tool is available.', {
   activeOnlyOn: 'win32',
   missingStatus: 'external'
@@ -235,7 +244,7 @@ addCommandCheck('android.adb', 'android', 'adb', ['version'], 'ADB is available 
 addCommandCheck('android.sdkmanager', 'android', 'sdkmanager', ['--version'], 'Android SDK manager is available for installing SDK/NDK/system images.', {
   missingStatus: 'external'
 })
-addCommandCheck('android.avdmanager', 'android', 'avdmanager', ['--version'], 'Android AVD manager is available for emulator profile management.', {
+addCommandCheck('android.avdmanager', 'android', 'avdmanager', ['list', 'device'], 'Android AVD manager is available for emulator profile management.', {
   missingStatus: 'external'
 })
 addCommandCheck('android.emulator', 'android', 'emulator', ['-version'], 'Android emulator is available for local smoke runs.', {

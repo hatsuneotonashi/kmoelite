@@ -114,6 +114,6 @@ explicit download option -> local task -> native queue -> runtime authorization 
 - iPad/Android tablet：rail/sidebar、分栏或多列布局。
 - iPhone/Android phone：safe-area aware touch navigation 和紧凑控件。
 - Android TV：已有实验 runtime/Leanback 入口、方向键焦点、native DPAD/OK 输入桥和 remote Back；Android TV emulator 已通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据删除 smoke，实体 TV 和签名发行仍需单独验证。
-- Apple TV：未来方向；`check:platforms` 已检查 tvOS SDK、Apple TV simulator device type、tvOS simulator runtime 和 tvOS Rust targets，但仍需要单独实现 tvOS 壳、遥控器输入、焦点导航和横屏 Reader。
+- Apple TV：未来方向；`check:platforms` 已检查 tvOS SDK、Apple TV simulator device type、实际 simulator device、tvOS simulator runtime 和 tvOS Rust targets；本机可启动 Apple TV 模拟器，但仍需要单独实现 tvOS 壳、遥控器输入、焦点导航和横屏 Reader。
 
 Cover-aware 页面应尽量从真实封面像素取色。CSS 可以压暗和提高对比，但不能把所有作品洗成固定色板。

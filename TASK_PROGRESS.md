@@ -4,6 +4,31 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Apple TV tvOS runtime 安装与模拟器启动
+
+- 变更范围：Apple TV readiness 脚本、Android AVD manager readiness 检查、README/README.en/CHANGELOG/AGENTS/docs/status/docs/platforms/docs/development/docs/release 文档。
+- 行为摘要：本机通过 Xcode 安装 tvOS 26.5 simulator runtime，并启动 Apple TV 4K 1080p 模拟器。`check:platforms` 新增 actual Apple TV simulator device 检查，用于区分“只有 device type”与“runtime 安装后实际有可用 simulator device”；同时把 Android `avdmanager` 检查改为有效且不输出本机 AVD 路径的 `list device`。该结果仍不代表 kmoelite 已有可运行 Apple TV App。
+- 本机工具状态：
+  - `xcodebuild -downloadPlatform tvOS`：passed，安装 `tvOS 26.5 (23L470)` runtime。
+  - `xcrun simctl list runtimes`：passed，存在 `com.apple.CoreSimulator.SimRuntime.tvOS-26-5`。
+  - `xcrun simctl list devicetypes`：passed，存在 Apple TV simulator device types。
+  - `xcrun simctl list devices 'tvOS 26.5'`：passed，存在 Apple TV 4K simulator devices。
+  - `xcrun simctl bootstatus ... -b`：passed，Apple TV 4K (3rd generation) 1080p simulator boot completed。
+- 验证：
+  - `git diff --check`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=52 warn=0 external=2 fail=0`；剩余 external 均为 Windows 主机专属 signing/NSIS 工具检查。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 294 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - 敏感文本扫描：passed，唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本；未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：本轮未运行 Playwright E2E，因为没有改路由、布局、Reader UI、accessibility 或浏览器可见工作流；未生成 tvOS/WKWebView 壳，未安装 kmoelite 到 Apple TV simulator，未验证 Apple TV 遥控器输入、Reader、下载、缓存清理或平台分发。
+- 待发布风险：Apple TV 仍是研究方向；工具链和模拟器已可用，但产品还缺 tvOS shell、焦点/遥控器输入、Reader 横屏体验和 native bridge 设计。
+
 ## 2026-06-17 Android 手机详情页目录合成层修复与平台 smoke
 
 - 变更范围：移动端 cover-theme 详情页目录 CSS、移动详情页 Playwright 视觉基线、README/CHANGELOG/TASK_PROGRESS。

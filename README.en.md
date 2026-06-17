@@ -37,7 +37,7 @@ Developer-preview usable surfaces:
 - Android phone: experimental source path exists; a Pixel 8 emulator has passed live login, detail, EPUB download, Reader, page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android tablet: experimental source path exists; a Pixel Tablet emulator has passed live login, detail, EPUB download, Reader spread page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android TV: experimental entry exists; an Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke, but real TV hardware, export/share, and signed distribution validation are incomplete.
-- Apple TV: future research target; platform checks now cover the tvOS SDK, simulator runtime, Apple TV simulator device types, and tvOS Rust targets, but no runnable tvOS shell exists yet.
+- Apple TV: future research target; the local toolchain now has a tvOS simulator runtime and can boot an Apple TV simulator, but no runnable tvOS shell exists yet.
 
 Future plan:
 
@@ -47,7 +47,7 @@ Future plan:
 
 - 2026-06-17: iPad simulator passed live EPUB download-to-Reader, page-turn, and progress-persistence smoke; iPhone simulator passed packaged render and session-restore smoke.
 - 2026-06-17: Android TV emulator passed live login, detail, EPUB-to-Reader, remote page-turn, and local reading-data deletion smoke.
-- 2026-06-17: added Apple TV/tvOS readiness checks for the tvOS SDK, simulator runtime, Apple TV device types, and Rust targets.
+- 2026-06-17: advanced Apple TV/tvOS readiness to an installed tvOS runtime, a bootable Apple TV simulator, and platform checks for actual simulator devices; no runnable tvOS shell exists yet.
 - 2026-06-17: fixed an intermittent mobile/tablet detail Reader auto-download queue-start failure; Android phone and tablet emulators have passed live EPUB-to-Reader and local reading-data deletion smoke.
 - 2026-06-17: added the Android TV native DPAD/OK bridge and verified Reader OK/Back smoke on a TV emulator with a synthetic local Reader cache.
 

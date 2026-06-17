@@ -28,7 +28,7 @@
 - TypeScript typecheck：passed。
 - Vitest：55 files / 294 tests passed。
 - Rust lib tests：86 passed。
-- `pnpm check:platforms`：`pass=49 warn=0 external=4 fail=0`。
+- `pnpm check:platforms`：`pass=52 warn=0 external=2 fail=0`。
 - Playwright E2E：114 passed / 50 skipped。
 - 真实 EPUB 单项下载到 Reader：passed，覆盖下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。
 - 真实 source ZIP 单项下载：failed，站点未返回可用 source ZIP 下载地址；普通自动阅读路径已改为 EPUB 优先，source ZIP 仍保留为显式高级格式。
@@ -53,7 +53,7 @@
 - Android TV：实验预览入口存在；Leanback launcher、TV runtime 识别、宽屏 shell、方向键焦点、native DPAD/OK 输入桥和真实 EPUB 下载到 Reader、遥控器翻页、本地阅读数据删除已在 Android TV API 36 模拟器验证；签名发布、实体 TV、文件导出/分享和分发验证仍未完成。
 - Windows：源码和打包脚本存在，真实 Windows 安装/卸载/open/reveal 验证未完成。
 - macOS：开发预览可用；当前主要本地开发和日常试用平台，公开二进制仍需签名、公证、stapling 和干净机器验证。
-- Apple TV：后续研究方向，不属于当前 Alpha 可用范围；本机已确认 tvOS SDK、Apple TV simulator device type 和 tvOS Rust targets，仍缺 tvOS simulator runtime 和可运行 tvOS shell。
+- Apple TV：后续研究方向，不属于当前 Alpha 可用范围；本机已确认 tvOS SDK、tvOS simulator runtime、Apple TV simulator device type、实际 simulator device 和 tvOS Rust targets，并可启动 Apple TV 4K 1080p 模拟器；仍缺可运行 tvOS shell。
 
 ## 未完成的发布验证
 
@@ -62,7 +62,7 @@
 - iPhone/iPad signed physical-device install、文件导出/分享、前后台行为验证未完成；iPhone simulator 的详情/Reader/下载/缓存清理未完成；iPad simulator 已覆盖真实 EPUB 下载到 Reader 和翻页，但登录 UI 自动化与显式缓存清理仍需补齐。
 - Android phone/tablet 真机、文件导出/分享、签名发布和分发验证未完成。
 - Android TV 实体设备、签名发布、文件导出/分享和分发验证未完成；当前 TV 真实站点、EPUB 下载、Reader 和缓存清理只在 Android TV emulator 验证。
-- Apple TV 输入、布局、缓存策略和可运行 tvOS shell 未完成；当前 readiness 检查只证明部分工具链存在，不代表 Apple TV App 已可启动。
+- Apple TV 输入、布局、缓存策略和可运行 tvOS shell 未完成；当前 readiness 检查和模拟器启动只证明工具链/运行时可用，不代表 Apple TV App 已可启动。
 - 最近一轮运行了真实 EPUB 单项下载验证，并在 Android phone/tablet/TV emulator 中验证 native 下载、Reader、翻页和本地阅读数据删除 smoke；iPad simulator 已验证真实 EPUB 下载到 Reader 和翻页；真实站点 smoke、source ZIP 成功验证、iPhone Reader/download、iOS 显式缓存清理和其余平台 native 下载/Reader/cache 清理 smoke 仍需按发布目标重新执行。
 - Store 分发仍需要平台政策、签名、provisioning 和 packaging review。
 
