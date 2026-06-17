@@ -48,6 +48,7 @@
 
 ### Fixed
 
+- GitHub Source CI no longer asks `actions/setup-node` to restore a pnpm cache before Corepack enables pnpm, making fresh GitHub Actions source checks less brittle.
 - Reader cache repair can now fall back to another available Reader-capable archive for the same volume, such as rebuilding a stale source ZIP cache from an EPUB Library file.
 - MOBI library records now stay file-only even when another local archive has already prepared a Reader cache for the same volume.
 - Local reading-data deletion actions no longer treat metadata-only Library records as real local files, so the app will not offer a fake cleanup path when there is no device file or Reader cache to remove.

@@ -4,6 +4,23 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 GitHub Source CI pnpm 启用顺序修复
+
+- 变更范围：`.github/workflows/desktop-ci.yml`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：GitHub Source CI 不再在 Corepack 启用 pnpm 之前要求 `actions/setup-node` 恢复 pnpm cache，避免 fresh GitHub Actions 环境因为 pnpm 尚不可用而提前失败。实际安装仍通过 `corepack prepare pnpm@11.1.3 --activate` 和 `pnpm install --frozen-lockfile` 完成。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只改 GitHub Actions source-check workflow 和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复降低 GitHub Actions source checks 的启动脆弱性；macOS 签名/公证、Windows 真机安装/卸载/open/reveal、物理 iPhone/iPad 签名设备验证和真实下载验证仍按平台文档继续验证。
+
 ## 2026-06-18 Reader cache 同卷归档兜底修复
 
 - 变更范围：`apps/kmoe-app/src/pages/ReaderPage.tsx`、`apps/kmoe-app/src/tests/readerPage.test.tsx`、`apps/kmoe-app/src-tauri/src/commands.rs`、`apps/kmoe-app/src-tauri/src/commands_snapshot_tests.rs`、README、README.en、CHANGELOG、TASK_PROGRESS。
