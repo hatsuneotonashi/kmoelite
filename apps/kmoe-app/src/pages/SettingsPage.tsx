@@ -190,9 +190,9 @@ export function SettingsPage() {
           <label className="grid gap-1.5 text-sm">
             <span className="font-medium text-[var(--app-muted)]">默认格式</span>
             <select value={settings.preferredFormat} onChange={(event) => settings.setPreferredFormat(event.target.value as DownloadFormat)} className="liquid-input h-11 rounded-full px-4 outline-none">
-              <option value="mobi">MOBI</option>
               <option value="epub">EPUB</option>
               <option value="source_zip">源图 ZIP</option>
+              <option value="mobi">MOBI</option>
             </select>
           </label>
           <div className="metric-tile p-3 text-sm">

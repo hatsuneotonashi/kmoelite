@@ -21,7 +21,7 @@ export interface LocalStateSnapshot {
 }
 
 const FORMATS: DownloadFormat[] = ['mobi', 'epub', 'source_zip']
-const PREFERRED_FORMATS: DownloadFormat[] = ['mobi', 'epub', 'source_zip']
+const PREFERRED_FORMATS: DownloadFormat[] = ['epub', 'source_zip', 'mobi']
 const STATUSES: DownloadTaskStatus[] = [
   'queued',
   'authorizing',
@@ -60,7 +60,7 @@ export function createLocalStateSnapshot(input: {
     },
     settings: {
       concurrency: normalizeConcurrency(input.settings.concurrency),
-      preferredFormat: PREFERRED_FORMATS.includes(input.settings.preferredFormat) ? input.settings.preferredFormat : 'mobi'
+      preferredFormat: PREFERRED_FORMATS.includes(input.settings.preferredFormat) ? input.settings.preferredFormat : 'epub'
     },
     tasks: input.tasks.map((task) => {
       const { localPath: _localPath, ...rest } = recoverTaskAfterRestart(task)
@@ -98,7 +98,7 @@ export function parseLocalStateSnapshot(raw: string): {
     concurrency: normalizeConcurrency(parsed.settings?.concurrency),
     preferredFormat: PREFERRED_FORMATS.includes(parsed.settings?.preferredFormat as DownloadFormat)
       ? (parsed.settings?.preferredFormat as DownloadFormat)
-      : 'mobi'
+      : 'epub'
   }
 
   const tasks = createDedupedTasks([], (Array.isArray(parsed.tasks) ? parsed.tasks : []).map(readTask)).map(recoverTaskAfterRestart)

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SettingsPage } from '../pages/SettingsPage'
+import { DEFAULT_SETTINGS } from '../lib/config'
 import { useCacheStore } from '../store/cacheStore'
 import { useSettingsStore } from '../store/settingsStore'
 import type { ChapterCacheRecord } from '../types/cache'
@@ -76,6 +77,11 @@ describe('Settings native config sync', () => {
       available: false,
       message: 'Native local reading data deletion is available only inside Tauri.'
     })
+  })
+
+  it('defaults explicit downloads to EPUB for reader-capable offline files', () => {
+    expect(DEFAULT_SETTINGS.preferredFormat).toBe('epub')
+    expect(useSettingsStore.getState().preferredFormat).toBe('epub')
   })
 
   it('shows mobile app-private downloads as read-only', async () => {

@@ -4,6 +4,24 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 默认显式下载格式对齐 EPUB
+
+- 变更范围：`apps/kmoe-app/src/lib/config.ts`、`apps/kmoe-app/src/lib/localSnapshot.ts`、`apps/kmoe-app/src/pages/SettingsPage.tsx`、对应 Vitest、Settings visual baselines、README、CHANGELOG、TASK_PROGRESS、`docs/status/README.md`。
+- 行为摘要：新安装或坏配置回落时，显式下载默认格式改为 EPUB；Settings 默认格式下拉也以 EPUB 为首项。MOBI 仍保留为用户手动选择的文件格式，旧用户已经显式保存的 MOBI 偏好不会被强制改掉。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/localSnapshot.test.ts src/tests/settingsNativeConfig.test.tsx`：passed，2 files / 20 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 313 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，91 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：第一次运行发现 Settings large-desktop/tablet visual baseline 因默认选项从 MOBI 改为 EPUB 而出现 144 pixels 差异；已更新对应基线后复跑 passed，114 passed / 50 skipped。
+- 未运行项：未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复只调整新安装/坏配置 fallback 的显式下载默认格式；真实平台下载、导出/分享、签名发布和真机验证仍按平台文档继续验证。
+
 ## 2026-06-18 metadata-only 本地阅读数据误判修复
 
 - 变更范围：`apps/kmoe-app/src/reading/localReadingData.ts`、`apps/kmoe-app/src/tests/localReadingData.test.ts`、README、CHANGELOG、TASK_PROGRESS。

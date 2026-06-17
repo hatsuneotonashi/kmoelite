@@ -2,7 +2,7 @@ import type { AppSettings } from '../types/domain'
 
 export const DEFAULT_SETTINGS: AppSettings = {
   concurrency: 1,
-  preferredFormat: 'mobi',
+  preferredFormat: 'epub',
   downloadDirectory: '~/Downloads/Kmoe',
   colorizeDetailPage: true,
   readerPageTurnAnimation: 'slide',

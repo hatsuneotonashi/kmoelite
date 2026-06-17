@@ -27,6 +27,7 @@
 
 ### Changed
 
+- Default explicit download format now starts at EPUB for new or invalid settings, keeping ordinary saved files closer to the Reader-capable online reading path while preserving MOBI as a manual file format.
 - Mobile and TV Settings now present the download location as an app-private read-only storage area with export/share guidance, while desktop keeps the editable save-location field.
 - Platform readiness now marks the known Apple TV/tvOS WebKit absence as a warning instead of hiding it as an external host-tool gap.
 - Tightened production UI/native copy for Shelf, Download Center, mobile download preflight, file export fallback, and oversized-download errors so the app explains current behavior without future-plan or "not implemented" wording in normal flows.

@@ -26,9 +26,8 @@
 最近一次本地 source gate 记录了以下结果：
 
 - TypeScript typecheck：passed。
-- Vitest：55 files / 294 tests passed。
-- Rust lib tests：86 passed。
-- Full source gate 中的 `pnpm check:platforms`：`pass=52 warn=0 external=2 fail=0`。
+- Vitest：55 files / 313 tests passed。
+- Rust lib tests：91 passed。
 - 最新单独 `pnpm check:platforms`：`pass=52 warn=1 external=2 fail=0`；warn 是 Apple TV/tvOS WebKit 不可用的架构限制记录。
 - Playwright E2E：114 passed / 50 skipped。
 - 真实 EPUB 单项下载到 Reader：passed，覆盖下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。

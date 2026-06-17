@@ -75,6 +75,24 @@ describe('local state snapshots', () => {
     expect(imported.library[0].localPath).not.toContain('/Users/example')
   })
 
+  it('falls back to epub for missing or invalid preferred formats', () => {
+    const snapshot = createLocalStateSnapshot({ settings: { ...settings, preferredFormat: 'bad' } as unknown as AppSettings, tasks: [], library: [], exportedAt: 'now' })
+    expect(snapshot.settings.preferredFormat).toBe('epub')
+
+    expect(parseLocalStateSnapshot(JSON.stringify({
+      version: 1,
+      exportedAt: 'now',
+      safety: {
+        runtimeSettings: 'not_exported',
+        authorizationUrls: 'omitted',
+        localPaths: 'redacted'
+      },
+      settings: { concurrency: 1, preferredFormat: 'bad' },
+      tasks: [],
+      library: []
+    })).settings.preferredFormat).toBe('epub')
+  })
+
   it('rejects snapshots containing temporary authorization or credential data', () => {
     expect(() => parseLocalStateSnapshot('{"version":1,"url":"/getdownurl.php?b=1&v=2&json=1"}')).toThrow(
       'Snapshot contains sensitive or temporary authorization data.'
