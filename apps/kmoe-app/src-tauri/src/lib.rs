@@ -8,7 +8,6 @@ pub mod queue;
 pub mod reader;
 pub mod web_adapter;
 
-#[cfg(not(mobile))]
 use tauri::Manager;
 
 #[cfg(not(mobile))]
@@ -54,6 +53,58 @@ fn ensure_main_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) -> tauri::Re
     window.set_focus()?;
 
     Ok(())
+}
+
+fn route_from_deep_link(raw_url: &str) -> Option<String> {
+    let rest = raw_url.strip_prefix("kmoelite://comic")?;
+    let comic_id = if let Some(rest) = rest.strip_prefix('/') {
+        rest.split(['?', '/', '#']).next().unwrap_or_default()
+    } else if let Some(query) = rest.strip_prefix('?') {
+        query
+            .split('&')
+            .filter_map(|pair| pair.split_once('='))
+            .find_map(|(key, value)| (key == "id").then_some(value))
+            .unwrap_or_default()
+    } else {
+        ""
+    };
+
+    if is_safe_comic_id(comic_id) {
+        Some(format!("/comic/{comic_id}"))
+    } else {
+        None
+    }
+}
+
+fn is_safe_comic_id(comic_id: &str) -> bool {
+    !comic_id.is_empty()
+        && comic_id.len() <= 80
+        && comic_id
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+}
+
+fn open_deep_link_route<R: tauri::Runtime>(app: &tauri::AppHandle<R>, route: &str) {
+    let Some(window) = app.get_webview_window("main") else {
+        eprintln!("failed to open deep link route: main webview window is unavailable");
+        return;
+    };
+    let Ok(route_json) = serde_json::to_string(route) else {
+        eprintln!("failed to open deep link route: route serialization failed");
+        return;
+    };
+    let script = format!(
+        r#"(() => {{
+  const route = {route_json};
+  if (window.location.pathname !== route) {{
+    window.history.pushState({{}}, "", route);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }}
+}})();"#
+    );
+    if let Err(error) = window.eval(script) {
+        eprintln!("failed to open deep link route: {error}");
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -118,8 +169,17 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building kmoelite");
 
-    #[cfg(not(mobile))]
     app.run(|app_handle, event| {
+        if let tauri::RunEvent::Opened { urls } = &event {
+            if let Some(route) = urls
+                .iter()
+                .find_map(|url| route_from_deep_link(url.as_str()))
+            {
+                open_deep_link_route(app_handle, &route);
+            }
+        }
+
+        #[cfg(not(mobile))]
         if let tauri::RunEvent::Ready = event {
             if let Err(error) = ensure_main_window(app_handle) {
                 eprintln!("failed to show kmoelite main window: {error}");
@@ -139,7 +199,32 @@ pub fn run() {
             }
         }
     });
+}
 
-    #[cfg(mobile)]
-    app.run(|_, _| {});
+#[cfg(test)]
+mod tests {
+    use super::route_from_deep_link;
+
+    #[test]
+    fn accepts_safe_comic_deep_links() {
+        assert_eq!(
+            route_from_deep_link("kmoelite://comic/10817"),
+            Some("/comic/10817".to_string())
+        );
+        assert_eq!(
+            route_from_deep_link("kmoelite://comic?id=made-in-abyss_01"),
+            Some("/comic/made-in-abyss_01".to_string())
+        );
+    }
+
+    #[test]
+    fn rejects_non_comic_or_unsafe_deep_links() {
+        assert_eq!(route_from_deep_link("https://kxo.moe/comic/10817"), None);
+        assert_eq!(route_from_deep_link("kmoelite://comic/../Settings"), None);
+        assert_eq!(route_from_deep_link("kmoelite://comic/%2Fsettings"), None);
+        assert_eq!(
+            route_from_deep_link(&format!("kmoelite://comic/{}", "a".repeat(81))),
+            None
+        );
+    }
 }

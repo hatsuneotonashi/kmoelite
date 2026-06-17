@@ -6,7 +6,7 @@
 
 ## Alpha / 开发预览
 
-截至 2026-06-17，kmoelite 仍处于 Alpha / 开发预览阶段。它不是稳定版本，也不是正式发行版。部分平台尚未完成完整测试。
+截至 2026-06-18，kmoelite 仍处于 Alpha / 开发预览阶段。它不是稳定版本，也不是正式发行版。部分平台尚未完成完整测试。
 
 ## 当前产品定位
 
@@ -39,14 +39,14 @@
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back；真实登录、详情、EPUB 下载、Reader cache、`DPAD_CENTER` 显示 chrome、`DPAD_LEFT` 双页翻页和本地阅读数据删除 passed。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
 - iPad simulator native runtime：`tauri ios build --debug --target aarch64-sim --no-sign` passed；iPad Air 13-inch simulator 可安装、启动、渲染 packaged debug app，并通过真实 EPUB detail -> download -> Reader -> page turn -> progress smoke。登录 UI 自动化未完成，本轮使用 runtime credentials 完成真实站点登录后把会话写入 app-private simulator SQLite 继续验证；输出未打印账号、密码、Cookie、Session 或授权 URL。
-- iPhone simulator native runtime：iPhone 17 simulator 可安装、启动、渲染 packaged debug app；受控 session restore 后账号入口和真实封面加载 passed。iPhone 详情、Reader、下载和缓存清理 smoke 尚未完成。
+- iPhone simulator native runtime：iPhone 17 simulator 可安装、启动、渲染 packaged debug app；受控 session restore 后账号入口和真实封面加载 passed；`kmoelite://comic/<id>` packaged open-url smoke passed。iPhone 详情、Reader、下载和缓存清理 smoke 尚未完成。
 - iPad/iPhone signed physical-device runtime：本机 Xcode signing/provisioning 未配置完整，实机完整验证未完成。
 
 这些记录是本地阶段性结果；公开上传前或发布二进制前应重新运行当前树的检查，并以最新输出为准。
 
 ## 平台状态摘要
 
-- iPhone：开发预览可用；iPhone simulator 已通过 packaged debug app 安装、启动、首屏渲染和 session restore smoke；签名真机、详情、Reader、下载、文件导出/分享和前后台行为验证仍需继续补齐。
+- iPhone：开发预览可用；iPhone simulator 已通过 packaged debug app 安装、启动、首屏渲染、session restore 和 `kmoelite://comic/<id>` open-url smoke；签名真机、详情、Reader、下载、文件导出/分享和前后台行为验证仍需继续补齐。
 - iPad：开发预览可用；iPad simulator 已通过 packaged debug app 安装、启动、平板布局、真实 EPUB 下载到 Reader、翻页和进度写入 smoke；签名真机、文件导出/分享、前后台行为和显式缓存清理仍需继续补齐。
 - Android 手机：实验预览源码路径存在；Android debug APK/AAB 构建通过，Pixel 8 API 36 模拟器可启动手机布局，并通过真实登录、详情、EPUB 下载、Reader、翻页和本地阅读数据删除 smoke；系统分享桥源码、debug build、WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，真机、真实 downloaded-file 记录分享 smoke 和签名发布仍未完整验证。
 - Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，Pixel Tablet API 36 模拟器可启动并通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据删除 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，平板真机、真实 downloaded-file 记录分享 smoke 和签名发布仍未完整验证。

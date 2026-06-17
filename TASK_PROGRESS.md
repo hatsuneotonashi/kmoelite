@@ -4,6 +4,22 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS packaged deep link 入口
+
+- 变更范围：Tauri Rust app run event、iOS `Info.plist` / `project.yml` URL scheme、README/README.en/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。
+- 行为摘要：iOS packaged app 注册 `kmoelite://` scheme；系统打开 `kmoelite://comic/<id>` 时，Rust 只接受 1-80 位 `[A-Za-z0-9_-]` comic id，并把它路由到应用内 `/comic/<id>`。非 `comic` host、路径穿越、百分号编码路径和过长 id 会被拒绝。
+- 验证：
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml deep_links --lib`：passed，2 tests。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `git diff --check`：passed。
+  - `plutil -p apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist | rg "CFBundleURLTypes|kmoelite|CFBundleURLName|CFBundleURLSchemes"`：passed。
+  - `pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign`：passed；production web build、iOS asset sync、Rust/iOS simulator build passed；构建产物保持 ignored。
+  - iPhone 17 simulator install/launch/open-url：passed；安装生成的 `kmoelite.app`，启动 bundle id `moe.kzo.client`，`xcrun simctl openurl ... kmoelite://comic/10817` 成功返回。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - 敏感文本扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+- 未运行项：本轮未跑完整 Vitest/Rust/platform/E2E gate；未做签名 iPhone/iPad 实机验证，未做 iPhone 详情页加载、Reader、下载、文件分享或缓存清理 smoke。
+- 待发布风险：iOS packaged app 已能接收安全漫画 deep link，但这不是 signed physical-device、Reader/download 或 App Store 分发验证。
+
 ## 2026-06-18 Android app-private 分享表 smoke
 
 - 变更范围：Android `MainActivity.kt` share bridge、Android source-level 测试、CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。

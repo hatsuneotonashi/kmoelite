@@ -6,6 +6,7 @@
 
 ### Added
 
+- iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page; iPhone simulator install/launch/open-url smoke passed.
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.
 - Android FileProvider roots are now limited to app-owned files/cache directories instead of broad external storage.
 - Android builds now include a system share bridge for app-owned downloaded files after the Rust path/SQLite open-file guard succeeds.

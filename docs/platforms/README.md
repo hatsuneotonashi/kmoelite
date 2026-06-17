@@ -1,13 +1,13 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render 和 session restore smoke，但还没有完成详情、下载和 Reader smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页和本地阅读数据清理 smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke，系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render、session restore 和 `kmoelite://comic/<id>` open-url smoke，但还没有完成详情、下载和 Reader smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页和本地阅读数据清理 smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke，系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
 - 开发预览可用，适合个人测试和日常试用。
 - 目标是触控优先、安全区适配、单手操作、低存储占用。
 - Reader 应优先使用临时 cache，避免长期保存大体积漫画文件。
-- iPhone 17 simulator 已通过 packaged debug app 安装、启动、首屏渲染和 session restore smoke。
+- iPhone 17 simulator 已通过 packaged debug app 安装、启动、首屏渲染、session restore 和 `kmoelite://comic/<id>` open-url smoke。
 - 详情、Reader、下载、缓存清理、签名真机、文件导出/分享和前后台行为验证仍需继续补齐。
 
 ## iPad

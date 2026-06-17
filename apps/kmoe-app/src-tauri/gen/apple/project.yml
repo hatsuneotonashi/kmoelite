@@ -53,6 +53,10 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         UIViewControllerBasedStatusBarAppearance: false
+        CFBundleURLTypes:
+          - CFBundleURLName: moe.kzo.client.kmoelite
+            CFBundleURLSchemes:
+              - kmoelite
         CFBundleShortVersionString: 0.1.0
         CFBundleVersion: "0.1.0"
     entitlements:
