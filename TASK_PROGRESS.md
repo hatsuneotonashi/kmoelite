@@ -12,7 +12,9 @@
   - `pnpm --dir apps/kmoe-app exec vitest run src/tests/nativeCommands.test.ts src/tests/androidTvInputBridge.test.ts`：passed，2 files / 33 tests。
   - `pnpm --dir apps/kmoe-app typecheck`：passed。
   - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，Kotlin/Gradle/XML resources/debug APK/AAB packaging passed；构建产物未进入 git 状态。
-- 未运行项：Android runtime chooser smoke 未完成；本轮尝试用 headless `Pixel_8_API_36` emulator 做最小 bridge smoke 时，emulator 进程未连上 ADB，仅输出启动初始日志。未运行完整 Vitest/build/Rust/platform gate，因为本轮只改 Android bridge 和前端 fallback；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
+  - `Pixel_8_API_36` emulator install/launch：passed，debug APK 安装成功，`moe.kzo.client/.MainActivity` 启动后进程保持存活，最近日志未见崩溃关键字。
+  - Android WebView share bridge failure smoke：passed，DevTools Runtime 中 `window.KmoeliteAndroidFile.shareFile('/data/user/0/moe.kzo.client/files/Downloads/Kmoe/missing.epub')` 返回 `error:invalid-file`，确认缺失文件不会被桥接层伪造成 `ok`。
+- 未运行项：真实 downloaded-file 系统分享 chooser 尚未完整触发；本轮只验证缺失文件失败路径，不使用真实下载文件。未运行完整 Vitest/build/Rust/platform gate，因为本轮只改 Android bridge 和前端 fallback；未运行 Android 真机、TV 实机、iPhone/iPad/Windows。
 - 待发布风险：该改动消除了 Android 分享 bridge 的假成功路径，但真实 downloaded-file 分享 chooser 仍需在 emulator/device 上用实际本地下载文件触发后才能移除 release blocker。
 
 ## 2026-06-17 Android 系统分享导出桥
