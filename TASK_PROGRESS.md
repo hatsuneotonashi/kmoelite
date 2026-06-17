@@ -4,6 +4,27 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-17 Android comic deep link 入口
+
+- 变更范围：Android Manifest、Android `MainActivity.kt`、Android 壳 source-level 测试、CHANGELOG/TASK_PROGRESS。
+- 行为摘要：Android debug app 新增安全的 `kmoelite://comic/<id>` deep link 入口。Manifest 只注册 `kmoelite` scheme 的 `comic` host；Activity 只接受 1-80 位 `[A-Za-z0-9_-]` comic id，并通过 WebView `history.pushState` 进入应用内 `/comic/<id>` 路由。该入口用于模拟器/真机直接打开详情页验证，不改变登录、下载、Reader 或文件权限逻辑。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/androidTvInputBridge.test.ts`：passed，1 file / 2 tests。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 296 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，86 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=0 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，27 files。
+  - `pnpm --dir apps/kmoe-app tauri:android:build:debug`：passed，生成 Android debug APK/AAB；Kotlin/Gradle 编译通过，构建产物未进入 git 状态。
+  - 敏感文本扫描：passed；仅命中 `TASK_PROGRESS.md`/`CHANGELOG.md` 中关于 cookie/session 的脱敏说明和安全规则文本，未发现真实账号、密码、Cookie、Session、Token、授权 URL 或本机私有路径。
+  - tracked 风险文件扫描：passed；未发现 `.env`、cookie/session 文件、SQLite/runtime DB、`node_modules`、`dist`、`target`、`test-results`、下载目录或临时构建文件进入 tracked tree。
+- 未运行项：本轮未安装 APK 到 Android emulator/device，也未通过 `adb shell am start -a android.intent.action.VIEW -d ...` 做运行时 deep link smoke；未运行 Playwright E2E 或真实站点/下载回归，因为没有改浏览器可见布局、Reader、登录、下载或站点适配逻辑。
+- 待发布风险：该入口只补 Android 验证/导航能力，不代表 Android 实体设备、文件导出/分享、签名发布或真实下载流程完成。
+
 ## 2026-06-17 iPhone session restore 登录状态误判修复
 
 - 变更范围：`WebKmoeApi.getSession()`、native API 聚焦测试、README/README.en/CHANGELOG/TASK_PROGRESS。

@@ -1,5 +1,6 @@
 package moe.kzo.client
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.webkit.WebView
@@ -7,15 +8,27 @@ import androidx.activity.enableEdgeToEdge
 
 class MainActivity : TauriActivity() {
   private var appWebView: WebView? = null
+  private var pendingRoute: String? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     enableEdgeToEdge()
     super.onCreate(savedInstanceState)
+    handleDeepLinkIntent(intent)
   }
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
     appWebView = webView
+    pendingRoute?.let { route ->
+      pendingRoute = null
+      navigateToAppRoute(route)
+    }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    handleDeepLinkIntent(intent)
   }
 
   override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -56,6 +69,53 @@ class MainActivity : TauriActivity() {
         target.dispatchEvent(event);
       })();
     """.trimIndent()
+  }
+
+  private fun handleDeepLinkIntent(intent: Intent?) {
+    val route = routeFromDeepLink(intent) ?: return
+    navigateToAppRoute(route)
+  }
+
+  private fun routeFromDeepLink(intent: Intent?): String? {
+    val uri = intent?.data ?: return null
+    if (uri.scheme != "kmoelite" || uri.host != "comic") {
+      return null
+    }
+
+    val comicId = uri.pathSegments.firstOrNull() ?: uri.getQueryParameter("id") ?: return null
+    if (!isSafeRoutePart(comicId)) {
+      return null
+    }
+
+    return "/comic/$comicId"
+  }
+
+  private fun navigateToAppRoute(route: String) {
+    val webView = appWebView
+    if (webView == null) {
+      pendingRoute = route
+      return
+    }
+
+    webView.post {
+      webView.evaluateJavascript(appRouteScript(route), null)
+    }
+  }
+
+  private fun appRouteScript(route: String): String {
+    return """
+      (() => {
+        const route = '$route';
+        if (window.location.pathname !== route) {
+          window.history.pushState({}, '', route);
+          window.dispatchEvent(new Event('popstate'));
+        }
+      })();
+    """.trimIndent()
+  }
+
+  private fun isSafeRoutePart(value: String): Boolean {
+    return value.matches(Regex("[A-Za-z0-9_-]{1,80}"))
   }
 
   private data class RemoteKey(val key: String, val code: String, val keyCode: Int)
