@@ -40,6 +40,7 @@ targets:
       path: kmoe-app_iOS/Info.plist
       properties:
         LSRequiresIPhoneOS: true
+        CFBundleDisplayName: kmoelite
         NSLocalNetworkUsageDescription: kmoelite needs local network access only when a developer build loads the app from a development server on this Mac.
         UILaunchStoryboardName: LaunchScreen
         UIRequiredDeviceCapabilities: [arm64, metal]

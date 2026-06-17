@@ -4,6 +4,24 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iPhone/iPad 安装显示名显式化
+
+- 变更范围：`apps/kmoe-app/src-tauri/gen/apple/project.yml`、`apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：iPhone/iPad 生成配置和当前 plist 都显式设置 `CFBundleDisplayName=kmoelite`，避免安装到模拟器/真机后显示名依赖 Xcode/Tauri 默认推断。
+- 验证：
+  - `plutil -extract CFBundleDisplayName raw apps/kmoe-app/src-tauri/gen/apple/kmoe-app_iOS/Info.plist`：passed，输出 `kmoelite`。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只改 iOS metadata 和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行 iPhone/iPad 真机安装。
+- 待发布风险：该修复只收紧 iOS metadata；签名真机、文件导出/分享、前后台行为和完整 Reader/download smoke 仍按平台文档继续验证。
+
 ## 2026-06-18 GitHub Source CI pnpm 启用顺序修复
 
 - 变更范围：`.github/workflows/desktop-ci.yml`、CHANGELOG、TASK_PROGRESS。
