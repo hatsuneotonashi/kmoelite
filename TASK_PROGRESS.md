@@ -4,6 +4,16 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Detail Reader 空下载任务拦截
+
+- 变更范围：`apps/kmoe-app/src/pages/DetailPage.tsx`、`apps/kmoe-app/src/tests/detailReaderEntry.test.tsx`、README、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：详情页 Reader 自动获取 EPUB/source ZIP 时，如果站点解析或任务生成层没有返回任何本地下载任务，前端会直接显示“没有生成下载任务”并停止流程，不再调用 native enqueue 空队列，也不再误导用户“队列已有任务”。
+- 验证：
+  - `pnpm --dir apps/kmoe-app exec vitest run src/tests/detailReaderEntry.test.tsx`：passed，1 file / 12 tests。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+- 未运行项：未运行完整 Vitest/build/Rust/platform/E2E gate；本轮只改 Detail Reader 异常分支和对应测试。未运行真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备或 Windows 真机。
+- 待发布风险：该修复只消除空任务假队列分支；各平台真实下载、导出/分享和签名发布仍按平台文档继续验证。
+
 ## 2026-06-18 移动端下载路径规划对齐 App 私有保存区
 
 - 变更范围：`apps/kmoe-app/src/download/pathPlanner.ts`、`apps/kmoe-app/src/tests/downloadPathPlanner.test.ts`、README、CHANGELOG、TASK_PROGRESS。

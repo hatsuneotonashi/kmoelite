@@ -571,6 +571,18 @@ export function DetailPage() {
       })
       setReaderMessage('')
       const tasks = await api.createDownloadTasks({ comic, selectedVolIds: [option.volId], format: readerFormat })
+      if (tasks.length === 0) {
+        setPreparingReaderVolId('')
+        updateReaderFlow(runId, {
+          volId: option.volId,
+          stage: 'failed',
+          percent: 100,
+          title: '没有生成下载任务',
+          detail: `没有生成「${option.displayTitle}」的${readerArchiveFormatLabel(readerFormat)}任务，请刷新详情后重试。`
+        })
+        setReaderMessage(`没有生成「${option.displayTitle}」的${readerArchiveFormatLabel(readerFormat)}任务，请刷新详情后重试。`)
+        return
+      }
       const nativeResult = await enqueueNativeDownloadTasks(tasks)
       if (nativeResult.ok && nativeResult.value !== undefined) {
         let candidateTasks = nativeResult.value

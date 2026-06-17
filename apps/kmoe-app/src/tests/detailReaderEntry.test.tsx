@@ -379,6 +379,19 @@ describe('Detail reader entry', () => {
     expect(enqueueNativeDownloadTasksMock).not.toHaveBeenCalled()
   })
 
+  it('does not enqueue an empty reader download task set', async () => {
+    mocks.api.createDownloadTasks.mockResolvedValue([])
+
+    renderDetail()
+
+    expect(await screen.findByRole('heading', { name: '尖帽子的魔法工房' })).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /获取 EPUB/ })[0])
+
+    expect((await screen.findAllByText(/没有生成「話 089-095」的EPUB任务/)).length).toBeGreaterThan(0)
+    expect(enqueueNativeDownloadTasksMock).not.toHaveBeenCalled()
+    expect(startNativeDownloadQueueMock).not.toHaveBeenCalled()
+  })
+
   it('downloads and prepares one local EPUB task when source ZIP is unavailable but EPUB can be downloaded', async () => {
     mocks.api.getComicDetail.mockResolvedValue(sampleComic({
       sizes: {
