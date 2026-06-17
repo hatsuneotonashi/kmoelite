@@ -6,6 +6,7 @@
 
 ### Added
 
+- Added `pnpm smoke:ios-sim`, a minimal iPhone/iPad simulator build/install/launch smoke that selects an iOS simulator explicitly instead of accidentally targeting a booted Apple TV simulator.
 - iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page.
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.
 - Android FileProvider roots are now limited to app-owned files/cache directories instead of broad external storage.

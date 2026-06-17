@@ -4,6 +4,25 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS simulator smoke 脚本
+
+- 变更范围：`scripts/smoke-ios-simulator.sh`、`package.json`、`docs/development/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：新增 `pnpm smoke:ios-sim`，执行 iOS simulator debug build、安装和启动，并显式选择 iOS simulator。若 iPhone 和 Apple TV simulator 同时 booted，脚本不会用 `booted` 别名误装到 tvOS。
+- 验证：
+  - `pnpm smoke:ios-sim`：passed；完成 `tauri ios build --debug --target aarch64-sim --no-sign`、安装到已启动 iPhone simulator，并返回 `moe.kzo.client` 进程号。
+  - 临时截图人工查看：iPhone simulator 有 app 内容可见；截图未进入仓库。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=52 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只新增 iOS simulator smoke 脚本和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行登录、详情、Reader、下载、缓存清理和真机安装。
+- 待发布风险：该脚本只覆盖 iOS simulator build/install/launch smoke；真实 iPhone/iPad 登录、Reader、显式下载、文件导出/分享和缓存清理仍需单独验证。
+
 ## 2026-06-18 iPhone/iPad 文件共享 metadata 生成源修复
 
 - 变更范围：`apps/kmoe-app/src-tauri/gen/apple/project.yml`、CHANGELOG、TASK_PROGRESS。

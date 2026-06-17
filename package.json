@@ -28,6 +28,7 @@
     "verify:real-source-zip-reader": "scripts/verify-real-source-zip-reader.sh",
     "check:platforms": "node scripts/check-platform-readiness.mjs",
     "check:ios-assets": "node scripts/check-ios-assets.mjs",
+    "smoke:ios-sim": "scripts/smoke-ios-simulator.sh",
     "setup:ios-tools": "scripts/setup-ios-local-tools.sh",
     "manifest:release": "node scripts/create-release-manifest.mjs"
   }

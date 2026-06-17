@@ -55,13 +55,14 @@ Android debug APK/AAB 构建入口：
 pnpm tauri:android:build:debug
 ```
 
-iPhone/iPad simulator debug bundle 构建入口：
+iPhone/iPad simulator debug bundle 构建与安装启动 smoke：
 
 ```bash
 pnpm --dir apps/kmoe-app exec tauri ios build --debug --target aarch64-sim --no-sign
+pnpm smoke:ios-sim
 ```
 
-不要用裸 `xcodebuild` 替代 Tauri iOS 构建脚本；它缺少 Tauri mobile RPC 上下文。打包入口也必须保持相对资源路径，不要在 `index.html` 写根 `<base href="/">`。
+`pnpm smoke:ios-sim` 会优先选择已启动的 iOS simulator；如果同时启动了 Apple TV simulator，也不会把 iOS app 误装到 tvOS。不要用裸 `xcodebuild` 替代 Tauri iOS 构建脚本；它缺少 Tauri mobile RPC 上下文。打包入口也必须保持相对资源路径，不要在 `index.html` 写根 `<base href="/">`。
 
 提交前默认运行以上完整 gate。涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流时再运行 `pnpm --dir apps/kmoe-app e2e`。不能运行的命令必须写入 `TASK_PROGRESS.md`，说明原因和风险。
 
