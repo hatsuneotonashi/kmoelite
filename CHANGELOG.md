@@ -69,6 +69,7 @@
 
 ### Docs
 
+- Documented the Apple TV/tvOS WebKit platform blocker: current tvOS SDKs do not provide WebKit, so Apple TV cannot reuse the existing Tauri/WKWebView app shell.
 - 明确项目为非官方 KMOE 漫画阅读器和个人阅读管理工具。
 - 收紧 Web Adapter、下载、安全和 release 文档，不公开传播站点内部下载授权接口细节。
 - 保持真实站点集成能力，但强调合规、单项、低频、脱敏和 runtime-only 凭证处理。

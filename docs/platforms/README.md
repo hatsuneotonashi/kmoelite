@@ -50,8 +50,8 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad sim
 
 - 后续研究方向，不属于当前 Alpha 可用范围。
 - 本机平台检查已覆盖 tvOS SDK、tvOS simulator runtime、Apple TV simulator device type、实际 simulator device 和 tvOS Rust targets。
-- Apple TV 4K 1080p 模拟器已可启动，但当前仍没有可运行的 tvOS/WKWebView 壳。
-- 需要先实现最薄 Apple TV 壳，再验证遥控器输入、横屏阅读、焦点导航、缓存清理和平台分发策略。
+- Apple TV 4K 1080p 模拟器已可启动，但 tvOS simulator SDK 不提供 WebKit；当前 Tauri/WKWebView 前端壳不能直接复用到 Apple TV。
+- 需要先完成 TVMLKit、TVUIKit 或原生 TV UI 可行性设计，再验证遥控器输入、横屏阅读、焦点导航、缓存清理和平台分发策略。
 
 ## Android TV
 

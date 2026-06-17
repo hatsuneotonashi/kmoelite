@@ -168,7 +168,22 @@ addCheck({
   platform: 'appletv',
   status: hostPlatform !== 'darwin' ? 'external' : xcodeSdks.ok && tvosSdkName ? 'pass' : 'external',
   summary: hostPlatform === 'darwin' && tvosSdkName ? `${tvosSdkName} available` : 'tvOS SDK check requires macOS/Xcode.',
-  detail: 'Apple TV validation needs the tvOS SDK before a WKWebView shell or simulator build can be verified.'
+  detail: 'Apple TV validation needs the tvOS SDK before any native TV shell or simulator build can be verified.'
+})
+
+const tvosSimulatorSdkPath = commandOutput('xcrun', ['--sdk', 'appletvsimulator', '--show-sdk-path'])
+const tvosWebKitPath = path.join(tvosSimulatorSdkPath.stdout.trim(), 'System', 'Library', 'Frameworks', 'WebKit.framework')
+const tvosHasWebKit = tvosSimulatorSdkPath.ok && existsSync(tvosWebKitPath)
+addCheck({
+  id: 'appletv.webkit_unavailable',
+  platform: 'appletv',
+  status: hostPlatform !== 'darwin' ? 'external' : tvosSimulatorSdkPath.ok && !tvosHasWebKit ? 'external' : 'pass',
+  summary: hostPlatform === 'darwin' && tvosSimulatorSdkPath.ok
+    ? tvosHasWebKit
+      ? 'WebKit.framework is available in the tvOS simulator SDK.'
+      : 'WebKit.framework is not available in the tvOS simulator SDK.'
+    : 'tvOS simulator SDK path not confirmed.',
+  detail: 'Apple TV cannot reuse the current Tauri/WKWebView app shell unless the platform provides WebKit; current work needs TVMLKit, TVUIKit, or a native TV UI plan.'
 })
 
 const simctlRuntimes = commandOutput('xcrun', ['simctl', 'list', 'runtimes'])

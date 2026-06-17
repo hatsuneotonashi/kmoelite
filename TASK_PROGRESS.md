@@ -4,6 +4,18 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Apple TV WebKit platform blocker documentation
+
+- 变更范围：`scripts/check-platform-readiness.mjs`、README、AGENTS、CHANGELOG、docs/status、docs/platforms、docs/development、docs/release、docs/reader-shelf。
+- 行为摘要：尝试走最薄 tvOS `WKWebView` 壳时，`xcodebuild` 在 tvOS simulator SDK 下无法解析 `WebKit`。随后用 SDK 文件检查确认 `WebKit.framework` 不存在，而 `TVMLKit.framework`、`TVUIKit.framework` 和 `UIKit.framework` 存在。本轮撤回失败 tvOS target，改为把 Apple TV 明确记录为架构 blocker：当前 Tauri/WKWebView 前端壳不能直接复用到 tvOS，后续必须先设计 TVMLKit、TVUIKit 或原生 TV UI 路线。
+- 验证：
+  - `git diff --check`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=52 warn=0 external=3 fail=0`；新增 external 是 `appletv.webkit_unavailable`。
+  - tvOS simulator SDK framework check：passed；确认 WebKit missing，TVMLKit/TVUIKit/UIKit present。
+- 未运行项：未运行完整 TypeScript/Vitest/build/Rust/E2E gate；本轮只改平台检查脚本和文档。未构建 Apple TV app，因为 WKWebView 方案被平台 SDK 阻断。
+- 待发布风险：Apple TV 仍不是可用目标；任何后续 Apple TV 工作必须先完成 TVMLKit、TVUIKit 或原生 TV UI 方案，再谈遥控器输入、Reader、缓存清理和分发验证。
+
 ## 2026-06-18 iOS deep link cold-start route hardening
 
 - 变更范围：`App.tsx` Tauri deep-link route listener、Rust pending deep-link route command、README/README.en/CHANGELOG/docs/status/docs/platforms/TASK_PROGRESS。

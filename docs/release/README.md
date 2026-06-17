@@ -167,9 +167,9 @@ Android TV：
 Apple TV：
 
 - 当前仅为未来研究方向。
-- `check:platforms` 已覆盖 tvOS SDK、Apple TV simulator device type、实际 simulator device、tvOS simulator runtime 和 tvOS Rust targets。
-- 本机已可启动 Apple TV 4K 1080p 模拟器；当前仍缺可运行 tvOS/WKWebView 壳验证。
-- 需要先完成遥控器输入、焦点导航、横屏 Reader、缓存策略和平台分发可行性设计。
+- `check:platforms` 已覆盖 tvOS SDK、Apple TV simulator device type、实际 simulator device、tvOS simulator runtime、tvOS WebKit availability 和 tvOS Rust targets。
+- 本机已可启动 Apple TV 4K 1080p 模拟器；tvOS SDK 不提供 WebKit，当前 Tauri/WKWebView 壳不能直接复用到 Apple TV。
+- 需要先完成 TVMLKit、TVUIKit 或原生 TV UI、遥控器输入、焦点导航、横屏 Reader、缓存策略和平台分发可行性设计。
 
 ## 安全规则
 
