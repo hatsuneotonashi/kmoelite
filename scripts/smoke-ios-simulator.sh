@@ -17,6 +17,23 @@ case "${device_kind}" in
 esac
 
 device="${IOS_SIM_UDID:-}"
+if [[ -n "${device}" ]]; then
+  if [[ ! "${device}" =~ ^[0-9A-F-]{36}$ ]]; then
+    echo "ios_sim_smoke=failed reason=invalid-ios-sim-udid kind=${device_kind}" >&2
+    exit 1
+  fi
+  device_line="$(xcrun simctl list devices \
+    | awk -v id="${device}" '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && index($0, "(" id ")") { print; exit }')"
+  if [[ -z "${device_line}" ]]; then
+    echo "ios_sim_smoke=failed reason=invalid-ios-sim-udid kind=${device_kind}" >&2
+    exit 1
+  fi
+  if [[ ! "${device_line}" =~ ${device_name_re} ]]; then
+    echo "ios_sim_smoke=failed reason=device-kind-mismatch kind=${device_kind}" >&2
+    exit 1
+  fi
+fi
+
 if [[ -z "${device}" ]]; then
   device="$(xcrun simctl list devices booted \
     | awk -v name_re="${device_name_re}" '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && $0 ~ name_re && /Booted/ { print; exit }' \

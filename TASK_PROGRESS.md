@@ -7,12 +7,15 @@
 ## 2026-06-18 iPhone/iPad simulator smoke 指定设备类型
 
 - 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
-- 行为摘要：`pnpm smoke:ios-sim` 新增 `IOS_SIM_DEVICE_KIND=iphone|ipad|any`，默认仍为 `any`。设置为 `iphone` 或 `ipad` 时，脚本只会选择对应 iOS simulator，避免 iPhone/iPad smoke 被当前 booted 设备顺序影响。非法值会在构建前失败，不进入 Tauri build。
+- 行为摘要：`pnpm smoke:ios-sim` 新增 `IOS_SIM_DEVICE_KIND=iphone|ipad|any`，默认仍为 `any`。设置为 `iphone` 或 `ipad` 时，脚本只会选择对应 iOS simulator，避免 iPhone/iPad smoke 被当前 booted 设备顺序影响。显式 `IOS_SIM_UDID` 必须是 36 位真实 iOS simulator UDID，且要匹配请求的 iPhone/iPad 类型；`booted` 这类别名、tvOS 设备和类型不匹配会在构建前失败。
 - 验证：
   - `bash -n scripts/smoke-ios-simulator.sh`：passed。
   - `IOS_SIM_DEVICE_KIND=bad scripts/smoke-ios-simulator.sh`：expected failure，输出 `ios_sim_smoke=failed reason=invalid-device-kind`，未进入构建。
+  - `IOS_SIM_UDID=Booted IOS_SIM_DEVICE_KIND=iphone scripts/smoke-ios-simulator.sh`：expected failure，输出 `ios_sim_smoke=failed reason=invalid-ios-sim-udid`，未进入构建。
+  - iPhone simulator UDID + `IOS_SIM_DEVICE_KIND=ipad scripts/smoke-ios-simulator.sh`：expected failure，输出 `ios_sim_smoke=failed reason=device-kind-mismatch`，未进入构建。
   - `IOS_SIM_DEVICE_KIND=iphone IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `kind=iphone`、`screenshot=1206x2622`；截图位于系统临时目录并由脚本删除。
   - `IOS_SIM_DEVICE_KIND=ipad IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `kind=ipad`、`screenshot=2064x2752`；截图位于系统临时目录并由脚本删除。
+  - iPhone simulator UDID + `IOS_SIM_DEVICE_KIND=iphone IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `kind=iphone`、`screenshot=1206x2622`；截图位于系统临时目录并由脚本删除。
   - `git diff --check`：passed。
   - `pnpm --dir apps/kmoe-app typecheck`：passed。
   - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。

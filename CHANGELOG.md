@@ -54,6 +54,7 @@
 
 ### Fixed
 
+- iOS simulator smoke now rejects non-UDID aliases, tvOS devices, and explicit `IOS_SIM_UDID` values that do not match the requested iPhone/iPad device kind.
 - Reader rolling-window cleanup now removes stale failed/missing reading-cache rows outside the retention window while preserving preparing/evicting in-flight rows.
 - iPhone/iPad file-sharing metadata is now preserved in the XcodeGen `project.yml`, so regenerating the iOS project keeps app-private downloads exportable through iOS document sharing.
 - iPhone/iPad app metadata now sets an explicit `CFBundleDisplayName` of `kmoelite`, so the installed app name no longer depends on inferred bundle defaults.
