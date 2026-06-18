@@ -35,7 +35,7 @@
 - macOS debug `.app` bundle：build passed，并通过可复跑 smoke 完成启动、临时截图解码和退出。
 - Android debug APK/AAB：build passed。
 - Android phone emulator：Pixel 8 API 36 install/launch smoke passed；`pnpm smoke:android-device` 已通过 debug APK build、adb install、launch、运行中 `kmoelite://comic/<id>` deep link 和截图解码；真实登录、账号页、详情页、EPUB 单项下载、Reader cache 准备、翻页和显式本地阅读数据删除 passed；Android WebView 系统分享 bridge 注入、app-private debug share chooser smoke passed。
-- Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract；真实登录、详情页、EPUB 单项下载、Reader cache 准备、双页翻页和显式本地阅读数据删除 passed。
+- Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract；`pnpm smoke:android-device` 已通过 debug APK build、adb install、launch、运行中 `kmoelite://comic/<id>` deep link 和截图解码；真实登录、详情页、EPUB 单项下载、Reader cache 准备、双页翻页和显式本地阅读数据删除 passed。
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back；真实登录、详情、EPUB 下载、Reader cache、`DPAD_CENTER` 显示 chrome、`DPAD_LEFT` 双页翻页和本地阅读数据删除 passed。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
 - iPad simulator native runtime：`tauri ios build --debug --target aarch64-sim --no-sign` passed；`IOS_SIM_DEVICE_KIND=ipad pnpm smoke:ios-sim` 可固定选择 iPad simulator 并通过安装、启动和截图解码 smoke；iPad Air 13-inch simulator 可安装、启动、渲染 packaged debug app，并通过真实 EPUB detail -> download -> Reader -> page turn -> progress smoke。登录 UI 自动化未完成，本轮使用 runtime credentials 完成真实站点登录后把会话写入 app-private simulator SQLite 继续验证；输出未打印账号、密码、Cookie、Session 或授权 URL。
@@ -49,7 +49,7 @@
 - iPhone：开发预览可用；iPhone simulator 已通过指定设备类型的 packaged debug app 安装、启动、首屏渲染、session restore 和可重复 deep-link open-url smoke；`kmoelite://comic/<id>` scheme 已注册并加固 pending route 交付；签名真机、详情、Reader、下载、文件导出/分享、确认后的 deep-link 详情视觉 smoke 和前后台行为验证仍需继续补齐。
 - iPad：开发预览可用；iPad simulator 已通过指定设备类型的 packaged debug app 安装/启动 smoke，另已通过平板布局、真实 EPUB 下载到 Reader、翻页和进度写入 smoke；签名真机、文件导出/分享、前后台行为和显式缓存清理仍需继续补齐。
 - Android 手机：实验预览源码路径存在；Android debug APK/AAB 构建通过，Pixel 8 API 36 模拟器可启动手机布局，并通过真实登录、详情、EPUB 下载、Reader、翻页、本地阅读数据删除和运行中 `kmoelite://comic/<id>` deep link smoke；系统分享桥源码、debug build、WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，真机、真实 downloaded-file 记录分享 smoke 和签名发布仍未完整验证。
-- Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，Pixel Tablet API 36 模拟器可启动并通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据删除 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，平板真机、真实 downloaded-file 记录分享 smoke 和签名发布仍未完整验证。
+- Android 平板：实验预览源码路径存在；Android tablet contract 已纳入布局模型，Pixel Tablet API 36 模拟器可通过通用 Android packaged smoke 安装、启动、运行中 deep link 和截图解码，并通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据删除 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，平板真机、真实 downloaded-file 记录分享 smoke 和签名发布仍未完整验证。
 - Android TV：实验预览入口存在；Leanback launcher、TV runtime 识别、宽屏 shell、方向键焦点、native DPAD/OK 输入桥和真实 EPUB 下载到 Reader、遥控器翻页、本地阅读数据删除已在 Android TV API 36 模拟器验证；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，签名发布、实体 TV、真实 downloaded-file 记录分享 smoke 和分发验证仍未完成。
 - Windows：源码和打包脚本存在，真实 Windows 安装/卸载/open/reveal 验证未完成。
 - macOS：开发预览可用；当前主要本地开发和日常试用平台，公开二进制仍需签名、公证、stapling 和干净机器验证。
