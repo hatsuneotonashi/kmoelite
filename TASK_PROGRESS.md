@@ -21,7 +21,7 @@
   - sensitive text scan：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only the release scanner regex matched。
 - GitHub Actions 观察：
   - commit `d7aa795`：Windows `Rust check` passed；Windows `Rust lib tests` failed on path-portability assertions。
-- 待验证：需要等待 GitHub Actions 新一轮 `Source CI`，确认 Windows `Rust lib tests` 通过。
+  - commit `0930d93`：GitHub Actions `Source CI` passed；Windows source check and Source checks both completed successfully.
 
 ## 2026-06-18 Source CI Windows Rust 诊断拆步
 
