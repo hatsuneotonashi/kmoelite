@@ -75,7 +75,7 @@ macOS / Windows：
 TV：
 
 - Android TV 已有实验 shell、方向键焦点、native DPAD/OK 输入桥、remote Back 和合成本地 Reader cache OK/Back smoke；Reader 下载、缓存清理、真实站点端到端 TV 链路和横屏阅读仍需单独实现/验证，不能直接复用手机 UI。
-- Apple TV 仍需要先设计 TVMLKit、TVUIKit 或原生 TV UI 路线、遥控器输入、焦点导航、横屏布局和缓存策略；当前 tvOS SDK 不提供 WebKit，不能直接复用现有 Tauri/WKWebView Reader。
+- Apple TV 已有独立原生 SwiftUI/tvOS 开发预览工程，但 Reader、真实 EPUB 获取、遥控器翻页、缓存窗口和删除本地阅读数据尚未实现。tvOS SDK 不提供 WebKit，不能直接复用现有 Tauri/WKWebView Reader。
 
 ## Native 边界
 

@@ -1,0 +1,55 @@
+name: KmoeliteAppleTV
+options:
+  bundleIdPrefix: moe.kzo.client
+  deploymentTarget:
+    tvOS: 17.0
+configs:
+  Debug: debug
+  Release: release
+settings:
+  base:
+    ALWAYS_SEARCH_USER_PATHS: NO
+    SWIFT_VERSION: 6.0
+targets:
+  KmoeliteAppleTV:
+    type: application
+    platform: tvOS
+    settings:
+      base:
+        PRODUCT_NAME: KmoeliteAppleTV
+        PRODUCT_MODULE_NAME: KmoeliteAppleTV
+        PRODUCT_BUNDLE_IDENTIFIER: moe.kzo.client.kmoelite.tvos
+        ENABLE_TESTABILITY: YES
+        SWIFT_OPTIMIZATION_LEVEL: -Onone
+    sources:
+      - path: Sources
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: kmoelite
+        CFBundleShortVersionString: 0.1.0
+        CFBundleVersion: "0.1.0"
+        UILaunchStoryboardName: LaunchScreen
+        UIRequiredDeviceCapabilities: [arm64]
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    dependencies:
+      - sdk: libsqlite3.tbd
+    scheme:
+      environmentVariables:
+        KMOELITE_TV_LOG: info
+  KmoeliteAppleTVTests:
+    type: bundle.unit-test
+    platform: tvOS
+    settings:
+      base:
+        PRODUCT_NAME: KmoeliteAppleTVTests
+        PRODUCT_MODULE_NAME: KmoeliteAppleTVTests
+        PRODUCT_BUNDLE_IDENTIFIER: moe.kzo.client.kmoelite.tvos.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/KmoeliteAppleTV.app/KmoeliteAppleTV"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+    sources:
+      - path: Tests
+    dependencies:
+      - target: KmoeliteAppleTV

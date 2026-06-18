@@ -30,6 +30,8 @@
     "check:platforms": "node scripts/check-platform-readiness.mjs",
     "check:ios-assets": "node scripts/check-ios-assets.mjs",
     "smoke:ios-sim": "scripts/smoke-ios-simulator.sh",
+    "test:appletv": "scripts/test-appletv.sh",
+    "smoke:appletv-sim": "scripts/smoke-appletv-simulator.sh",
     "smoke:android-device": "scripts/smoke-android-device.sh",
     "setup:ios-tools": "scripts/setup-ios-local-tools.sh",
     "manifest:release": "node scripts/create-release-manifest.mjs"

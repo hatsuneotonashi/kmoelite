@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render、session restore、可重复 `kmoelite://comic/<id>` open-url smoke 和 debug 内部详情页路由/视觉 smoke，`kmoelite://comic/<id>` scheme 已注册并加固 pending route 交付，`pnpm smoke:ios-sim` 可用 `IOS_SIM_DEVICE_KIND=iphone|ipad` 分别固定验证 iPhone 或 iPad simulator，但还没有完成 iPhone 下载、Reader 和缓存清理 smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页、本地阅读数据清理和运行中 `kmoelite://comic/<id>` deep link smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过通用 packaged smoke 的安装、启动、运行中 deep link 和截图解码，并通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render、session restore、可重复 `kmoelite://comic/<id>` open-url smoke 和 debug 内部详情页路由/视觉 smoke，`kmoelite://comic/<id>` scheme 已注册并加固 pending route 交付，`pnpm smoke:ios-sim` 可用 `IOS_SIM_DEVICE_KIND=iphone|ipad` 分别固定验证 iPhone 或 iPad simulator，但还没有完成 iPhone 下载、Reader 和缓存清理 smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页、本地阅读数据清理和运行中 `kmoelite://comic/<id>` deep link smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过通用 packaged smoke 的安装、启动、运行中 deep link 和截图解码，并通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 已有独立原生 tvOS 开发预览工程和 simulator smoke，但还不是 Reader 可用平台。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -50,10 +50,11 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad sim
 
 ## Apple TV
 
-- 后续研究方向，不属于当前 Alpha 可用范围。
-- 本机平台检查已覆盖 tvOS SDK、tvOS simulator runtime、Apple TV simulator device type、实际 simulator device 和 tvOS Rust targets。
-- Apple TV 4K 1080p 模拟器已可启动，但 tvOS simulator SDK 不提供 WebKit；当前 Tauri/WKWebView 前端壳不能直接复用到 Apple TV。
-- 需要先完成 TVMLKit、TVUIKit 或原生 TV UI 可行性设计，再验证遥控器输入、横屏阅读、焦点导航、缓存清理和平台分发策略。
+- 原生 tvOS 开发预览工程位于 `apps/kmoe-appletv`，不复用 Tauri/WKWebView。
+- `pnpm test:appletv` passed，覆盖 catalog/detail/book_data parser、登录/profile 标记和 SQLite progress round-trip。
+- `pnpm smoke:appletv-sim` passed，覆盖 Apple TV 4K 1080p simulator build、install、launch 和临时截图解码。
+- tvOS simulator SDK 不提供 WebKit；当前 Tauri/WKWebView 前端壳不能直接复用到 Apple TV。
+- 真实登录、EPUB 获取、横屏 Reader、遥控器翻页、前一章/当前章/后一章缓存窗口、显式删除本地阅读数据、实体 Apple TV、签名和分发验证仍未完成。
 
 ## Android TV
 

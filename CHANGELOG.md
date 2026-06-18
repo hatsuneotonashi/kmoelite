@@ -10,6 +10,7 @@
 
 ### Added
 
+- Added a separate native SwiftUI/tvOS Apple TV developer-preview project under `apps/kmoe-appletv`, plus `pnpm test:appletv` and `pnpm smoke:appletv-sim` for tvOS unit tests and simulator build/install/launch smoke.
 - Added `pnpm smoke:mac-app`, a repeatable macOS debug `.app` build/launch/screenshot smoke that exits the app and deletes the temporary screenshot.
 - `pnpm verify:real-source-zip-reader` now uses a temporary download directory and cleans it by default, so guarded live download checks do not leave private files on the developer machine unless explicitly requested.
 - Added `pnpm smoke:android-device`, a minimal Android adb build/install/launch/screenshot smoke that refuses to guess when no device or multiple devices are connected.

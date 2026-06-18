@@ -4,6 +4,28 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Apple TV 原生 tvOS 开发预览工程
+
+- 变更范围：`apps/kmoe-appletv/**`、`scripts/smoke-appletv-simulator.sh`、`scripts/test-appletv.sh`、`scripts/check-platform-readiness.mjs`、root `package.json`、`.gitignore`、README、README.en、AGENTS、CHANGELOG、docs status/platforms/development/release/reader-shelf。
+- 行为摘要：新增独立 SwiftUI/tvOS Apple TV 工程，不复用 Tauri/WKWebView。tvOS SDK 不提供 WebKit，因此当前 Apple TV 路线固定为原生 tvOS。当前工程覆盖登录/目录/详情解析基础、cookie session 处理、SQLite progress round-trip、Apple TV simulator build/install/launch/screenshot smoke；Reader、EPUB 获取、缓存窗口和本地阅读数据删除仍未完成。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `pnpm check:platforms`：passed，`pass=65 warn=1 external=2 fail=0`；warn 是 tvOS simulator SDK 缺少 WebKit；external 是 Windows-only signtool/NSIS on macOS。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `bash -n scripts/smoke-appletv-simulator.sh scripts/test-appletv.sh`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm test:appletv`：passed，4 tvOS tests。
+  - `pnpm smoke:appletv-sim`：passed，Apple TV 4K simulator screenshot 1920x1080, live=0。
+  - sensitive text scan on modified files/full repo source scan：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only the release scanner regex matched。`.env.local`、node_modules、dist、target、test-results and cookie crate build outputs are ignored/generated。
+- 未运行项：未运行 Playwright E2E；本轮没有修改 React routes/layout/Reader/browser-visible workflows。未运行 Apple TV live login smoke、真实 EPUB 下载、Reader、cache cleanup、实体 Apple TV、签名或分发验证。
+- 待发布风险：Apple TV 现在只有原生开发预览壳和基础测试/smoke，不是可日常阅读版本；真实 Reader/EPUB/cache/delete 是下一阶段 blocker。tvOS 不能复用 Tauri/WKWebView。
+
 ## 2026-06-18 真实下载验证默认格式对齐 EPUB
 
 - 变更范围：`scripts/verify-real-source-zip-reader.sh`、`docs/development/README.md`、CHANGELOG。

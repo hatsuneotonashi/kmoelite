@@ -14,6 +14,8 @@ apps/kmoe-app/src-tauri/gen/apple/build/
 apps/kmoe-app/src-tauri/gen/apple/Externals/
 *.xcarchive/
 *.dSYM/
+apps/kmoe-appletv/*.xcodeproj/
+apps/kmoe-appletv/DerivedData/
 
 # Local-only runtime state
 .env

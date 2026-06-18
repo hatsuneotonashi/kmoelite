@@ -134,6 +134,6 @@ explicit download option -> local task -> native queue -> runtime authorization 
 - iPad/Android tablet：rail/sidebar、分栏或多列布局。
 - iPhone/Android phone：safe-area aware touch navigation 和紧凑控件。
 - Android TV：已有实验 runtime/Leanback 入口、方向键焦点、native DPAD/OK 输入桥和 remote Back；Android TV emulator 已通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据删除 smoke，实体 TV 和签名发行仍需单独验证。
-- Apple TV：未来方向；`check:platforms` 已检查 tvOS SDK、Apple TV simulator device type、实际 simulator device、tvOS simulator runtime、tvOS WebKit availability 和 tvOS Rust targets；本机可启动 Apple TV 模拟器，但 tvOS SDK 不提供 WebKit，不能直接复用当前 Tauri/WKWebView 壳，仍需要 TVMLKit、TVUIKit 或原生 TV UI 设计、遥控器输入、焦点导航和横屏 Reader。
+- Apple TV：独立原生 SwiftUI/tvOS 工程位于 `apps/kmoe-appletv`，不复用 Tauri/WKWebView。使用 `pnpm test:appletv` 跑 tvOS unit tests，使用 `pnpm smoke:appletv-sim` 生成 Xcode project、构建、安装、启动 Apple TV simulator 并验证临时截图可解码。真实登录、EPUB 获取、Reader、缓存窗口、实体设备和签名发布仍未完成。
 
 Cover-aware 页面应尽量从真实封面像素取色。CSS 可以压暗和提高对比，但不能把所有作品洗成固定色板。

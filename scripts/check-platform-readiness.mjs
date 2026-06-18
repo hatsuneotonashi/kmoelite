@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const ROOT_DIR = path.resolve(SCRIPT_DIR, '..')
 const APP_DIR = path.join(ROOT_DIR, 'apps', 'kmoe-app')
+const APPLETV_DIR = path.join(ROOT_DIR, 'apps', 'kmoe-appletv')
 const TAURI_DIR = path.join(APP_DIR, 'src-tauri')
 const EXTRA_BIN_DIRS = [
   path.join(os.homedir(), '.local', 'bin'),
@@ -67,6 +68,8 @@ addScriptCheck('script.platform_readiness', 'all', rootPackage, 'check:platforms
 addScriptCheck('script.ios_assets_check', 'ios', rootPackage, 'check:ios-assets')
 addScriptCheck('script.real_download_reader_verify', 'all', rootPackage, 'verify:real-source-zip-reader')
 addScriptCheck('script.ios_sim_smoke', 'ios', rootPackage, 'smoke:ios-sim')
+addScriptCheck('script.appletv_tests', 'appletv', rootPackage, 'test:appletv')
+addScriptCheck('script.appletv_sim_smoke', 'appletv', rootPackage, 'smoke:appletv-sim')
 addScriptCheck('script.ios_tools_setup', 'ios', rootPackage, 'setup:ios-tools')
 addScriptCheck('script.macos_app', 'macos', rootPackage, 'tauri:build:mac-app:debug')
 addScriptCheck('script.macos_app_smoke', 'macos', rootPackage, 'smoke:mac-app')
@@ -215,6 +218,25 @@ addCheck({
   status: hostPlatform !== 'darwin' ? 'external' : xcodeSdks.ok && tvosSdkName ? 'pass' : 'external',
   summary: hostPlatform === 'darwin' && tvosSdkName ? `${tvosSdkName} available` : 'tvOS SDK check requires macOS/Xcode.',
   detail: 'Apple TV validation needs the tvOS SDK before any native TV shell or simulator build can be verified.'
+})
+
+addCommandCheck('appletv.xcodegen', 'appletv', 'xcodegen', ['--version'], 'XcodeGen is available for the native Apple TV project.', {
+  activeOnlyOn: 'darwin',
+  missingStatus: 'external'
+})
+
+const appleTvProjectSpec = path.join(APPLETV_DIR, 'project.yml')
+const appleTvAppSource = path.join(APPLETV_DIR, 'Sources', 'KmoeliteTVApp.swift')
+const appleTvCoreSource = path.join(APPLETV_DIR, 'Sources', 'KmoeTVCore.swift')
+const appleTvTests = path.join(APPLETV_DIR, 'Tests', 'KmoeliteTVTests.swift')
+addCheck({
+  id: 'appletv.native_project',
+  platform: 'appletv',
+  status: filesExist([appleTvProjectSpec, appleTvAppSource, appleTvCoreSource, appleTvTests]) ? 'pass' : 'warn',
+  summary: filesExist([appleTvProjectSpec, appleTvAppSource, appleTvCoreSource, appleTvTests])
+    ? 'Native SwiftUI Apple TV project sources are present.'
+    : 'Native SwiftUI Apple TV project sources are incomplete.',
+  detail: 'Apple TV cannot reuse the Tauri/WKWebView shell; it needs a separate native tvOS app with source and unit-test entrypoints.'
 })
 
 const tvosSimulatorSdkPath = commandOutput('xcrun', ['--sdk', 'appletvsimulator', '--show-sdk-path'])
@@ -458,7 +480,10 @@ function hasIcon(config, icon) {
 }
 
 function filesExist(relativePaths) {
-  return relativePaths.every((relativePath) => existsSync(path.join(TAURI_DIR, relativePath)))
+  return relativePaths.every((relativePath) => {
+    const candidate = path.isAbsolute(relativePath) ? relativePath : path.join(TAURI_DIR, relativePath)
+    return existsSync(candidate)
+  })
 }
 
 function summarize(items) {

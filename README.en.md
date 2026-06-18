@@ -37,20 +37,19 @@ Developer-preview usable surfaces:
 - Android phone: experimental source path exists; a Pixel 8 emulator has passed live login, detail, EPUB download, Reader, page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android tablet: experimental source path exists; a Pixel Tablet emulator has passed live login, detail, EPUB download, Reader spread page-turn, and local reading-data deletion smoke; real-device, export/share, and signed distribution validation are incomplete.
 - Android TV: experimental entry exists; an Android TV emulator has passed live login, detail, EPUB download, Reader, remote page-turn, and local reading-data deletion smoke, but real TV hardware, export/share, and signed distribution validation are incomplete.
-- Apple TV: future research target; the local toolchain now has a tvOS simulator runtime and can boot an Apple TV simulator, but no runnable tvOS shell exists yet.
+- Apple TV: a separate native SwiftUI/tvOS developer-preview project now exists. `pnpm test:appletv` and `pnpm smoke:appletv-sim` pass on an Apple TV 4K simulator, covering build, install, launch, screenshot decoding, parsers, and SQLite basics. Real Reader, EPUB fetch, cache policy, remote Reader controls, hardware validation, signing, and distribution are still incomplete; tvOS does not provide WebKit, so the existing Tauri/WKWebView shell is not reused.
 
 Future plan:
 
-- Apple TV: future research target for remote-control input, landscape Reader, focus navigation, and cache policy.
+- Apple TV: continue the native SwiftUI/tvOS path with real login, EPUB fetch, landscape Reader, remote page-turn, rolling cache cleanup, local reading-data deletion, hardware validation, signing, and distribution.
 
 ## Recent Updates
 
+- 2026-06-18: Added a separate native Apple TV SwiftUI/tvOS developer-preview project with repeatable `pnpm test:appletv` and `pnpm smoke:appletv-sim` checks.
 - 2026-06-18: Reader cache repair can now fall back to another Reader-capable archive for the same volume, such as rebuilding a stale source ZIP cache from a local EPUB file.
 - 2026-06-18: MOBI library records stay file-only even when the same volume already has a Reader cache from another archive.
 - 2026-06-18: Explicit download defaults and format pickers now put EPUB first; source ZIP remains the advanced high-quality option, and MOBI remains a manual file format.
 - 2026-06-18: Metadata-only Library records are no longer treated as removable local reading data when no real local file or Reader cache exists.
-- 2026-06-18: Detail Reader entry no longer blocks online EPUB/source retrieval when the Library only has metadata-only records for that volume.
-- 2026-06-18: Starting the native download queue with no pending tasks now reports a clear error instead of a false success.
 
 See [CHANGELOG.md](CHANGELOG.md) for the public update log, [TASK_PROGRESS.md](TASK_PROGRESS.md) for verification logs, and [docs/status](docs/status/README.md) for platform limitations.
 
