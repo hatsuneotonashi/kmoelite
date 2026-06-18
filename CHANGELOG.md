@@ -7,6 +7,7 @@
 ### Added
 
 - Added `pnpm smoke:mac-app`, a repeatable macOS debug `.app` build/launch/screenshot smoke that exits the app and deletes the temporary screenshot.
+- `pnpm verify:real-source-zip-reader` now uses a temporary download directory and cleans it by default, so guarded live download checks do not leave private files on the developer machine unless explicitly requested.
 - Added `pnpm smoke:android-device`, a minimal Android adb build/install/launch/screenshot smoke that refuses to guess when no device or multiple devices are connected.
 - Platform readiness now compiles the guarded real-download-to-Reader verification example without running a live download, so that path cannot silently rot outside the normal Rust lib gate.
 - `pnpm smoke:ios-sim` can now use `IOS_SIM_INTERNAL_COMIC_ID=<id>` to validate debug in-app iPhone/iPad detail routing without being blocked by the iOS custom URL confirmation dialog.

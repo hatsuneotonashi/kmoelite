@@ -4,6 +4,30 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 真实下载验证默认临时目录清理
+
+- 变更范围：`scripts/verify-real-source-zip-reader.sh`、`AGENTS.md`、`docs/development/README.md`、CHANGELOG。
+- 行为摘要：guarded real-download wrapper 在未显式设置 `KMOE_VERIFY_DOWNLOAD_DIR` 时使用临时目录，并在退出时默认删除。开发者可用 `KMOE_VERIFY_KEEP_DOWNLOAD=1` 显式保留文件用于本机排查。该变更不改变产品运行时下载/Reader 行为。
+- 现场检查：
+  - `git status --short --branch`：clean at start，`main` tracking `origin/main`。
+  - `.env.local`：present and gitignored；`KMOE_SMOKE_EMAIL`、`KMOE_SMOKE_PASSWORD`、`KMOE_VERIFY_EMAIL`、`KMOE_VERIFY_PASSWORD` present；`KMOE_REAL_DOWNLOAD_VERIFY` missing。
+  - `pnpm verify:real-site-smoke`：passed against `https://kxo.moe`，covered login page, login POST, profile, catalog, detail, and book_data; forbidden download/admin endpoints were not called.
+- 验证：
+  - `git diff --check`：passed。
+  - `bash -n scripts/verify-real-source-zip-reader.sh`：passed。
+  - guarded wrapper cleanup self-check：passed；未设置确认开关时拒绝真实下载，并清理临时下载目录。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `pnpm check:platforms`：passed，`pass=61 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - sensitive text scan on modified files：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only documented placeholder password examples matched.
+- 未运行项：未运行 Playwright E2E；本轮只改验证脚本和文档，没有修改 UI、Reader runtime、路由、布局、accessibility 或视觉基线。未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。未运行 iPhone/iPad 真机、Windows 真机或 macOS 签名/公证验证。
+- 待发布风险：该变更只收紧验证脚本的本机文件清理纪律，不代表 iPhone App UI Reader/download/cache smoke 或任何平台二进制验收完成。
+
 ## 2026-06-18 真实下载到 Reader 验证入口纳入平台检查
 
 - 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG。

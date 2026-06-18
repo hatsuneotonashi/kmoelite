@@ -106,6 +106,8 @@ KMOE_REAL_DOWNLOAD_VERIFY=I_UNDERSTAND_THIS_MAY_USE_QUOTA \
 pnpm verify:real-source-zip-reader
 ```
 
+验证 wrapper 默认使用临时下载目录并在结束时删除。需要指定目录时设置 `KMOE_VERIFY_DOWNLOAD_DIR`；确实要保留下载文件用于本机排查时再设置 `KMOE_VERIFY_KEEP_DOWNLOAD=1`。
+
 不要打印、保存、提交或截图真实凭证、Cookie、Session、授权 URL、私有路径、runtime DB 或下载文件。
 
 ## 在线阅读和缓存开发规则
