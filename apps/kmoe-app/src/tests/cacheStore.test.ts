@@ -129,6 +129,32 @@ describe('cacheStore', () => {
     expect(candidates.map((item) => item.chapter.id)).toEqual(['cache-001', 'cache-005'])
   })
 
+  it('includes stale failed and missing reading cache rows in policy cleanup without touching in-flight rows', () => {
+    const chapters = [
+      sampleChapter('cache-001', 'reading_cache', 100, '2026-05-24T08:00:00.000Z', { volumeId: '001', volumeTitle: '話 001' }),
+      sampleChapter('cache-002', 'reading_cache', 0, '2026-05-24T08:10:00.000Z', { volumeId: '002', volumeTitle: '話 002', status: 'failed' }),
+      sampleChapter('cache-003', 'reading_cache', 100, '2026-05-24T08:20:00.000Z', { volumeId: '003', volumeTitle: '話 003' }),
+      sampleChapter('cache-004', 'reading_cache', 0, '2026-05-24T08:30:00.000Z', { volumeId: '004', volumeTitle: '話 004', status: 'missing' }),
+      sampleChapter('cache-005', 'reading_cache', 0, '2026-05-24T08:40:00.000Z', { volumeId: '005', volumeTitle: '話 005', status: 'failed' }),
+      sampleChapter('cache-006', 'reading_cache', 100, '2026-05-24T08:50:00.000Z', { volumeId: '006', volumeTitle: '話 006', status: 'preparing' }),
+      sampleChapter('downloaded-001', 'permanent_download', 100, '2026-05-24T07:00:00.000Z', { volumeId: '001', volumeTitle: '話 001' })
+    ]
+
+    const candidates = cacheCleanupCandidates(chapters, {
+      ...useCacheStore.getState().policy,
+      mode: 'balanced',
+      keepPreviousChapters: 1,
+      keepNextChapters: 1,
+      maxRecentChapters: 3
+    }, {
+      activeChapterId: 'cache-003',
+      reason: 'policy',
+      respectPolicy: true
+    })
+
+    expect(candidates.map((item) => item.chapter.id)).toEqual(['cache-001', 'cache-005'])
+  })
+
   it('keeps only the active chapter in space saver policy cleanup', () => {
     const chapters = [
       sampleChapter('cache-001', 'reading_cache', 100, '2026-05-24T08:00:00.000Z', { volumeId: '001', volumeTitle: '話 001' }),

@@ -208,7 +208,7 @@ export function cacheCleanupCandidates(
   const reason = options.reason ?? 'policy'
   const limit = options.limit ?? 20
   const readingChapters = chapters
-    .filter((chapter) => isReadingCacheKind(chapter.cacheKind) && chapter.status === 'ready')
+    .filter((chapter) => isReadingCacheKind(chapter.cacheKind) && isReadingCacheCleanupStatus(chapter.status))
     .sort((left, right) => left.lastAccessedAt.localeCompare(right.lastAccessedAt))
   if (!options.respectPolicy || readingChapters.length === 0) {
     return readingChapters.slice(0, limit).map((chapter) => ({ chapter, reason }))
@@ -333,6 +333,10 @@ function normalizeCacheKind(value: string): ChapterCacheRecord['cacheKind'] {
 
 function isReadingCacheKind(value: string): boolean {
   return value === 'reading_cache' || value === 'reading'
+}
+
+function isReadingCacheCleanupStatus(status: ChapterCacheStatus): boolean {
+  return status === 'ready' || status === 'failed' || status === 'missing'
 }
 
 function resolveActiveChapter(chapters: ChapterCacheRecord[], activeChapterId?: string): ChapterCacheRecord | undefined {

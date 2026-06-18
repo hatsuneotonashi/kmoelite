@@ -53,6 +53,7 @@
 
 ### Fixed
 
+- Reader rolling-window cleanup now removes stale failed/missing reading-cache rows outside the retention window while preserving preparing/evicting in-flight rows.
 - iPhone/iPad file-sharing metadata is now preserved in the XcodeGen `project.yml`, so regenerating the iOS project keeps app-private downloads exportable through iOS document sharing.
 - iPhone/iPad app metadata now sets an explicit `CFBundleDisplayName` of `kmoelite`, so the installed app name no longer depends on inferred bundle defaults.
 - GitHub Source CI no longer asks `actions/setup-node` to restore a pnpm cache before Corepack enables pnpm, making fresh GitHub Actions source checks less brittle.

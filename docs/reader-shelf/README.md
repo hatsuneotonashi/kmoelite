@@ -17,6 +17,7 @@
 - Reader cache 应服务高清阅读、快速翻页和短期恢复；默认滚动保留前一章、当前章和后一章，切换章节或达到存储策略限制后应清理窗口外缓存。
 - 书架、永久下载、Library、Reader cache、阅读进度、阅读历史和下载队列是不同概念。
 - 自动策略清理 Reader cache 只能删除临时 cache rows、page rows 和 app-owned cache directories，不能删除永久下载、书架记录、阅读进度、阅读历史或下载任务。
+- 自动策略清理可以删除滚动窗口外的 ready、failed 和 missing reading-cache 行，但不能删除 preparing 或 evicting 这类正在准备/清理中的行。
 - 用户显式“删除本地阅读数据”是更强的手动动作：可删除对应 Reader cache、Reader-capable `source_zip` / `epub` 本地源文件、资料库记录和终态源文件任务；必须保留书架记录、阅读进度、阅读历史和 MOBI 等非 Reader-capable 文件。
 - Detail、Shelf/Continue Reading、Library、Reader 控制面板和 Settings 全量清理都必须使用同一套真实删除流程。native 不可用或删除失败时只能提示失败，不能只清前端状态伪造成已释放设备空间。
 - 在 Tauri 运行时，本机 SQLite 是 Reader cache 是否存在的事实源。同步本机章节缓存时，native 已不存在的 `reading_cache` 必须从前端 store 移除，避免设置页清空后详情页继续显示旧缓存。

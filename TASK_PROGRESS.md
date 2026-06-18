@@ -4,6 +4,28 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Reader 滚动窗口清理覆盖 failed/missing cache 行
+
+- 变更范围：`apps/kmoe-app/src/store/cacheStore.ts`、`apps/kmoe-app/src/tests/cacheStore.test.ts`、README、CHANGELOG、AGENTS、Reader/Shelf 文档。
+- 行为摘要：Reader 策略清理不再只清理 `ready` reading cache。滚动窗口外的 `failed` / `missing` reading-cache 行现在也会进入自动策略清理候选，避免普通阅读后长期残留失败/缺失缓存状态；`preparing` / `evicting` 仍被排除，避免清掉正在准备或正在清理的章节。永久下载、书架、阅读进度、阅读历史和下载任务仍不受自动策略清理影响。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run -- cacheStore cachePolicyRuntime`：passed，55 files / 317 tests。
+- 完整验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=54 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+  - 修改文件敏感文本扫描：passed，未发现真实账号、密码、Cookie、Session、Token、Authorization header、完整授权 URL 或本机私有路径。
+  - tracked 风险路径扫描：passed，未发现 `.env`、cookie/session、SQLite/runtime DB、`node_modules`、`dist`、`target`、`test-results`、`playwright-report`、本地下载目录或 `.part` 文件进入 tracked tree。
+- 未运行项：本轮未运行真实站点 smoke、真实下载验证、iPhone/iPad 真机、Android 真机/TV 实体设备、Windows 真机或 macOS 签名/公证验证；当前 shell 未提供 live-profile 环境变量，本轮变更也不需要消耗真实站点配额。
+- 待发布风险：该修复覆盖默认前端缓存策略和浏览器 E2E Reader 入口；各平台 native runtime 中的真实缓存清理仍应按发布目标继续做设备级 smoke。
+
 ## 2026-06-18 iOS simulator deep-link smoke 可复跑化
 
 - 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
