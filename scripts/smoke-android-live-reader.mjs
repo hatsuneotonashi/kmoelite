@@ -23,14 +23,7 @@ ws.addEventListener('message', (event) => {
 })
 await send('Runtime.enable')
 await waitFor(`() => document.readyState === 'complete' && !!document.body`, 30_000)
-const login = await evaluate(`(async () => {
-  try {
-    await window.__TAURI_INTERNALS__.invoke('kmoe_login', { input: { email: ${JSON.stringify(email)}, password: ${JSON.stringify(password)}, remember: false } });
-    return { ok: true };
-  } catch (error) {
-    return { ok: false, error: String(error) };
-  }
-})()`, 60_000)
+const login = await loginWithRetry()
 if (!login?.ok) throw new Error(`login-failed ${login?.error || 'unknown'}`)
 await evaluate(`location.href = '/'; true`)
 await waitFor(`() => document.readyState === 'complete' && !!document.body`, 30_000)
@@ -90,6 +83,23 @@ async function evaluate(expression, timeout = 30_000) {
     throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text || 'evaluation-failed')
   }
   return result.result?.value
+}
+
+async function loginWithRetry() {
+  let lastLogin = { ok: false, error: 'not-started' }
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    lastLogin = await evaluate(`(async () => {
+      try {
+        await window.__TAURI_INTERNALS__.invoke('kmoe_login', { input: { email: ${JSON.stringify(email)}, password: ${JSON.stringify(password)}, remember: false } });
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, error: String(error) };
+      }
+    })()`, 60_000)
+    if (lastLogin?.ok) return lastLogin
+    await delay(4000)
+  }
+  return lastLogin
 }
 
 async function waitFor(source, timeoutMs, intervalMs = 500) {

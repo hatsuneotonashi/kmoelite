@@ -17,6 +17,7 @@
   - `ANDROID_AVD=Pixel_8_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
   - `ANDROID_SKIP_BUILD=1 ANDROID_AVD=Kmoelite_Tablet_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
   - `ANDROID_SKIP_BUILD=1 ANDROID_AVD=Kmoelite_TV_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
+  - 最终脚本复跑：新启动 emulator 首次登录可能遇到网络未就绪；脚本补充有限登录重试后，Pixel 8、Pixel Tablet 和 Android TV 三个 AVD 均再次通过 `pnpm smoke:android-live-reader`，均打开 `/reader/cache/...` 且页面图片数为 1。
 - 聚焦验证：
   - `pnpm --dir apps/kmoe-app test:run src/tests/readerEntryState.test.ts src/tests/detailReaderEntry.test.tsx`：passed，2 files / 23 tests。
   - `node --check scripts/smoke-android-live-reader.mjs`：passed。

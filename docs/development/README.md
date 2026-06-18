@@ -74,7 +74,7 @@ pnpm smoke:android-live-reader
 
 `pnpm smoke:android-device` 会先选择一个 `adb devices` 中处于 `device` 状态的 Android emulator/device，再构建 debug APK、安装、启动并截取临时截图确认系统可解码。未连接设备时会在构建前退出；连接多个设备时必须设置 `ANDROID_DEVICE_ID`，避免把 App 装错设备。截图位于系统临时目录并自动删除，不进入仓库。设置 `ANDROID_COMIC_ID` 时会额外打开安全的 `kmoelite://comic/<id>` deep link。
 
-`pnpm smoke:android-live-reader` 是显式 live smoke。它需要 runtime 账号密码，默认会构建 debug APK、安装、启动 App，通过 WebView 调试通道调用 native 登录，再从详情页点击 Reader 入口，等待真实 EPUB 下载、Reader cache 打开、页面图片渲染并发送一次翻页键。它不会打印账号、密码、Cookie、Session、授权 URL 或本机下载路径。未指定 `ANDROID_DEVICE_ID` 时必须只有一个 adb device；设置 `ANDROID_AVD=<name>` 时脚本会启动该 emulator。需要复用现有 APK 时可设置 `ANDROID_SKIP_BUILD=1`。
+`pnpm smoke:android-live-reader` 是显式 live smoke。它需要 runtime 账号密码，默认会构建 debug APK、安装、启动 App，通过 WebView 调试通道调用 native 登录，再从详情页点击 Reader 入口，等待真实 EPUB 下载、Reader cache 打开、页面图片渲染并发送一次翻页键。它不会打印账号、密码、Cookie、Session、授权 URL 或本机下载路径。未指定 `ANDROID_DEVICE_ID` 时必须只有一个 adb device；设置 `ANDROID_AVD=<name>` 时脚本会启动该 emulator。需要复用现有 APK 时可设置 `ANDROID_SKIP_BUILD=1`。新启动 emulator 网络可能短暂未就绪，脚本会对 native 登录做有限重试。
 
 iPhone/iPad simulator debug bundle 构建与安装启动 smoke：
 
