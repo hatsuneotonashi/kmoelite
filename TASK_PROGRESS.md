@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iPhone/iPad 文件导出 metadata readiness 检查
+
+- 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：平台 readiness 自检新增 `tauri.ios_file_export_metadata`，同时检查 XcodeGen 源 `project.yml` 和当前生成的 iOS `Info.plist` 是否保留 `CFBundleDisplayName=kmoelite`、`LSSupportsOpeningDocumentsInPlace=true`、`UIFileSharingEnabled=true`。这只防止生成配置漂移，不声称已经完成 iPad/iPhone 真机文件导出验证。
+- 验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=54 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `KMOE_SMOKE_EMAIL/KMOE_SMOKE_PASSWORD` runtime env + `pnpm verify:real-site-smoke`：passed，覆盖 `login_page`、`login_post`、`profile`、`catalog`、`detail`、`book_data`，baseUrl=`https://kxo.moe`，catalogItems=21，forbiddenEndpointsCalled=false；输出未包含凭证、Cookie、Session 或授权 URL。
+  - tracked 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，tracked 文件未发现真实账号、密码、Cookie、Session、Token、完整授权 URL、本机私有路径、`.env`、runtime DB、下载文件、`dist`、`target`、`test-results` 或 `playwright-report`。
+- 未运行项：未运行 Playwright E2E；本轮只改平台 readiness 脚本和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实下载验证、iPhone/iPad 真机文件导出或 signed physical-device 验证。
+- 待发布风险：该检查只保证 iOS metadata 不漂移；真实 iPhone/iPad 文件导出、分享目标选择、前后台下载、Reader/download/cache cleanup 和签名真机验证仍需继续补齐。
+
 ## 2026-06-18 iOS simulator smoke 截图检查
 
 - 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。

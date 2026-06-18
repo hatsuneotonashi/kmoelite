@@ -28,7 +28,7 @@
 - TypeScript typecheck：passed。
 - Vitest：55 files / 316 tests passed。
 - Rust lib tests：92 passed。
-- 最新单独 `pnpm check:platforms`：`pass=53 warn=1 external=2 fail=0`；warn 是 Apple TV/tvOS WebKit 不可用的架构限制记录。
+- 最新单独 `pnpm check:platforms`：`pass=54 warn=1 external=2 fail=0`；新增 pass 覆盖 iPhone/iPad display-name 和文件导出 metadata 漂移检查，warn 是 Apple TV/tvOS WebKit 不可用的架构限制记录。
 - Playwright E2E：114 passed / 50 skipped。
 - 真实 EPUB 单项下载到 Reader：passed，覆盖下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。
 - 真实 source ZIP 单项下载：failed，站点未返回可用 source ZIP 下载地址；普通自动阅读路径已改为 EPUB 优先，source ZIP 仍保留为显式高级格式。

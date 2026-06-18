@@ -117,6 +117,30 @@ addCheck({
   detail: 'iPhone/iPad builds require the generated AppIcon asset set before device packaging.'
 })
 
+const iosProjectPath = path.join(TAURI_DIR, 'gen/apple/project.yml')
+const iosInfoPlistPath = path.join(TAURI_DIR, 'gen/apple/kmoe-app_iOS/Info.plist')
+const iosProject = existsSync(iosProjectPath) ? await readFile(iosProjectPath, 'utf8') : ''
+const iosInfoPlist = existsSync(iosInfoPlistPath) ? await readFile(iosInfoPlistPath, 'utf8') : ''
+const iosFileSharingReady = [
+  'CFBundleDisplayName: kmoelite',
+  'LSSupportsOpeningDocumentsInPlace: true',
+  'UIFileSharingEnabled: true'
+].every((marker) => iosProject.includes(marker)) &&
+  [
+    '<key>CFBundleDisplayName</key>',
+    '<string>kmoelite</string>',
+    '<key>LSSupportsOpeningDocumentsInPlace</key>',
+    '<true/>',
+    '<key>UIFileSharingEnabled</key>'
+  ].every((marker) => iosInfoPlist.includes(marker))
+addCheck({
+  id: 'tauri.ios_file_export_metadata',
+  platform: 'ios',
+  status: iosFileSharingReady ? 'pass' : 'warn',
+  summary: iosFileSharingReady ? 'iOS display name and file-export metadata are preserved.' : 'iOS file-export metadata is incomplete.',
+  detail: 'iPhone/iPad explicit downloads rely on the generated Info.plist and XcodeGen project keeping document opening and file sharing enabled.'
+})
+
 const androidProjectFiles = [
   'gen/android/app/build.gradle.kts',
   'gen/android/app/src/main/AndroidManifest.xml',
