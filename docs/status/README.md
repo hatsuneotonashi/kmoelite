@@ -34,7 +34,7 @@
 - 真实 source ZIP 单项下载：failed，站点未返回可用 source ZIP 下载地址；普通自动阅读路径已改为 EPUB 优先，source ZIP 仍保留为显式高级格式。
 - macOS debug `.app` bundle：build passed，并通过可复跑 smoke 完成启动、临时截图解码和退出。
 - Android debug APK/AAB：build passed。
-- Android phone emulator：Pixel 8 API 36 install/launch smoke passed；真实登录、账号页、详情页、EPUB 单项下载、Reader cache 准备、翻页和显式本地阅读数据删除 passed；Android WebView 系统分享 bridge 注入、app-private debug share chooser smoke 和运行中 `kmoelite://comic/<id>` deep link smoke passed。
+- Android phone emulator：Pixel 8 API 36 install/launch smoke passed；`pnpm smoke:android-device` 已通过 debug APK build、adb install、launch、运行中 `kmoelite://comic/<id>` deep link 和截图解码；真实登录、账号页、详情页、EPUB 单项下载、Reader cache 准备、翻页和显式本地阅读数据删除 passed；Android WebView 系统分享 bridge 注入、app-private debug share chooser smoke passed。
 - Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract；真实登录、详情页、EPUB 单项下载、Reader cache 准备、双页翻页和显式本地阅读数据删除 passed。
 - Android TV emulator：Android TV API 36 install/launch smoke passed，确认 Leanback launcher、`androidTv` runtime、`tv` layout contract、`remote` input class、方向键焦点移动、native DPAD/OK 输入桥、Settings Back；真实登录、详情、EPUB 下载、Reader cache、`DPAD_CENTER` 显示 chrome、`DPAD_LEFT` 双页翻页和本地阅读数据删除 passed。
 - Android TV / remote input：源码层已支持 remote Back 导航、native DPAD/OK 输入桥和 Reader OK/Back 键位；聚焦 Vitest passed。
