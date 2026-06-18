@@ -9,6 +9,7 @@ if [[ -z "${KMOE_VERIFY_DOWNLOAD_DIR:-}" ]]; then
   temp_download_dir="$(mktemp -d "${TMPDIR:-/tmp}/kmoelite-real-download.XXXXXX")"
   export KMOE_VERIFY_DOWNLOAD_DIR="$temp_download_dir"
 fi
+export KMOE_VERIFY_FORMAT="${KMOE_VERIFY_FORMAT:-epub}"
 
 cleanup() {
   if [[ -n "$temp_download_dir" && "${KMOE_VERIFY_KEEP_DOWNLOAD:-0}" != "1" ]]; then

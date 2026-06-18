@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 真实下载验证默认格式对齐 EPUB
+
+- 变更范围：`scripts/verify-real-source-zip-reader.sh`、`docs/development/README.md`、CHANGELOG。
+- 行为摘要：guarded real-download wrapper 默认设置 `KMOE_VERIFY_FORMAT=epub`，与当前普通 Reader 下载路径一致。需要验证源图 ZIP 时仍可显式设置 `KMOE_VERIFY_FORMAT=source_zip`。该变更不执行 live download，不改变生产下载逻辑。
+- 验证：
+  - `bash -n scripts/verify-real-source-zip-reader.sh`：passed。
+  - wrapper default-format self-check with fake cargo：passed；未显式设置格式时输出 `format=epub`，并确认临时下载目录存在后被清理。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `pnpm check:platforms`：passed，`pass=61 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - sensitive text scan on modified files：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only documented placeholder password examples matched.
+- 未运行项：未运行 Playwright E2E；本轮只改验证脚本和文档，没有修改 UI、Reader runtime、路由、布局、accessibility 或视觉基线。未运行真实下载验证；`KMOE_REAL_DOWNLOAD_VERIFY` 未设置，本轮不下载文件、不保存授权 URL。
+- 待发布风险：该变更只修正 guarded verifier 的默认格式，不代表 iPhone App UI Reader/download/cache smoke 或 source ZIP 授权成功。
+
 ## 2026-06-18 真实下载验证默认临时目录清理
 
 - 变更范围：`scripts/verify-real-source-zip-reader.sh`、`AGENTS.md`、`docs/development/README.md`、CHANGELOG。

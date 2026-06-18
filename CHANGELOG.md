@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Changed
+
+- `pnpm verify:real-source-zip-reader` now defaults to EPUB, matching the ordinary Reader download path; source ZIP remains available with `KMOE_VERIFY_FORMAT=source_zip`.
+
 ### Added
 
 - Added `pnpm smoke:mac-app`, a repeatable macOS debug `.app` build/launch/screenshot smoke that exits the app and deletes the temporary screenshot.
