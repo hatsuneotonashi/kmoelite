@@ -4,6 +4,14 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Source CI Windows Rust 诊断拆步
+
+- 变更范围：`.github/workflows/desktop-ci.yml`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：GitHub Source CI 的 Windows job 失败在合并的 `Rust checks` step，公开 API annotations 只返回 `Process completed with exit code 1`，无法区分 `cargo fmt`、`cargo check` 还是 `cargo test --lib`。本轮把 Windows Rust step 拆成 `Rust format`、`Rust check`、`Rust lib tests` 三步，并把 checkout/setup-node 升到当前 GitHub Actions runtime 版本，避免 Node 20 deprecation annotation 干扰判断。
+- 验证：
+  - `git diff --check`：passed。
+- 待验证：需要等待 GitHub Actions 新一轮 `Source CI`。如果仍失败，下一轮应直接显示具体失败命令。
+
 ## 2026-06-18 Android live Reader smoke 与 EPUB 入口过滤
 
 - 变更范围：`apps/kmoe-app/src/download/optionGuards.ts`、`apps/kmoe-app/src/tests/readerEntryState.test.ts`、`scripts/smoke-android-live-reader.*`、root/app `package.json`、`scripts/check-platform-readiness.mjs`、README、CHANGELOG、AGENTS、docs development/status/platforms。

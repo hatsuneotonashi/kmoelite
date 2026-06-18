@@ -16,8 +16,8 @@ jobs:
     name: Source checks
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
       - name: Enable pnpm
@@ -47,8 +47,8 @@ jobs:
     name: Windows source check
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
       - name: Enable pnpm
@@ -64,9 +64,12 @@ jobs:
           pnpm --dir apps/kmoe-app typecheck
           pnpm --dir apps/kmoe-app test:run
           pnpm --dir apps/kmoe-app build
-      - name: Rust checks
+      - name: Rust format
         shell: pwsh
-        run: |
-          cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
-          cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
-          cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
+        run: cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check
+      - name: Rust check
+        shell: pwsh
+        run: cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml
+      - name: Rust lib tests
+        shell: pwsh
+        run: cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib
