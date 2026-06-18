@@ -4,6 +4,28 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iPhone simulator 内部详情路由 smoke
+
+- 变更范围：`apps/kmoe-app/src-tauri/src/lib.rs`、`scripts/smoke-ios-simulator.sh`、README、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG。
+- 行为摘要：`pnpm smoke:ios-sim` 新增 `IOS_SIM_INTERNAL_COMIC_ID=<id>`。debug 包启动时只接受安全漫画 ID，并通过现有 native pending-route 机制进入 `/comic/<id>`，用于绕过 iOS custom URL 系统确认框，验证 App 内详情页路由和视觉渲染。原有 `IOS_SIM_COMIC_ID` 仍保留为系统 open-url/scheme 入口验证；两种模式不能同时使用。
+- 验证：
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml comic --lib`：passed，覆盖 safe deep link 和 debug smoke comic id 解析。
+  - `bash -n scripts/smoke-ios-simulator.sh`：passed。
+  - `IOS_SIM_DEVICE_KIND=iphone IOS_SIM_INTERNAL_COMIC_ID=10817 IOS_SIM_RENDER_WAIT_SECONDS=8 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动、内部 `/comic/10817` 路由和临时截图解码，输出 `screenshot=1206x2622`。
+  - 重启 iPhone simulator 后重复 `IOS_SIM_DEVICE_KIND=iphone IOS_SIM_INTERNAL_COMIC_ID=10817 IOS_SIM_RENDER_WAIT_SECONDS=8 pnpm smoke:ios-sim`：passed；临时截图人工确认已进入详情页且没有残留 iOS open-url 系统确认框，截图随后删除。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `pnpm check:platforms`：passed，`pass=58 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+- 未运行项：未运行真实站点 smoke、真实下载验证、iPhone Reader/download/cache cleanup、iPhone/iPad 签名真机安装、文件导出/分享、前后台行为、Windows 真机或 macOS 签名/公证验证。
+- 待发布风险：该结果证明 iPhone simulator debug 包可以不依赖 iOS open-url 确认框直接验证详情路由；不代表 iPhone Reader、下载、缓存清理或 signed physical-device 发行验证完成。
+
 ## 2026-06-18 Android TV emulator adb smoke 复跑
 
 - 变更范围：TASK_PROGRESS、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG。

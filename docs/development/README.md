@@ -76,9 +76,10 @@ pnpm smoke:ios-sim
 IOS_SIM_DEVICE_KIND=iphone pnpm smoke:ios-sim
 IOS_SIM_DEVICE_KIND=ipad pnpm smoke:ios-sim
 IOS_SIM_COMIC_ID=10817 pnpm smoke:ios-sim
+IOS_SIM_DEVICE_KIND=iphone IOS_SIM_INTERNAL_COMIC_ID=10817 pnpm smoke:ios-sim
 ```
 
-`pnpm smoke:ios-sim` 会优先选择已启动的 iOS simulator；如果同时启动了 Apple TV simulator，也不会把 iOS app 误装到 tvOS。`IOS_SIM_DEVICE_KIND=iphone|ipad|any` 可固定选择 iPhone 或 iPad simulator，默认是 `any`。手动设置 `IOS_SIM_UDID` 时必须传 36 位真实 iOS simulator UDID，脚本会拒绝 `booted` 这类别名、tvOS 设备和设备类型不匹配。启动后脚本会截一张临时 simulator 截图并确认系统可解码，截图自动删除、不进入仓库。设置 `IOS_SIM_COMIC_ID` 时，脚本会额外打开安全的 `kmoelite://comic/<id>` deep link；这只验证 URL scheme/open-url 入口，不等同于已自动点掉 iOS 系统确认框或完成详情页视觉验证。不要用裸 `xcodebuild` 替代 Tauri iOS 构建脚本；它缺少 Tauri mobile RPC 上下文。打包入口也必须保持相对资源路径，不要在 `index.html` 写根 `<base href="/">`。
+`pnpm smoke:ios-sim` 会优先选择已启动的 iOS simulator；如果同时启动了 Apple TV simulator，也不会把 iOS app 误装到 tvOS。`IOS_SIM_DEVICE_KIND=iphone|ipad|any` 可固定选择 iPhone 或 iPad simulator，默认是 `any`。手动设置 `IOS_SIM_UDID` 时必须传 36 位真实 iOS simulator UDID，脚本会拒绝 `booted` 这类别名、tvOS 设备和设备类型不匹配。启动后脚本会截一张临时 simulator 截图并确认系统可解码，截图自动删除、不进入仓库。设置 `IOS_SIM_COMIC_ID` 时，脚本会额外打开安全的 `kmoelite://comic/<id>` deep link；这只验证 URL scheme/open-url 入口，不等同于已自动点掉 iOS 系统确认框。设置 `IOS_SIM_INTERNAL_COMIC_ID` 时，debug 包会通过受限启动参数直接进入 `/comic/<id>`，用于验证 App 内详情页路由和视觉渲染；它不能和 `IOS_SIM_COMIC_ID` 同时使用，也不是生产用户入口。不要用裸 `xcodebuild` 替代 Tauri iOS 构建脚本；它缺少 Tauri mobile RPC 上下文。打包入口也必须保持相对资源路径，不要在 `index.html` 写根 `<base href="/">`。
 
 提交前默认运行以上完整 gate。涉及路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流时再运行 `pnpm --dir apps/kmoe-app e2e`。不能运行的命令必须写入 `TASK_PROGRESS.md`，说明原因和风险。
 

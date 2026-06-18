@@ -6,6 +6,11 @@ APP_DIR="${ROOT_DIR}/apps/kmoe-app"
 BUNDLE_ID="moe.kzo.client"
 device_kind="${IOS_SIM_DEVICE_KIND:-any}"
 
+if [[ -n "${IOS_SIM_COMIC_ID:-}" && -n "${IOS_SIM_INTERNAL_COMIC_ID:-}" ]]; then
+  echo "ios_sim_smoke=failed reason=conflicting-comic-route-modes" >&2
+  exit 1
+fi
+
 case "${device_kind}" in
   any) device_name_re='iPhone|iPad' ;;
   iphone) device_name_re='iPhone' ;;
@@ -55,13 +60,23 @@ fi
 pnpm --dir "${APP_DIR}" tauri ios build --debug --target aarch64-sim --no-sign
 
 app="${APP_DIR}/src-tauri/gen/apple/build/arm64-sim/kmoelite.app"
-if [[ "${IOS_SIM_FRESH:-0}" == "1" ]]; then
+if [[ "${IOS_SIM_FRESH:-0}" == "1" || -n "${IOS_SIM_INTERNAL_COMIC_ID:-}" ]]; then
   xcrun simctl terminate "${device}" "${BUNDLE_ID}" >/dev/null 2>&1 || true
   xcrun simctl uninstall "${device}" "${BUNDLE_ID}" >/dev/null 2>&1 || true
 fi
 
 xcrun simctl install "${device}" "${app}"
-launch_output="$(xcrun simctl launch "${device}" "${BUNDLE_ID}")"
+launch_args=()
+internal_route_output=""
+if [[ -n "${IOS_SIM_INTERNAL_COMIC_ID:-}" ]]; then
+  if [[ ! "${IOS_SIM_INTERNAL_COMIC_ID}" =~ ^[A-Za-z0-9_-]{1,80}$ ]]; then
+    echo "ios_sim_smoke=failed reason=unsafe-internal-comic-id" >&2
+    exit 1
+  fi
+  launch_args+=("--kmoelite-smoke-comic-id=${IOS_SIM_INTERNAL_COMIC_ID}")
+  internal_route_output=" internalRoute=/comic/${IOS_SIM_INTERNAL_COMIC_ID}"
+fi
+launch_output="$(xcrun simctl launch "${device}" "${BUNDLE_ID}" "${launch_args[@]}")"
 deep_link_output=""
 if [[ -n "${IOS_SIM_COMIC_ID:-}" ]]; then
   if [[ ! "${IOS_SIM_COMIC_ID}" =~ ^[A-Za-z0-9_-]{1,80}$ ]]; then
@@ -83,4 +98,4 @@ if [[ -z "${width}" || -z "${height}" || "${width}" -le 0 || "${height}" -le 0 |
   echo "ios_sim_smoke=failed reason=screenshot-not-readable" >&2
   exit 1
 fi
-echo "ios_sim_smoke=passed kind=${device_kind} device=${device} ${launch_output}${deep_link_output} screenshot=${width}x${height}"
+echo "ios_sim_smoke=passed kind=${device_kind} device=${device} ${launch_output}${internal_route_output}${deep_link_output} screenshot=${width}x${height}"

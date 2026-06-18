@@ -8,6 +8,7 @@
 
 - Added `pnpm smoke:mac-app`, a repeatable macOS debug `.app` build/launch/screenshot smoke that exits the app and deletes the temporary screenshot.
 - Added `pnpm smoke:android-device`, a minimal Android adb build/install/launch/screenshot smoke that refuses to guess when no device or multiple devices are connected.
+- `pnpm smoke:ios-sim` can now use `IOS_SIM_INTERNAL_COMIC_ID=<id>` to validate debug in-app iPhone/iPad detail routing without being blocked by the iOS custom URL confirmation dialog.
 - Platform readiness now checks iPhone/iPad display-name and file-export metadata in both XcodeGen source and generated Info.plist, so app-private download export support cannot silently drift.
 - `pnpm smoke:ios-sim` can now target `IOS_SIM_DEVICE_KIND=iphone|ipad`, so iPhone and iPad simulator launch/render smoke can be verified separately.
 - Platform readiness now checks the root `pnpm smoke:ios-sim` entry so iPhone/iPad simulator smoke coverage cannot drift out of the release checklist unnoticed.

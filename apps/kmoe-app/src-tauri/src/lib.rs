@@ -79,6 +79,30 @@ fn route_from_deep_link(raw_url: &str) -> Option<String> {
     }
 }
 
+#[cfg(debug_assertions)]
+fn route_from_smoke_comic_id(raw_comic_id: &str) -> Option<String> {
+    let comic_id = raw_comic_id.trim();
+    if is_safe_comic_id(comic_id) {
+        Some(format!("/comic/{comic_id}"))
+    } else {
+        None
+    }
+}
+
+#[cfg(debug_assertions)]
+fn route_from_smoke_launch() -> Option<String> {
+    std::env::args()
+        .find_map(|arg| {
+            arg.strip_prefix("--kmoelite-smoke-comic-id=")
+                .and_then(route_from_smoke_comic_id)
+        })
+        .or_else(|| {
+            std::env::var("KMOELITE_SMOKE_COMIC_ID")
+                .ok()
+                .and_then(|comic_id| route_from_smoke_comic_id(&comic_id))
+        })
+}
+
 fn is_safe_comic_id(comic_id: &str) -> bool {
     !comic_id.is_empty()
         && comic_id.len() <= 80
@@ -181,6 +205,10 @@ pub fn run() {
         .setup(|app| {
             #[cfg(not(mobile))]
             ensure_main_window(app.handle())?;
+            #[cfg(debug_assertions)]
+            if let Some(route) = route_from_smoke_launch() {
+                open_deep_link_route(app.handle(), &route);
+            }
             #[cfg(mobile)]
             let _ = app;
 
@@ -223,7 +251,7 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::route_from_deep_link;
+    use super::{route_from_deep_link, route_from_smoke_comic_id};
 
     #[test]
     fn accepts_safe_comic_deep_links() {
@@ -246,5 +274,16 @@ mod tests {
             route_from_deep_link(&format!("kmoelite://comic/{}", "a".repeat(81))),
             None
         );
+    }
+
+    #[test]
+    fn accepts_only_safe_smoke_comic_ids() {
+        assert_eq!(
+            route_from_smoke_comic_id(" 10817 "),
+            Some("/comic/10817".to_string())
+        );
+        assert_eq!(route_from_smoke_comic_id("../Settings"), None);
+        assert_eq!(route_from_smoke_comic_id("%2Fsettings"), None);
+        assert_eq!(route_from_smoke_comic_id(&"a".repeat(81)), None);
     }
 }
