@@ -21,6 +21,14 @@ Tauri 桌面开发：
 pnpm tauri dev
 ```
 
+macOS debug `.app` 构建、启动和临时截图 smoke：
+
+```bash
+pnpm smoke:mac-app
+```
+
+`pnpm smoke:mac-app` 会构建 debug `.app`、启动本机 App、确认进程存在、截取一张临时屏幕截图确认系统可解码，然后退出 App 并删除截图。它不等同于签名、公证或干净机器安装验证。
+
 ## 仓库结构
 
 - `AGENTS.md`：无上下文 AI 接手入口、长期工程约束、项目记忆和提交纪律。

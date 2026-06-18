@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 macOS debug app smoke 入口
+
+- 变更范围：`scripts/smoke-macos-app.sh`、root/app `package.json`、`scripts/check-platform-readiness.mjs`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：新增 `pnpm smoke:mac-app`，用于 macOS 本机 debug `.app` 的最小可复跑 smoke。脚本构建 debug `.app`、读取 bundle id/executable、启动 App、确认进程存在、截取临时屏幕截图并解码，然后退出 App 并删除截图。
+- 验证：
+  - `bash -n scripts/smoke-macos-app.sh`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=58 warn=1 external=2 fail=0`。
+  - `MACOS_RENDER_WAIT_SECONDS=1 pnpm smoke:mac-app`：passed；完成 debug `.app` build、bundle、启动、临时截图解码和退出，输出 `screenshot=2940x1912`；截图位于系统临时目录并由脚本删除。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只新增 macOS smoke 脚本、package entry 和平台 readiness 检查，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实站点 smoke、真实下载验证、macOS 签名/公证/干净机器安装、Windows 真机、Android 实体设备或 iPhone/iPad 真机。
+- 待发布风险：该 smoke 证明当前机器上的 debug `.app` 能构建、启动并渲染出可解码画面；不代表 release 签名、公证、stapling 或干净机器安装完成。
+
 ## 2026-06-18 Android adb smoke 入口
 
 - 变更范围：`scripts/smoke-android-device.sh`、root/app `package.json`、`scripts/check-platform-readiness.mjs`、`docs/development/README.md`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。

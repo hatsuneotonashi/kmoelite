@@ -28,11 +28,11 @@
 - TypeScript typecheck：passed。
 - Vitest：55 files / 317 tests passed。
 - Rust lib tests：92 passed。
-- 最新单独 `pnpm check:platforms`：`pass=56 warn=1 external=2 fail=0`；新增 pass 覆盖 Android adb smoke 入口、iPhone/iPad display-name 和文件导出 metadata 漂移检查，warn 是 Apple TV/tvOS WebKit 不可用的架构限制记录。
+- 最新单独 `pnpm check:platforms`：`pass=58 warn=1 external=2 fail=0`；新增 pass 覆盖 macOS app smoke 入口、Android adb smoke 入口、iPhone/iPad display-name 和文件导出 metadata 漂移检查，warn 是 Apple TV/tvOS WebKit 不可用的架构限制记录。
 - Playwright E2E：114 passed / 50 skipped。
 - 真实 EPUB 单项下载到 Reader：passed，覆盖下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。
 - 真实 source ZIP 单项下载：failed，站点未返回可用 source ZIP 下载地址；普通自动阅读路径已改为 EPUB 优先，source ZIP 仍保留为显式高级格式。
-- macOS debug `.app` bundle：build passed，并完成一次启动/退出 smoke。
+- macOS debug `.app` bundle：build passed，并通过可复跑 smoke 完成启动、临时截图解码和退出。
 - Android debug APK/AAB：build passed。
 - Android phone emulator：Pixel 8 API 36 install/launch smoke passed；真实登录、账号页、详情页、EPUB 单项下载、Reader cache 准备、翻页和显式本地阅读数据删除 passed；Android WebView 系统分享 bridge 注入、app-private debug share chooser smoke 和运行中 `kmoelite://comic/<id>` deep link smoke passed。
 - Android tablet emulator：Pixel Tablet API 36 install/launch smoke passed，确认 tablet contract；真实登录、详情页、EPUB 单项下载、Reader cache 准备、双页翻页和显式本地阅读数据删除 passed。

@@ -19,6 +19,7 @@
     "tauri:info": "pnpm --dir apps/kmoe-app tauri info",
     "tauri:build:mac-app": "pnpm --dir apps/kmoe-app tauri build --bundles app",
     "tauri:build:mac-app:debug": "pnpm --dir apps/kmoe-app tauri build --debug --bundles app",
+    "smoke:mac-app": "scripts/smoke-macos-app.sh",
     "tauri:build:mac-dmg:debug": "scripts/package-macos-dmg.sh",
     "tauri:android:init": "pnpm --dir apps/kmoe-app tauri android init --ci",
     "tauri:android:build:debug": "pnpm --dir apps/kmoe-app tauri android build --debug",

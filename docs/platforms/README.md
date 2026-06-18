@@ -45,6 +45,7 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad sim
 
 - 开发预览可用，当前主要本地开发和日常试用平台。
 - debug `.app` 构建脚本存在：`pnpm tauri:build:mac-app:debug`。
+- 可复跑本机 smoke 入口存在：`pnpm smoke:mac-app`，覆盖 debug `.app` 构建、启动、临时截图解码和退出。
 - 公开二进制发布前仍需 Apple Developer 签名、hardened runtime 审查、公证、stapling、干净机器安装/打开验证。
 
 ## Apple TV
