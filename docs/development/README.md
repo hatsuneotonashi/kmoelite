@@ -53,7 +53,12 @@ Android debug APK/AAB 构建入口：
 
 ```bash
 pnpm tauri:android:build:debug
+pnpm smoke:android-device
+ANDROID_DEVICE_ID=<adb-device-id> pnpm smoke:android-device
+ANDROID_COMIC_ID=10817 pnpm smoke:android-device
 ```
+
+`pnpm smoke:android-device` 会先选择一个 `adb devices` 中处于 `device` 状态的 Android emulator/device，再构建 debug APK、安装、启动并截取临时截图确认系统可解码。未连接设备时会在构建前退出；连接多个设备时必须设置 `ANDROID_DEVICE_ID`，避免把 App 装错设备。截图位于系统临时目录并自动删除，不进入仓库。设置 `ANDROID_COMIC_ID` 时会额外打开安全的 `kmoelite://comic/<id>` deep link。
 
 iPhone/iPad simulator debug bundle 构建与安装启动 smoke：
 

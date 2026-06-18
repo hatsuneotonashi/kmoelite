@@ -56,12 +56,14 @@ addScriptCheck('script.macos_app', 'macos', rootPackage, 'tauri:build:mac-app:de
 addScriptCheck('script.macos_dmg', 'macos', rootPackage, 'tauri:build:mac-dmg:debug')
 addScriptCheck('script.android_build', 'android', rootPackage, 'tauri:android:build:debug')
 addScriptCheck('script.android_run', 'android', rootPackage, 'tauri:android:run')
+addScriptCheck('script.android_device_smoke', 'android', rootPackage, 'smoke:android-device')
 addScriptCheck('script.windows_msi', 'windows', rootPackage, 'tauri:build:windows-msi')
 addScriptCheck('script.windows_nsis', 'windows', rootPackage, 'tauri:build:windows-nsis')
 addScriptCheck('script.app_platform_readiness', 'all', appPackage, 'check:platforms')
 addScriptCheck('script.app_ios_tools_setup', 'ios', appPackage, 'setup:ios-tools')
 addScriptCheck('script.app_android_build', 'android', appPackage, 'tauri:android:build:debug')
 addScriptCheck('script.app_android_run', 'android', appPackage, 'tauri:android:run')
+addScriptCheck('script.app_android_device_smoke', 'android', appPackage, 'smoke:android-device')
 
 addCheck({
   id: 'tauri.identifier',

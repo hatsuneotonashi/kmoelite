@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android adb smoke 入口
+
+- 变更范围：`scripts/smoke-android-device.sh`、root/app `package.json`、`scripts/check-platform-readiness.mjs`、`docs/development/README.md`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：新增 `pnpm smoke:android-device`，用于 Android emulator/device 的最小 packaged smoke。脚本先选择一个 `adb devices` 中处于 `device` 状态的目标，再构建 debug APK、安装、启动、截图并解码；无设备时在构建前退出，多设备时要求显式 `ANDROID_DEVICE_ID`，避免装错设备。可选 `ANDROID_COMIC_ID` 只接受安全 comic id 并打开 `kmoelite://comic/<id>`。
+- 验证：
+  - `bash -n scripts/smoke-android-device.sh`：passed。
+  - `scripts/smoke-android-device.sh`：expected failure，当前没有连接的 Android emulator/device，输出 `android_smoke=missing-android-device`，未进入构建。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=56 warn=1 external=2 fail=0`。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Android emulator/device 安装启动 smoke；当前 `adb devices` 无可用 `device` 状态目标。未运行 Playwright E2E；本轮只新增 Android smoke 脚本、package entry 和平台 readiness 检查，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实下载验证、Android 真机、Windows 真机、iPhone/iPad 真机或 macOS 签名/公证验证。
+- 待发布风险：该脚本提供 Android 真实安装/启动/截图 smoke 入口，但本轮未连接设备执行完整 Android packaged smoke；Android phone/tablet/TV 的真实下载、Reader、缓存清理仍以已有 emulator live smoke 记录为准，实体设备和签名发布仍未完成。
+
 ## 2026-06-18 iPhone/iPad simulator smoke 指定设备类型
 
 - 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
