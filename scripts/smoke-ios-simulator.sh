@@ -4,20 +4,31 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_DIR="${ROOT_DIR}/apps/kmoe-app"
 BUNDLE_ID="moe.kzo.client"
+device_kind="${IOS_SIM_DEVICE_KIND:-any}"
+
+case "${device_kind}" in
+  any) device_name_re='iPhone|iPad' ;;
+  iphone) device_name_re='iPhone' ;;
+  ipad) device_name_re='iPad' ;;
+  *)
+    echo "ios_sim_smoke=failed reason=invalid-device-kind" >&2
+    exit 1
+    ;;
+esac
 
 device="${IOS_SIM_UDID:-}"
 if [[ -z "${device}" ]]; then
   device="$(xcrun simctl list devices booted \
-    | awk '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && /Booted/ { print; exit }' \
+    | awk -v name_re="${device_name_re}" '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && $0 ~ name_re && /Booted/ { print; exit }' \
     | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')"
 fi
 
 if [[ -z "${device}" ]]; then
   device="$(xcrun simctl list devices available \
-    | awk '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && /iPhone|iPad/ { print; exit }' \
+    | awk -v name_re="${device_name_re}" '/^-- iOS / { ios=1; next } /^-- / { ios=0 } ios && $0 ~ name_re { print; exit }' \
     | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')"
   if [[ -z "${device}" ]]; then
-    echo "ios_sim_smoke=missing-ios-simulator" >&2
+    echo "ios_sim_smoke=missing-ios-simulator kind=${device_kind}" >&2
     exit 1
   fi
   xcrun simctl boot "${device}" >/dev/null 2>&1 || true
@@ -55,4 +66,4 @@ if [[ -z "${width}" || -z "${height}" || "${width}" -le 0 || "${height}" -le 0 |
   echo "ios_sim_smoke=failed reason=screenshot-not-readable" >&2
   exit 1
 fi
-echo "ios_sim_smoke=passed device=${device} ${launch_output}${deep_link_output} screenshot=${width}x${height}"
+echo "ios_sim_smoke=passed kind=${device_kind} device=${device} ${launch_output}${deep_link_output} screenshot=${width}x${height}"

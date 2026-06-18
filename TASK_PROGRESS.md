@@ -4,6 +4,27 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iPhone/iPad simulator smoke 指定设备类型
+
+- 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：`pnpm smoke:ios-sim` 新增 `IOS_SIM_DEVICE_KIND=iphone|ipad|any`，默认仍为 `any`。设置为 `iphone` 或 `ipad` 时，脚本只会选择对应 iOS simulator，避免 iPhone/iPad smoke 被当前 booted 设备顺序影响。非法值会在构建前失败，不进入 Tauri build。
+- 验证：
+  - `bash -n scripts/smoke-ios-simulator.sh`：passed。
+  - `IOS_SIM_DEVICE_KIND=bad scripts/smoke-ios-simulator.sh`：expected failure，输出 `ios_sim_smoke=failed reason=invalid-device-kind`，未进入构建。
+  - `IOS_SIM_DEVICE_KIND=iphone IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `kind=iphone`、`screenshot=1206x2622`；截图位于系统临时目录并由脚本删除。
+  - `IOS_SIM_DEVICE_KIND=ipad IOS_SIM_RENDER_WAIT_SECONDS=1 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动和临时截图解码，输出 `kind=ipad`、`screenshot=2064x2752`；截图位于系统临时目录并由脚本删除。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=54 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只修 iOS simulator smoke 脚本和文档，没有改路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流，并已用 iPhone/iPad simulator smoke 覆盖脚本行为。未运行真实下载验证、iPhone/iPad 真机安装、文件导出/分享、前后台行为、iPhone Reader/download/cache cleanup 或确认后的 deep-link 详情视觉 smoke。
+- 待发布风险：该修复让 iPhone/iPad simulator 启动渲染 smoke 可分别复跑；不代表 iPhone/iPad 真机或 iPhone Reader/download/cache 验证完成。
+
 ## 2026-06-18 Reader 滚动窗口清理覆盖 failed/missing cache 行
 
 - 变更范围：`apps/kmoe-app/src/store/cacheStore.ts`、`apps/kmoe-app/src/tests/cacheStore.test.ts`、README、CHANGELOG、AGENTS、Reader/Shelf 文档。
