@@ -8,6 +8,7 @@
 
 - Platform readiness now checks iPhone/iPad display-name and file-export metadata in both XcodeGen source and generated Info.plist, so app-private download export support cannot silently drift.
 - Platform readiness now checks the root `pnpm smoke:ios-sim` entry so iPhone/iPad simulator smoke coverage cannot drift out of the release checklist unnoticed.
+- `pnpm smoke:ios-sim` can now open a safe `kmoelite://comic/<id>` URL when `IOS_SIM_COMIC_ID` is set, making iPhone/iPad deep-link smoke repeatable without committing screenshots.
 - Added `pnpm smoke:ios-sim`, a minimal iPhone/iPad simulator build/install/launch smoke that selects an iOS simulator explicitly instead of accidentally targeting a booted Apple TV simulator.
 - iOS packaged builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page.
 - Android debug builds can now receive safe `kmoelite://comic/<id>` links and route them to the in-app comic detail page for emulator/device validation.

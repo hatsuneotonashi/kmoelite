@@ -34,6 +34,15 @@ fi
 
 xcrun simctl install "${device}" "${app}"
 launch_output="$(xcrun simctl launch "${device}" "${BUNDLE_ID}")"
+deep_link_output=""
+if [[ -n "${IOS_SIM_COMIC_ID:-}" ]]; then
+  if [[ ! "${IOS_SIM_COMIC_ID}" =~ ^[A-Za-z0-9_-]{1,80}$ ]]; then
+    echo "ios_sim_smoke=failed reason=unsafe-comic-id" >&2
+    exit 1
+  fi
+  xcrun simctl openurl "${device}" "kmoelite://comic/${IOS_SIM_COMIC_ID}"
+  deep_link_output=" deepLink=kmoelite://comic/${IOS_SIM_COMIC_ID}"
+fi
 sleep "${IOS_SIM_RENDER_WAIT_SECONDS:-3}"
 screenshot="${TMPDIR:-/tmp}/kmoelite-ios-sim-${device}-$$.png"
 trap 'rm -f "${screenshot}"' EXIT
@@ -46,4 +55,4 @@ if [[ -z "${width}" || -z "${height}" || "${width}" -le 0 || "${height}" -le 0 |
   echo "ios_sim_smoke=failed reason=screenshot-not-readable" >&2
   exit 1
 fi
-echo "ios_sim_smoke=passed device=${device} ${launch_output} screenshot=${width}x${height}"
+echo "ios_sim_smoke=passed device=${device} ${launch_output}${deep_link_output} screenshot=${width}x${height}"

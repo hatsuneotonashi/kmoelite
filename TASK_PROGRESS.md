@@ -4,6 +4,26 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 iOS simulator deep-link smoke 可复跑化
+
+- 变更范围：`scripts/smoke-ios-simulator.sh`、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：`pnpm smoke:ios-sim` 新增可选 `IOS_SIM_COMIC_ID`。设置后脚本会在安装启动 packaged iPhone/iPad simulator app 后打开安全的 `kmoelite://comic/<id>`，再做临时截图解码检查。漫画 ID 限制为 1-80 位 `[A-Za-z0-9_-]`，避免把 smoke 脚本变成任意 URL 入口。该检查只验证 simulator open-url 入口可复跑，不声称已经自动处理 iOS 系统确认框或完成详情页视觉验证。
+- 验证：
+  - `bash -n scripts/smoke-ios-simulator.sh`：passed。
+  - `IOS_SIM_RENDER_WAIT_SECONDS=1 IOS_SIM_COMIC_ID=10817 pnpm smoke:ios-sim`：passed；完成 iOS simulator debug build、安装、启动、`kmoelite://comic/10817` open-url 和临时截图解码，输出 `screenshot=1206x2622`；截图位于系统临时目录并由脚本删除。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 316 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `pnpm check:platforms`：passed，`pass=54 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - tracked 敏感扫描：passed；唯一命中是 `scripts/verify-release-readiness.sh` 中用于检测敏感信息的正则规则文本，tracked 文件未发现真实账号、密码、Cookie、Session、Token、完整授权 URL、本机私有路径、`.env`、runtime DB、下载文件、`dist`、`target`、`test-results` 或 `playwright-report`。
+- 未运行项：未运行 Playwright E2E；本轮只改 iOS simulator smoke 脚本和文档，没有改应用路由实现、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实下载验证、iPhone/iPad 真机文件导出或 signed physical-device 验证。
+- 待发布风险：该 smoke 仍不是确认后的 deep-link 详情视觉验证，也不覆盖 iPhone Reader、下载、缓存清理或真机签名安装。
+
 ## 2026-06-18 iPhone/iPad 文件导出 metadata readiness 检查
 
 - 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG、TASK_PROGRESS。
