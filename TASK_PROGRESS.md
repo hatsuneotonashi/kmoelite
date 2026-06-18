@@ -4,6 +4,39 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android live Reader smoke 与 EPUB 入口过滤
+
+- 变更范围：`apps/kmoe-app/src/download/optionGuards.ts`、`apps/kmoe-app/src/tests/readerEntryState.test.ts`、`scripts/smoke-android-live-reader.*`、root/app `package.json`、`scripts/check-platform-readiness.mjs`、README、CHANGELOG、AGENTS、docs development/status/platforms。
+- 行为摘要：EPUB/MOBI 目录项必须有真实文件大小才会被当成可排队下载入口，避免只有元数据的条目在 Android/iPad 等真实路径里排队后授权失败；source ZIP/CBZ 保留既有 source-image metadata fallback。新增 `pnpm smoke:android-live-reader`，用 runtime 凭证通过 Android WebView 调试通道完成 native 登录，然后从 Detail 点击 EPUB Reader 入口，等待真实下载、Reader cache、页面图片和一次翻页。脚本不打印账号、密码、Cookie、Session、授权 URL 或本机下载路径。
+- 现场检查：
+  - `git status --short --branch`：`main` tracking `origin/main`，本轮开始只有预期源码/脚本改动。
+  - `.env.local`：present and gitignored；runtime 凭证只从环境读取，未写入仓库文件。
+- Android live smoke：
+  - `pnpm verify:real-site-smoke`：passed against `https://kxo.moe`，covered login page, login POST, profile, catalog, detail, and book_data; forbidden download/admin endpoints were not called.
+  - `KMOE_REAL_DOWNLOAD_VERIFY=I_UNDERSTAND_THIS_MAY_USE_QUOTA KMOE_VERIFY_FORMAT=epub pnpm verify:real-source-zip-reader`：passed；覆盖真实 EPUB 下载、Library 记录、Reader cache、翻页、继续阅读进度和 cache cleanup；输出已脱敏，本地文件使用临时目录清理。
+  - `ANDROID_AVD=Pixel_8_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
+  - `ANDROID_SKIP_BUILD=1 ANDROID_AVD=Kmoelite_Tablet_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
+  - `ANDROID_SKIP_BUILD=1 ANDROID_AVD=Kmoelite_TV_API_36 ANDROID_READER_COMIC_ID=53339 ANDROID_READER_VOLUME_TEXT=089-095 pnpm smoke:android-live-reader`：passed，打开 `/reader/cache/...` 且页面图片数为 1。
+- 聚焦验证：
+  - `pnpm --dir apps/kmoe-app test:run src/tests/readerEntryState.test.ts src/tests/detailReaderEntry.test.tsx`：passed，2 files / 23 tests。
+  - `node --check scripts/smoke-android-live-reader.mjs`：passed。
+  - `bash -n scripts/smoke-android-live-reader.sh`：passed。
+  - `pnpm check:platforms`：passed，`pass=67 warn=1 external=2 fail=0`；warn 是 tvOS simulator SDK 缺少 WebKit；external 是 Windows-only signtool/NSIS on macOS。
+- 提交前验证：
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 318 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `pnpm check:platforms`：passed，`pass=67 warn=1 external=2 fail=0`。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+  - `pnpm --dir apps/kmoe-app e2e`：passed，114 passed / 50 skipped。
+  - sensitive text scan：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only the release scanner regex matched。
+  - ignored-boundary check：`.env.local`、node_modules、dist、target、iOS generated assets and Android build outputs are ignored/generated and not in `git status`。
+- 待发布风险：Android phone/tablet/TV 仍只是在 emulator 完成 live Reader smoke；真机、签名发布、真实 downloaded-file 记录分享 smoke 和分发验证仍未完成。
+
 ## 2026-06-18 Apple TV 原生 tvOS 开发预览工程
 
 - 变更范围：`apps/kmoe-appletv/**`、`scripts/smoke-appletv-simulator.sh`、`scripts/test-appletv.sh`、`scripts/check-platform-readiness.mjs`、root `package.json`、`.gitignore`、README、README.en、AGENTS、CHANGELOG、docs status/platforms/development/release/reader-shelf。

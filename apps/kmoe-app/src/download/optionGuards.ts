@@ -7,5 +7,8 @@ export function getBlockingDownloadRestrictions(option: Pick<VolumeDownloadOptio
 }
 
 export function canQueueDownloadOption(option: VolumeDownloadOption, format: DownloadFormat): boolean {
-  return option.availableFormats.includes(format) && getBlockingDownloadRestrictions(option).length === 0
+  if (!option.availableFormats.includes(format) || getBlockingDownloadRestrictions(option).length > 0) return false
+  if (format === 'epub') return Boolean(option.sizes.epub)
+  if (format === 'mobi') return Boolean(option.sizes.mobi)
+  return true
 }

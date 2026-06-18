@@ -78,6 +78,7 @@ Public project positioning: kmoelite is an Alpha / developer-preview unofficial 
 - The production client must not expose a destructive "clear Library" command or UI. Library records should be preserved unless a deliberate per-item removal/rebind product flow is designed and tested.
 - Missing Reader archives may queue exactly one local `source_zip` or `epub` task for the selected volume/chapter; this is not a package or VIP batch action.
 - Automatic "start reading" and automatic download selection should prefer EPUB when EPUB is available and queueable, because it is Reader-capable and currently the most reliable live single-item path. Source ZIP/CBZ remains a supported explicit high-quality/manual option and an existing local archive format.
+- EPUB and MOBI options must have a positive declared size before the UI can queue them as downloadable Reader/file tasks. Source ZIP/CBZ may still use the existing source-image metadata fallback when size is missing, because the website can expose source-image availability through generation/resolution metadata.
 - Reader-initiated archive downloads may promote that one queued task to the next queue item, but must still respect single-item sequential downloading.
 - Reader recovery may queue a missing EPUB/source ZIP only after confirming an authenticated live session. Signed-out users must be sent to Login before any native download task is created.
 

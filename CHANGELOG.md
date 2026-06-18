@@ -10,6 +10,7 @@
 
 ### Added
 
+- Added `pnpm smoke:android-live-reader`, a guarded Android WebView/CDP smoke that uses runtime credentials to verify login, Detail, EPUB download, Reader cache opening, image rendering, and page-turn behavior without printing credentials or authorization data.
 - Added a separate native SwiftUI/tvOS Apple TV developer-preview project under `apps/kmoe-appletv`, plus `pnpm test:appletv` and `pnpm smoke:appletv-sim` for tvOS unit tests and simulator build/install/launch smoke.
 - Added `pnpm smoke:mac-app`, a repeatable macOS debug `.app` build/launch/screenshot smoke that exits the app and deletes the temporary screenshot.
 - `pnpm verify:real-source-zip-reader` now uses a temporary download directory and cleans it by default, so guarded live download checks do not leave private files on the developer machine unless explicitly requested.
@@ -64,6 +65,7 @@
 
 ### Fixed
 
+- Detail/Reader download entry selection no longer offers metadata-only EPUB or MOBI rows as queueable tasks when the website does not expose a real file size; source ZIP keeps its existing source-image metadata fallback.
 - iOS simulator smoke now rejects non-UDID aliases, tvOS devices, and explicit `IOS_SIM_UDID` values that do not match the requested iPhone/iPad device kind.
 - Reader rolling-window cleanup now removes stale failed/missing reading-cache rows outside the retention window while preserving preparing/evicting in-flight rows.
 - iPhone/iPad file-sharing metadata is now preserved in the XcodeGen `project.yml`, so regenerating the iOS project keeps app-private downloads exportable through iOS document sharing.

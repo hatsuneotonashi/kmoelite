@@ -44,6 +44,21 @@ describe('reader entry state resolver', () => {
     expect(state.label).toBe('获取 EPUB')
   })
 
+  it('does not offer metadata-only EPUB rows as downloadable Reader archives', () => {
+    const state = resolveReaderEntryState({
+      option: option({
+        sizes: { mobi: undefined, epub: undefined, sourceZip: undefined },
+        availableFormats: ['epub']
+      }),
+      chapters: [],
+      library: [],
+      tasks: []
+    })
+
+    expect(state.kind).toBe('unavailable')
+    expect(state.enabled).toBe(false)
+  })
+
   it('does not let metadata-only library records block online Reader download', () => {
     const state = resolveReaderEntryState({
       option: option({ availableFormats: ['mobi', 'epub'] }),
