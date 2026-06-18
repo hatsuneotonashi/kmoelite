@@ -65,6 +65,7 @@
 
 ### Fixed
 
+- Windows Source CI no longer compiles macOS/iOS/Android-only deep-link open events, allowing the Windows Rust source check to validate the supported Windows code path.
 - Source CI now uses current GitHub Actions runtime versions and splits Windows Rust checks into format/check/test steps, so Windows failures point at the exact failing command instead of one merged Rust step.
 - Detail/Reader download entry selection no longer offers metadata-only EPUB or MOBI rows as queueable tasks when the website does not expose a real file size; source ZIP keeps its existing source-image metadata fallback.
 - Android live Reader smoke now retries native login briefly, so newly booted emulators do not fail only because network connectivity is not ready at the first login attempt.

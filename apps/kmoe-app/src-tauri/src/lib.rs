@@ -218,6 +218,7 @@ pub fn run() {
         .expect("error while building kmoelite");
 
     app.run(|app_handle, event| {
+        #[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
         if let tauri::RunEvent::Opened { urls } = &event {
             if let Some(route) = urls
                 .iter()
