@@ -47,9 +47,25 @@ addCommandCheck('tool.rustc', 'all', 'rustc', ['--version'], 'Rust compiler is a
 addCommandCheck('tool.cargo', 'all', 'cargo', ['--version'], 'Cargo is available.')
 addCommandCheck('tool.rustup', 'all', 'rustup', ['--version'], 'rustup is available for target management.')
 
+const realDownloadExample = commandOutput('cargo', [
+  'check',
+  '--manifest-path',
+  path.join(TAURI_DIR, 'Cargo.toml'),
+  '--example',
+  'verify_real_download_once'
+])
+addCheck({
+  id: 'real_download.example_compiles',
+  platform: 'all',
+  status: realDownloadExample.ok ? 'pass' : 'warn',
+  summary: realDownloadExample.ok ? 'verify_real_download_once example compiles.' : 'verify_real_download_once example did not compile.',
+  detail: 'The guarded real-download-to-Reader verification example must compile without running a live download.'
+})
+
 addScriptCheck('script.release_gate', 'all', rootPackage, 'verify:release')
 addScriptCheck('script.platform_readiness', 'all', rootPackage, 'check:platforms')
 addScriptCheck('script.ios_assets_check', 'ios', rootPackage, 'check:ios-assets')
+addScriptCheck('script.real_download_reader_verify', 'all', rootPackage, 'verify:real-source-zip-reader')
 addScriptCheck('script.ios_sim_smoke', 'ios', rootPackage, 'smoke:ios-sim')
 addScriptCheck('script.ios_tools_setup', 'ios', rootPackage, 'setup:ios-tools')
 addScriptCheck('script.macos_app', 'macos', rootPackage, 'tauri:build:mac-app:debug')
@@ -61,6 +77,7 @@ addScriptCheck('script.android_device_smoke', 'android', rootPackage, 'smoke:and
 addScriptCheck('script.windows_msi', 'windows', rootPackage, 'tauri:build:windows-msi')
 addScriptCheck('script.windows_nsis', 'windows', rootPackage, 'tauri:build:windows-nsis')
 addScriptCheck('script.app_platform_readiness', 'all', appPackage, 'check:platforms')
+addScriptCheck('script.app_real_download_reader_verify', 'all', appPackage, 'verify:real-source-zip-reader')
 addScriptCheck('script.app_macos_app_smoke', 'macos', appPackage, 'smoke:mac-app')
 addScriptCheck('script.app_ios_tools_setup', 'ios', appPackage, 'setup:ios-tools')
 addScriptCheck('script.app_android_build', 'android', appPackage, 'tauri:android:build:debug')

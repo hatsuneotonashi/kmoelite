@@ -4,6 +4,25 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 真实下载到 Reader 验证入口纳入平台检查
+
+- 变更范围：`scripts/check-platform-readiness.mjs`、`docs/status/README.md`、CHANGELOG。
+- 行为摘要：`pnpm check:platforms` 现在检查 root/app `verify:real-source-zip-reader` 脚本入口，并编译 `verify_real_download_once` example。该检查只证明真实单项下载到 Reader/cache cleanup 的 guarded verification 入口可编译，不执行 live download、不读取凭证、不授权下载、不消耗配额。
+- 验证：
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --example verify_real_download_once`：passed。
+  - `node scripts/check-platform-readiness.mjs --self-test`：passed。
+  - `pnpm check:platforms`：passed，`pass=61 warn=1 external=2 fail=0`。
+  - `git diff --check`：passed。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，93 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮只改平台 readiness 检查和文档，没有修改 UI、Reader runtime、路由、布局、accessibility 或视觉基线。未运行真实站点 smoke、真实下载验证、iPhone Reader/download/cache cleanup、iPhone/iPad 签名真机、Windows 真机或 macOS 签名/公证验证。
+- 待发布风险：该变更防止真实下载验证入口在默认平台检查外腐化；它不替代真实 EPUB/source ZIP 下载、iPhone App UI Reader/download/cache smoke 或任何平台二进制验收。
+
 ## 2026-06-18 iPhone simulator 内部详情路由 smoke
 
 - 变更范围：`apps/kmoe-app/src-tauri/src/lib.rs`、`scripts/smoke-ios-simulator.sh`、README、`docs/development/README.md`、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG。
