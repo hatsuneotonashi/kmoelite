@@ -109,6 +109,7 @@
 
 ### Validation
 
+- Android TV emulator has passed the reusable `pnpm smoke:android-device` path, covering debug APK build, adb install, launch, safe comic deep link delivery, and temporary screenshot decoding.
 - Android Pixel Tablet emulator has passed the reusable `pnpm smoke:android-device` path, covering debug APK build, adb install, launch, safe comic deep link delivery, and temporary screenshot decoding.
 - Android Pixel 8 emulator has passed the reusable `pnpm smoke:android-device` path, covering debug APK build, adb install, launch, safe comic deep link delivery, and temporary screenshot decoding.
 - Android Pixel 8 emulator has passed debug APK install/direct launch and running-app `kmoelite://comic/<id>` delivery without the previous native intent crash.

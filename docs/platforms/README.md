@@ -1,6 +1,6 @@
 # 平台状态
 
-kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render、session restore 和可重复 `kmoelite://comic/<id>` open-url smoke，`kmoelite://comic/<id>` scheme 已注册并加固 pending route 交付，`pnpm smoke:ios-sim` 可用 `IOS_SIM_DEVICE_KIND=iphone|ipad` 分别固定验证 iPhone 或 iPad simulator，但还没有完成确认后的 deep-link 详情视觉、下载和 Reader smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页、本地阅读数据清理和运行中 `kmoelite://comic/<id>` deep link smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke，系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
+kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad simulator 已通过真实 EPUB 下载到 Reader 和翻页 smoke；iPhone simulator 已通过 packaged render、session restore 和可重复 `kmoelite://comic/<id>` open-url smoke，`kmoelite://comic/<id>` scheme 已注册并加固 pending route 交付，`pnpm smoke:ios-sim` 可用 `IOS_SIM_DEVICE_KIND=iphone|ipad` 分别固定验证 iPhone 或 iPad simulator，但还没有完成确认后的 deep-link 详情视觉、下载和 Reader smoke。Windows 有源码和打包路径但未完成真机发行验证。Android 手机和平板已经有实验预览源码路径和 debug APK/AAB 构建路径；Android phone emulator 已通过真实登录、详情、EPUB 下载、Reader、翻页、本地阅读数据清理和运行中 `kmoelite://comic/<id>` deep link smoke；Android tablet emulator 已通过真实登录、详情、EPUB 下载、Reader、双页翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、Android WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但两者仍未完成真机、真实 downloaded-file 记录分享 smoke 和签名发布验证。Android TV 已有实验入口，Android TV emulator 已通过通用 packaged smoke 的安装、启动、运行中 deep link 和截图解码，并通过真实登录、详情、EPUB 下载、Reader、遥控器翻页和本地阅读数据清理 smoke；系统分享桥源码、debug build、手机 WebView bridge 注入 smoke 和 app-private debug share chooser smoke 已通过，但不等同于实体 TV、真实 downloaded-file 记录分享或签名发行完成。Apple TV 是未来研究方向。源码支持、开发预览和公开二进制可发布是不同状态。
 
 ## iPhone
 
@@ -59,6 +59,7 @@ kmoelite 当前开发预览可用的平台是 iPhone、iPad 和 macOS。iPad sim
 
 - 实验入口存在，不属于当前 Alpha 稳定可用范围。
 - Android manifest 已声明 optional Leanback launcher；Android TV API 36 模拟器可安装并启动。
+- Android TV API 36 模拟器已通过 `pnpm smoke:android-device`，覆盖 debug APK build、adb install、app launch、运行中 `kmoelite://comic/<id>` deep link 和临时截图解码。
 - 前端可识别 Android TV WebView UA，进入 `androidTv` runtime、`tv` layout contract 和 `remote` input class。
 - 方向键焦点 smoke 已验证可从 shell 进入导航项。
 - App shell 已在 remote 输入下处理 Back 导航；Android native WebView bridge 可把 DPAD 方向键和 OK/Enter 交给前端。

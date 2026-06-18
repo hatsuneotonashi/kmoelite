@@ -4,6 +4,28 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
+## 2026-06-18 Android TV emulator adb smoke 复跑
+
+- 变更范围：TASK_PROGRESS、`docs/status/README.md`、`docs/platforms/README.md`、CHANGELOG。
+- 行为摘要：使用已存在的 `Kmoelite_TV_API_36` Android TV emulator 复跑 `pnpm smoke:android-device`，验证通用 Android packaged smoke 入口也能覆盖 TV 形态的 debug APK build、adb install、启动、运行中 `kmoelite://comic/<id>` deep link 和临时截图解码。
+- 验证：
+  - `emulator -list-avds`：passed，存在 phone/tablet/TV AVD。
+  - `emulator -avd Kmoelite_TV_API_36 -no-snapshot-save -no-boot-anim -gpu swiftshader_indirect -no-audio -no-window`：started。
+  - `adb wait-for-device` + `adb shell getprop sys.boot_completed`：passed，设备 `emulator-5554` 进入 `device` 状态。
+  - `ANDROID_DEVICE_ID=emulator-5554 ANDROID_RENDER_WAIT_SECONDS=1 ANDROID_COMIC_ID=10817 pnpm smoke:android-device`：passed；完成 frontend build、Tauri Android debug APK/AAB build、adb install、app launch、safe comic deep link 和临时截图解码，输出 `screenshot=1920x1080`；截图位于系统临时目录并由脚本删除。
+  - `adb -s emulator-5554 emu kill`：passed，验证后关闭 emulator。
+  - `git diff --check`：passed。
+  - `pnpm check:platforms`：passed，`pass=58 warn=1 external=2 fail=0`。
+  - `pnpm --dir apps/kmoe-app typecheck`：passed。
+  - `pnpm --dir apps/kmoe-app test:run`：passed，55 files / 317 tests。
+  - `pnpm --dir apps/kmoe-app build`：passed，production Vite build and iOS asset sync completed；生成产物保持 ignored。
+  - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
+  - `cargo check --manifest-path apps/kmoe-app/src-tauri/Cargo.toml`：passed。
+  - `cargo test --manifest-path apps/kmoe-app/src-tauri/Cargo.toml --lib`：passed，92 tests。
+  - `node scripts/check-ios-assets.mjs`：passed，files=27。
+- 未运行项：未运行 Playwright E2E；本轮未修改生产代码、路由、布局、Reader、accessibility、视觉基线或浏览器可见工作流。未运行真实站点 smoke、真实下载验证、Android TV 实体设备、Windows 真机、iPhone/iPad 真机或 macOS 签名/公证验证。
+- 待发布风险：该结果证明 Android TV emulator 可通过通用 adb smoke 入口安装、启动、deep link 和截图；不代表 Android TV 实体设备、真实文件分享、签名 release 或分发验证完成。
+
 ## 2026-06-18 Android tablet emulator adb smoke 复跑
 
 - 变更范围：TASK_PROGRESS、`docs/status/README.md`、CHANGELOG。
