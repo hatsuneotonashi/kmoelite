@@ -4,10 +4,10 @@
 
 对外更新记录写入 [CHANGELOG.md](CHANGELOG.md)；README 只保留最近 5 次公开更新摘要。
 
-## 2026-06-18 Source CI Windows deep-link 条件编译修复
+## 2026-06-18 Source CI Windows Rust 修复
 
-- 变更范围：`apps/kmoe-app/src-tauri/src/lib.rs`、CHANGELOG、TASK_PROGRESS。
-- 行为摘要：上一轮 Source CI 拆步后确认 Windows job 失败在 `Rust check`。GitHub Actions 日志显示 Windows 编译 `tauri::RunEvent::Opened` 失败，因为该事件只存在于 macOS、iOS 和 Android。补丁把 deep-link open-event 处理限制到支持该事件的平台；Windows 保留正常窗口启动/Ready 处理，不再编译不兼容分支。
+- 变更范围：`apps/kmoe-app/src-tauri/src/lib.rs`、`apps/kmoe-app/src-tauri/src/commands_snapshot_tests.rs`、`apps/kmoe-app/src-tauri/src/fs_utils.rs`、CHANGELOG、TASK_PROGRESS。
+- 行为摘要：上一轮 Source CI 拆步后确认 Windows job 先失败在 `Rust check`。GitHub Actions 日志显示 Windows 编译 `tauri::RunEvent::Opened` 失败，因为该事件只存在于 macOS、iOS 和 Android。补丁把 deep-link open-event 处理限制到支持该事件的平台；Windows 保留正常窗口启动/Ready 处理，不再编译不兼容分支。推送后新一轮 Windows `Rust check` 已通过，但 `Rust lib tests` 暴露 5 个测试断言硬编码 Unix `/` 路径或在 Windows host 上判断 Android 设备路径为本机绝对路径；本轮把这些断言改成跨平台路径语义检查，不改变生产行为。
 - 验证：
   - `git diff --check`：passed。
   - `cargo fmt --all --manifest-path apps/kmoe-app/src-tauri/Cargo.toml -- --check`：passed。
@@ -19,7 +19,9 @@
   - `pnpm check:platforms`：passed，`pass=67 warn=1 external=2 fail=0`。
   - `node scripts/check-ios-assets.mjs`：passed，files=27。
   - sensitive text scan：no real credential, cookie, token, private path, authorization URL, runtime DB, or download path found；only the release scanner regex matched。
-- 待验证：需要等待 GitHub Actions 新一轮 `Source CI`，确认 Windows `Rust check` 和 `Rust lib tests` 均通过。
+- GitHub Actions 观察：
+  - commit `d7aa795`：Windows `Rust check` passed；Windows `Rust lib tests` failed on path-portability assertions。
+- 待验证：需要等待 GitHub Actions 新一轮 `Source CI`，确认 Windows `Rust lib tests` 通过。
 
 ## 2026-06-18 Source CI Windows Rust 诊断拆步
 

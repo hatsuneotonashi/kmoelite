@@ -229,6 +229,10 @@ fn is_windows_reserved_stem(stem: &str) -> bool {
 mod tests {
     use super::*;
 
+    fn slash_path(path: &Path) -> String {
+        path.to_string_lossy().replace('\\', "/")
+    }
+
     #[test]
     fn sanitizes_windows_reserved_and_empty_names() {
         assert_eq!(sanitize_filename("CON.txt"), "_CON.txt");
@@ -239,7 +243,7 @@ mod tests {
 
     #[test]
     fn expands_home_and_rejects_traversal() {
-        let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
+        let home = home_dir();
         let normalized = normalize_user_path("~/Downloads/Kmoe").expect("home path normalizes");
         assert!(normalized.starts_with(home));
         assert!(normalize_user_path("../secret").is_err());
@@ -292,6 +296,8 @@ mod tests {
             !path.to_string_lossy().contains(".local/share"),
             "Android app data must not use Linux-style fallback paths"
         );
+        assert!(slash_path(&path).starts_with("/data/data/"));
+        #[cfg(not(windows))]
         assert!(path.is_absolute());
     }
 

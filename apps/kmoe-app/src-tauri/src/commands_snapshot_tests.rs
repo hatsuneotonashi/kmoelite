@@ -1,6 +1,10 @@
 use super::*;
 use crate::models::ReadingHistoryEntry;
 
+fn slash_path(path: impl AsRef<str>) -> String {
+    path.as_ref().replace('\\', "/")
+}
+
 #[test]
 fn native_task_shape_rejects_restricted_policy_rows() {
     let mut task = sample_download_task();
@@ -45,7 +49,7 @@ fn mobile_download_dir_uses_app_private_downloads_root() {
     let path = mobile_download_dir_from_app_data_dir(app_data);
 
     assert_eq!(
-        path,
+        slash_path(&path),
         "/app/container/Library/Application Support/moe.kzo.client/Downloads/Kmoe"
     );
     assert!(!path.contains("/Documents/"));
@@ -143,10 +147,9 @@ fn saves_safe_migration_snapshot_without_overwriting_existing_files() {
     let second = save_migration_snapshot_to_dir(&snapshot, root.to_str().unwrap(), "fallback")
         .expect("second snapshot saves");
 
-    assert!(
-        first.ends_with("Snapshots/kmoe-client-snapshot-2026-05-21T04_30_00_Asia_Shanghai.json")
-    );
-    assert!(second
+    assert!(slash_path(&first)
+        .ends_with("Snapshots/kmoe-client-snapshot-2026-05-21T04_30_00_Asia_Shanghai.json"));
+    assert!(slash_path(&second)
         .ends_with("Snapshots/kmoe-client-snapshot-2026-05-21T04_30_00_Asia_Shanghai (1).json"));
     assert!(std::fs::read_to_string(&first).unwrap().ends_with('\n'));
     assert!(std::fs::read_to_string(&second)
@@ -562,7 +565,7 @@ fn prepares_reader_cache_from_epub_archive() {
     assert_eq!(prepared.manifest.page_count, 2);
     assert_eq!(prepared.chapter.format, "epub");
     assert_eq!(prepared.chapter.id, "reader-cache:53339:3089:epub");
-    assert!(prepared.chapter.cache_dir.ends_with("/53339/3089/epub"));
+    assert!(slash_path(&prepared.chapter.cache_dir).ends_with("/53339/3089/epub"));
     assert_eq!(
         prepared
             .pages

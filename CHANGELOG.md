@@ -65,6 +65,7 @@
 
 ### Fixed
 
+- Windows Source CI Rust tests now use platform-portable path assertions for snapshots, mobile storage roots, and Reader cache directories.
 - Windows Source CI no longer compiles macOS/iOS/Android-only deep-link open events, allowing the Windows Rust source check to validate the supported Windows code path.
 - Source CI now uses current GitHub Actions runtime versions and splits Windows Rust checks into format/check/test steps, so Windows failures point at the exact failing command instead of one merged Rust step.
 - Detail/Reader download entry selection no longer offers metadata-only EPUB or MOBI rows as queueable tasks when the website does not expose a real file size; source ZIP keeps its existing source-image metadata fallback.
